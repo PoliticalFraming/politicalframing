@@ -1,0 +1,107 @@
+@import "mixin_helpers";
+
+@function inverse-position($position) {
+  @if $position == "left" {
+    @return "right";
+  } @else if $position == "bottom" {
+    @return "top";
+  } @else if $position == "right" {
+    @return "left";
+  } @else {
+    @return "bottom";
+  }
+}
+
+@mixin arrow-colors($border_color: nil, $box_color: nil, $position: nil) {
+
+  $inverse-position: inverse-position($position);
+
+  @if $box_color {
+    background: $box_color;
+  }
+
+  @if $border_color {
+    border-color: $border_color;
+
+    &:before {
+      border-#{$inverse-position}-color: $border_color;
+    }
+  }
+}
+
+@mixin arrow-box( $selector: ".arrow-box", $position: "top", $arrow_size: 10px, $border_width: 2px, $box_color: #333, $border_color: #ccc, $centered: true, $edge: 7px) {
+
+  $inverse: inverse-position($position);
+  $sideway: "left";
+
+  @if $position == "left" {
+    $sideway: "top";
+  } @else if $position == "bottom" {
+    $sideway: "left";
+  } @else if $position == "right" {
+    $sideway: "top";
+  } @else {
+    $position: "top";
+  }
+
+  $border: false;
+  $cumul: 0;
+
+  @if $border_width > 0 {
+    $border: true;
+    $cumul: $arrow_size + round($border_width * 1.41421356); // cos(PI/4) * 2
+  }
+
+
+  #{$selector} {
+    position: relative;
+    background: $box_color;
+
+    @if $border { border: $border_width solid $border_color; }
+
+    // Need to be in content-box mode for this to work!
+    @include box-sizing(content-box);
+  }
+
+  $ab: $selector + ":after";
+
+  @if $border {
+    $ab: $ab + ", " + $selector + ":before";
+  }
+
+  #{$ab} {
+    #{$inverse}: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+  }
+
+  #{$selector}:after {
+    border-#{$inverse}-color: $box_color;
+    border-width: $arrow_size;
+    @if $centered {
+      #{$sideway}: 50%;
+      margin-#{$sideway}: -$arrow_size;
+    } @else {
+      #{$sideway}: $edge;
+    }
+  }
+
+  @if $border {
+    #{$selector}:before {
+      border-#{$inverse}-color: $border_color;
+      border-width: $cumul;
+
+      @if $centered {
+        #{$sideway}: 50%;
+        margin-#{$sideway}: -$cumul;
+      } @else {
+        #{$sideway}: $edge - 1px;
+      }
+
+    }
+  }
+}

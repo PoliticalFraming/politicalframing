@@ -1,0 +1,91 @@
+$colors:
+  #3880aa rgba(56, 128, 170, 0.1) #89bbd8,
+  #4da944 rgba(77, 169, 68, 0.1) #9dd597,
+  #f26522 rgba(242, 101, 34, 0.1) #f9b99a,
+  #c6080d rgba(198, 8, 13, 0.1) #f8555a,
+  #672d8b rgba(103, 45, 139, 0.1) #a869ce,
+  #ce1797 rgba(206, 23, 151, 0.1) #f075cb,
+  #d9ce00 rgba(217, 206, 0, 0.1) #fff75a,
+  #754c24 rgba(117, 76, 36, 0.1) #c98c50,
+  #2eb9b4 rgba(46, 185, 180, 0.1) #86e1de,
+  #0e2e42 rgba(14, 46, 66, 0.1) #2477ab;
+
+
+@mixin xchart-color($color_list) {
+  .line {
+    stroke: #{nth($color_list, 1)};
+  }
+  rect, circle {
+    fill: #{nth($color_list, 1)};
+  }
+  .fill {
+    fill: #{nth($color_list, 2)};
+  }
+  &.comp {
+    .line {
+      stroke: #{nth($color_list, 3)};
+    }
+    rect {
+      fill: #{nth($color_list, 3)};
+    }
+    .fill {
+      display: none;
+    }
+    circle, .pointer {
+      fill: #{nth($color_list, 3)};
+    }
+  }
+}
+
+.xchart {
+  .line {
+    stroke-width: 3px;
+    fill: none;
+  }
+  .fill {
+    stroke-width: 0;
+  }
+  circle {
+    stroke: #FFF;
+    stroke-width: 3px;
+  }
+  .axis {
+    .domain {
+      fill: none;
+    }
+    .tick {
+      stroke: #EEE;
+      stroke-width: 1px;
+    }
+    text {
+      font-family: Helvetica, Arial, Verdana, sans-serif;
+      fill: #666;
+      font-size: 12px;
+    }
+  }
+
+  $i: 0;
+  @each $color in $colors {
+    .color#{$i} {
+      @include xchart-color($color);
+    }
+    $i: $i + 1;
+  }
+}
+
+.ex-tooltip {
+  position:absolute;
+  background:#EEE;
+  -webkit-border-radius:3px;
+  -moz-border-radius:3px;
+  -ms-border-radius:3px;
+  -o-border-radius:3px;
+  border-radius:3px;
+  padding:5px;
+  -webkit-box-shadow:0 1px 3px #000;
+  -moz-box-shadow:0 1px 3px #000;
+  -ms-box-shadow:0 1px 3px #000;
+  -o-box-shadow:0 1px 3px #000;
+  box-shadow:0 1px 3px #000;
+  border-collapse:separate;display:none
+}

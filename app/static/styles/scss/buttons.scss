@@ -1,0 +1,146 @@
+@import "mixin_helpers";
+@import "variables";
+
+@mixin core-button($color) {
+  border: 1px solid darken($color, 16);
+  @include box-shadow(inset 0 1px 2px lighten($color, 5));
+  @include std-bg(lighten($color, 0), darken($color, 8));
+
+  &:hover {
+    @include std-bg($color, darken($color, 9));
+    @include transition(box-shadow 0.05s ease-in-out);
+  }
+
+  &:active {
+    background: darken($color, 4);
+    border-color: darken($color, 18);
+    @include box-shadow(0 0 5px darken($color, 4) inset);
+  }
+}
+
+@mixin action-color-button($color) {
+  $color: darken($color, 14);
+  border: 1px solid $color;
+  @include box-shadow(0 1px 2px 0 lighten($color, 12) inset);
+  @include std-bg(lighten($color, 12), darken($color, 2));
+
+  &:hover {
+    opacity: 0.95;
+    @include transition(opacity 0.2s ease-in-out);
+  }
+
+  &:active {
+    background: lighten($color, 4);
+  }
+}
+
+
+
+.btn {
+
+  color: #fff;
+  @include border-radius(2px);
+  font-size: 11px;
+  font-weight: 600;
+  @include text-shadow(0 -1px #6f6f6f);
+  //margin-bottom: 5px;
+
+  &:hover, &:active, &:focus {
+    color: #fff;
+  }
+
+  &.btn-full {
+    display: block;
+  }
+
+  &.btn-default {
+    color: #686868;
+    @include text-shadow(none);
+
+    &:hover, &:active {
+      color: #505050;
+    }
+
+    .caret {
+      border-top: 4px solid black;
+    }
+  }
+
+  .caret {
+    border-top: 4px solid white;
+  }
+
+  &.btn-lg {
+    font-size: 12px;
+  }
+
+  @each $pair in $buttonColors {
+    &.btn-#{nth($pair, 1)} {
+      @include core-button(nth($pair, 2));
+    }
+  }
+}
+
+@each $pair in $buttonColors {
+  .btn-group.open .btn.btn-#{nth($pair, 1)}.dropdown-toggle {
+    background-color: #{nth($pair,2)};
+  }
+}
+
+.btn-group.btn.btn-lg {
+  padding: 8px 10px;
+}
+
+button.btn {
+  font-weight: 600;
+}
+
+.btn-group > .btn, .btn-group > .dropdown-menu {
+  font-size: 12px;
+}
+
+.caret {
+  opacity: 0.6;
+}
+
+
+.btn-xs .caret, .btn-sm .caret, .btn-lg .caret {
+  margin-top: 8px;
+  margin-left: 4px;
+}
+
+.dropdown-menu .divider {
+  border-top: none !important;
+}
+
+.btn {
+  i {
+    vertical-align: middle;
+  }
+}
+
+//fixing the border radius
+
+$group-radius: 2px;
+
+.btn-group > .btn:first-child {
+  margin-left: 0;
+  @include border-top-left-radius($group-radius);
+  @include border-bottom-left-radius($group-radius);
+}
+
+.btn-group > .btn:last-child,
+.btn-group > .dropdown-toggle {
+  @include border-top-right-radius($group-radius);
+  @include border-bottom-right-radius($group-radius);
+}
+
+.btn-group > .btn.large:first-child {
+  @include border-top-left-radius($group-radius);
+  @include border-bottom-left-radius($group-radius);
+}
+.btn-group > .btn.large:last-child,
+.btn-group > .large.dropdown-toggle {
+  @include border-top-right-radius($group-radius);
+  @include border-bottom-right-radius($group-radius);
+}

@@ -1,0 +1,13 @@
+bin
+include
+lib
+.vagrant
+.DS_Store
+*.pyc
+logs
+database.db
+node_modules
+dist
+.tmp
+.sass-cache
+.webassets-cache

@@ -1,0 +1,10 @@
+.justgage {
+  width: 200px;
+  height: 160px;
+  display: inline-block;
+
+  &.small {
+    width: 90px;
+    height: 70px;
+  }
+}

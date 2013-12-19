@@ -1,0 +1,47 @@
+@import "mixin_helpers";
+@import "bootstrap-sass/lib/mixins";
+
+.pagination > ul {
+  @include box-shadow(none);
+}
+
+.pagination-lg > li > a, .pagination-lg > li > span {
+  padding: 9px 16px;
+}
+
+.pagination > li {
+  > a {
+    @include std-bg($header-gradient-top, $header-gradient-bottom);
+
+    border-top: 1px solid #E2E2E2;
+    border-left: 1px solid #C9C9C9;
+    border-right: 1px solid #C9C9C9;
+    border-bottom: 1px solid #AEAEAE;
+
+    font-weight: 600;
+
+    @include border-radius(3px);
+    margin: 0 1px;
+    cursor: pointer;
+    color: #666;
+    @include box-shadow(0 1px 0 #fff inset);
+
+    &:hover {
+      @include std-bg(#f1f1f1, $header-gradient-bottom);
+    }
+  }
+
+  &.active a, > a:active, &.active:hover a {
+    color: #666;
+    border: 1px solid #AEAEAE;
+    @include box-shadow(0 0 6px -1px rgba(0, 0, 0, 0.2) inset, 0 1px 0 white);
+
+    @include text-shadow(none);
+  }
+}
+
+// extra small
+.pagination-xs {
+  @include pagination-size(4px, 6px, 10px, 3px);
+}
+

@@ -1,0 +1,136 @@
+@import "mixin_helpers";
+@import "arrow";
+
+$margin-left: 65px;
+
+//define an array of arrow boxes, with selector class and position
+$arrow-positions: ".arrow-box-left" "left", ".arrow-box-right" "right";
+
+//for more colors for arrow boxes you only need to check out the next iteration and add more subclasses to the selector
+@each $pair in $arrow-positions {
+  $selector: #{nth($pair, 1)};
+  $position: #{nth($pair, 2)};
+
+  //make arrow-box-left and arrow-box-right classes
+  @include arrow-box($selector: $selector, $position: $position, $border_width: 1px, $border_color: #b5cdd7, $box_color: #fafeff, $arrow_size: 6px, $centered: false);
+
+  //add custom gray selector for gray arrow boxes
+  #{$selector} {
+    &.gray {
+      @include arrow-colors($border_color: #d8d8d8, $position: $position);
+    }
+  }
+
+  #{$selector} {
+    @include box-shadow(0px 1px 3px -1px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.chat-box.timeline {
+
+  .arrow-box-left {
+    padding: 0;
+    @include border-radius(2px);
+    min-height: auto;
+    margin-right: 0;
+  }
+
+  .info, .content {
+    background: #fafafa;
+    padding: 5px 10px;
+  }
+
+  .content {
+    @include clearfix;
+    border-top: 1px solid #ccc;
+    background: #f8f8f8;
+    @include border-bottom-left-radius(2px);
+    @include border-bottom-right-radius(2px);
+  }
+
+  blockquote {
+    margin: 10px 0px;
+  }
+
+  .chat-message-box {
+    display: inline-block;
+    min-width: 100px;
+    margin-left: 64px;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+}
+
+.chat-box.timeline + .closable-chat-box {
+  margin-left: $margin-left;
+}
+
+
+.chat-box {
+  list-style: none;
+  margin: 0;
+  font-size: 11px;
+  line-height: 20px;
+  color: #5f5f5f;
+
+  .avatar {
+    position: absolute;
+    top: 0;
+  }
+
+  //all arrow boxes must have this generic styling, so we'll use @extend instead of @include so that the css file doesn't get bloated
+  %all-arrows-general {
+    min-height: 30px;
+    @include border-radius(3px);
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 5px 10px;
+  }
+
+  @each $pair in $arrow-positions {
+    #{nth($pair, 1)} {
+      @extend %all-arrows-general;
+    }
+  }
+
+  //we set the offsets for the arrow boxes and the avatar inside them here. they are pretty much symmetrical so we can automate it like this
+  @each $pair in $arrow-positions {
+    $selector: #{nth($pair, 1)};
+    $position: #{nth($pair, 2)};
+
+    #{$selector} {
+      margin-#{$position}: $margin-left;
+      margin-#{inverse-position($position)}: 15px;
+
+      .avatar { #{$position}: -50px; }
+
+      &.gray {
+        //change the text color for the bold name in the chat arrow box
+        .info .name strong { color: #393939; }
+      }
+    }
+  }
+
+  .info {
+    @include clearfix;
+
+    color: #949494;
+    @include border-radius(2px);
+
+    .name {
+      float: left;
+      strong {
+        color: #2c596d;
+        margin-right: 10px;
+      }
+
+      .label {
+
+      }
+    }
+
+    .time { float: right; }
+  }
+
+}
+

@@ -1,0 +1,80 @@
+@import "mixin_helpers";
+
+@media (max-width: 480px) {
+  .area-top .num-stats li {
+    width: auto;
+  }
+
+  .navbar .nav.pull-right {
+    float: none;
+    @include clearfix;
+  }
+
+  .navbar-inner {
+    text-align: center;
+    
+    a {
+      margin-right: 0;
+    }
+  }
+
+  .navbar-brand + .nav {
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  .navbar-inverse {
+    .nav > li > a {
+      margin-right: 0;
+    }
+
+    .navbar-brand + .nav {
+      > li > a {
+        margin-right: 10px;
+      }
+
+      > li:last-child a {
+        margin-right: 0;
+      }
+    }
+  }
+
+  .area-top {
+    height: auto;
+    text-align: center;
+
+    .num-stats {
+      float: none;
+      display: inline-block;
+
+      li {
+        padding: 5px;
+      }
+    }
+  }
+
+  .chat-box.timeline {
+    .arrow-box-left {
+      margin-left: 0;
+
+      &:after, &:before {
+        content: none;
+      }
+
+      .avatar {
+        left: 10px;
+        top: 5px;
+      }
+
+      .name {
+        float: left;
+        margin-left: 45px;
+      }
+    }
+  }
+
+  .chat-box.timeline + .closable-chat-box {
+    margin-left: 0;
+  }
+}
+

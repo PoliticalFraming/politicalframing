@@ -1,0 +1,44 @@
+@import "scss/variables";
+@import "bootstrap-sass/lib/bootstrap";
+@import "font-awesome/scss/font-awesome.scss";
+@import "scss/navigation";
+@import "scss/sidebar";
+@import "scss/breadcrumbs";
+@import "scss/badges";
+@import "scss/dropdowns";
+@import "scss/form_elements";
+@import "scss/action_nav";
+@import "./scss/*";
+
+@import "scss/base";
+
+ul {
+   list-style-position: inside;
+}
+
+.speech-list {
+	height: 500px;
+	overflow: scroll;
+	overflow-x:hidden;
+}
+
+.current-speech {
+	height: 500px;
+	overflow: scroll;
+	overflow-x:hidden;
+}
+
+.filter {
+	min-width: 400px;
+}
+
+.gridStyle {
+    border: 1px solid rgb(212,212,212);
+    /*width: 60%; */
+    height: 500px;
+}
+
+.select2-arrow {
+	background: none;
+	border-left: none;
+}

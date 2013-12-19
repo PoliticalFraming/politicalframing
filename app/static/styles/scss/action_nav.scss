@@ -1,0 +1,139 @@
+@import "mixin_helpers";
+
+@mixin action-color-button($color) {
+  $color: darken($color, 14);
+  border: 1px solid $color;
+  @include box-shadow(0 1px 2px 0 lighten($color, 12) inset);
+  @include std-bg(lighten($color, 12), darken($color, 2));
+
+  &:hover {
+    opacity: 0.95;
+    @include transition(opacity 0.2s ease-in-out);
+  }
+
+  &:active {
+    background: lighten($color, 4);
+  }
+}
+
+//these are common options for colored action navs (things that repeat themselves for each color)
+%action-color-button-common {
+  a {
+    color: #fff;
+    @include text-shadow-bottom(#333);
+
+    i {
+      color: #fff;
+      @include text-shadow-bottom(#333);
+    }
+
+    &:active {
+      @include box-shadow(0 0 2px #707070 inset, 0 1px 0 #fff);
+    }
+  }
+}
+
+.action-nav-normal {
+
+  &.rounded {
+    .action-nav-button {
+
+      margin-left: 10px;
+      margin-right: 10px;
+
+      a {
+        @include border-radius(50%);
+        padding: 16px;
+        min-width: auto;
+
+        i {
+          height: 40px;
+          line-height: 40px;
+        }
+      }
+    }
+  }
+
+  text-align: center;
+  //margin: 0 0 30px 0;
+
+  .action-nav-button {
+    //margin: 5px 10px 0 10px;
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+    text-align: center;
+    padding-right: 0;
+
+    a {
+      @include border-radius(4px);
+      @include std-bg(#fafafa, #ececec);
+      border: 1px solid #d5d5d5;
+      @include box-shadow(0 0 0 1px #fafafa inset, 0 1px 1px 0px #ddd);
+      padding: 10px 0;
+      display: block;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #626262;
+
+      @include box-sizing(border-box);
+
+      &:hover {
+        @include std-bg(#f7f7f7, #f2f2f2);
+      }
+
+      &:active {
+        @include box-shadow(none);
+        @include std-bg(#f4f4f4, #f7f7f7);
+      }
+
+      > {
+        span {
+          display: block;
+          padding-top: 4px;
+          font-weight: 600;
+        }
+        i {
+          font-size: 32px;
+          color: #808080;
+        }
+      }
+    }
+
+    @each $pair in $buttonColors {
+      &.btn-#{nth($pair, 1)} {
+        @extend %action-color-button-common;
+        a {
+          @include action-color-button(nth($pair, 2));
+        }
+      }
+    }
+  }
+}
+
+.action-nav-normal {
+  .badge, .label {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    padding: 3px 5px;
+    display: block;
+    @include box-shadow(none);
+  }
+
+  &.action-nav-line {
+    .action-nav-row {
+      margin-right: 0;
+    }
+  }
+
+  .triangle-button {
+    border-top-right-radius: 3px;
+    pointer-events: none;
+
+    i {
+      right: 4px;
+      top: 3px;
+    }
+  }
+}
