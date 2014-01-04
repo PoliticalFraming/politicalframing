@@ -112,21 +112,21 @@ def index():
 
 # Set up Logging
 
-if not app.debug:
-  LOG_FILENAME = 'logs/framingapp.log'
-  file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False) 
-  app.logger.setLevel(logging.INFO)
-  file_handler.setLevel(logging.INFO)
-else:
-  LOG_FILENAME = 'logs/framingapp_debug.log'
-  file_handler = FileHandler(LOG_FILENAME) 
-  app.logger.setLevel(logging.DEBUG)
-  file_handler.setLevel(logging.DEBUG)
+# if not app.debug:
+#   LOG_FILENAME = 'logs/framingapp.log'
+#   file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False) 
+#   app.logger.setLevel(logging.INFO)
+#   file_handler.setLevel(logging.INFO)
+# else:
+#   LOG_FILENAME = 'logs/framingapp_debug.log'
+#   file_handler = FileHandler(LOG_FILENAME) 
+#   app.logger.setLevel(logging.DEBUG)
+#   file_handler.setLevel(logging.DEBUG)
 
-file_handler.setFormatter(Formatter(
-    '%(asctime)s %(levelname)s: %(message)s '
-    '[in %(pathname)s:%(lineno)d]'
-))
+# file_handler.setFormatter(Formatter(
+#     '%(asctime)s %(levelname)s: %(message)s '
+#     '[in %(pathname)s:%(lineno)d]'
+# ))
 
-app.logger.addHandler(file_handler)
-app.logger.info("Starting framingapp __init__ file.")
+# app.logger.addHandler(file_handler)
+# app.logger.info("Starting framingapp __init__ file.")
