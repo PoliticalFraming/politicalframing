@@ -43,8 +43,8 @@ if 'HEROKU' in os.environ:
         'host': url.hostname,
         'port': url.port,
     }
-    CELERY_BROKER_URL = os.environ['DATABASE_URL']
-    CELERY_RESULT_BACKEND = os.environ['DATABASE_URL'] + '/0'
+    CELERY_BROKER_URL = os.environ['REDIS_URL']
+    CELERY_RESULT_BACKEND = os.environ['REDIS_URL'] + '/0'
 
 else:
     DEBUG = True
