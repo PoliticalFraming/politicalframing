@@ -32,7 +32,7 @@ def make_celery(app):
 # heroku addons:add heroku-postgresql:dev
 # heroku config:set HEROKU=1
 if 'HEROKU' in os.environ:
-    DEBUG = True
+    DEBUG = False
     urlparse.uses_netloc.append('postgres')
     url = urlparse.urlparse(os.environ['DATABASE_URL'])  
     DATABASE = {
