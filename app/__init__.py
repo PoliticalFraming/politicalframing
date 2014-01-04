@@ -61,6 +61,7 @@ else:
 SECRET_KEY='poop'
 CELERY_BROKER_URL = 'redis://localhost:6379',
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object(__name__)
