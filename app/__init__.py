@@ -74,13 +74,15 @@ celery = make_celery(app)
 # Instantaite Flask Peewee Database ORM
 db = Database(app)
 db.database.get_conn().set_client_encoding('UTF8')
-db.set_autocommit(True)
-# Instatiate Flask Peewee REST API
 
+# Instatiate Flask Peewee REST API
 api = RestAPI(app)
 
-# Import All Models and Controllers
+# Transaction
+db.database.set_autocommit(True)
 
+
+# Import All Models and Controllers
 from app import database_views
 from app import decorators
 from app.models import Topic
