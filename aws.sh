@@ -15,7 +15,7 @@ pf "wget -qO- https://raw.github.com/progrium/dokku/v0.2.1/bootstrap.sh | sudo D
 pf "export PFURL=$PFURL; sudo sh -c  'echo $PFURL > /home/dokku/VHOST'"
 # Install dokku plugins
 pf "sudo git clone https://github.com/statianzo/dokku-shoreman.git /var/lib/dokku/plugins/dokku-shoreman"
-pf "sudo git clone https://github.com/AlJohri/dokku-pg-plugin.git /var/lib/dokku/plugins/postgresql"
+pf "sudo git clone https://github.com/teemow/dokku-pg-plugin /var/lib/dokku/plugins/postgresql"
 pf "sudo git clone https://github.com/AlJohri/dokku-redis-plugin /var/lib/dokku/plugins/redis"
 pf "sudo dokku plugins-install"
 # Create databases
