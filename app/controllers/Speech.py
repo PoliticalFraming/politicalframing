@@ -11,7 +11,7 @@ from flask import request
 from peewee import DJANGO_MAP
 
 class SpeechResource(RestResource):
-    paginate_by = 100
+    paginate_by = 30
     # exclude = ('speaking')
 
     def get_api_name(self):

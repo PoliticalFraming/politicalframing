@@ -13,10 +13,8 @@ from app.models.Speech import Speech
 from app.models.SpeechTopic import SpeechTopic
 from app import app
 
-
 CAPITOL_WORDS_API_KEY = '8e87cf0e8a92499e9d14b67165f7018f'
-RESULTS_PER_PAGE = 100
-
+RESULTS_PER_PAGE = 30
 
 @app.route('/download_speeches/<phrase>')
 def download_speeches_for_topic(phrase):

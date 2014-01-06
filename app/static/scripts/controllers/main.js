@@ -128,8 +128,8 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
     };
 
     $scope.pagingOptions = {
-        pageSizes: [100],
-        pageSize: 100,
+        pageSizes: [30],
+        pageSize: 30,
         currentPage: 1
     };
 

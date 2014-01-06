@@ -34,7 +34,7 @@ def highlight_speech(speech, frame):
 	return speech
 
 class SpeechTopicResource(RestResource):
-	paginate_by = 100
+	paginate_by = 30
 	include_resources = {'speech': SpeechResource}
 	highlighted_frame = None
 

@@ -6,7 +6,7 @@ from app.models.User import User
 from flask_peewee.rest import RestAPI, RestResource
 
 class UserResource(RestResource):
-	paginate_by = 100
+	paginate_by = 30
 	def get_api_name(self):
 		return "users"
         
