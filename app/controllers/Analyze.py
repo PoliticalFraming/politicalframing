@@ -120,7 +120,7 @@ def plot_topic_usage(speeches, topic, n):
         except:
             float(x)/float(.00001)
 
-    ratios = map(lambda x,y: float(x)/float(y), dem_counts, rep_counts)
+    ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
 
     return {
     'title': "Ratio of Speeches about %s (%d speeches per bin)" % (topic.phrase, n),
