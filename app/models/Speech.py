@@ -5,7 +5,7 @@ from dateutil import parser
 
 class Speech(db.Model):
     speech_id = CharField(null=False, db_column='id', primary_key=True, unique=True)
-    bills = CharField(null=True)
+    bills = TextField(null=True)
     biouguide = CharField(null=True)
     capitolwords_url = TextField(null=True)
     chamber = CharField(null=True)
