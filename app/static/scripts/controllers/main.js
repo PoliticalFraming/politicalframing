@@ -326,7 +326,7 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                 }
                 else {
                   console.log(response.data);
-                  setTimeout(pollforAnalyzeData, 1000);
+                  setTimeout(pollforAnalyzeData, 5000);
                 }
 
               });
