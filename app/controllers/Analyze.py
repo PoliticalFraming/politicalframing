@@ -311,9 +311,10 @@ def plot_discrete_average(frame, speeches, n):
     d_likelihoods = []
 
     #Generate data for discrete buckets of n speeches
+    count = 0
     while not b.is_empty():
         ordered_speeches = []
-
+        count = count + 1
         #Run clasifier for n items at a time
         # n=100
         dates.append(max(b.nsmallest(n, pop = False))[0][0])
@@ -322,6 +323,7 @@ def plot_discrete_average(frame, speeches, n):
         # print 'ordered_speeches is ' + str(map(lambda x: x.date, ordered_speeches)) #works fine
         # print "ordered_speeches is " + str(len(ordered_speeches)) + " items long"
         training_set = build_training_set(ordered_speeches)
+        print "built training set " + str(count) + " of " + str(len(speeches)/n)
 
         #log_likelihoods        
         log_likelihoods = return_framing_datum(training_set, frame)    
