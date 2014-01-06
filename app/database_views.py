@@ -3,6 +3,7 @@ import json
 import sqlite3
 from flask import jsonify, g
 from math import ceil
+import sys
 
 from peewee import *
 from app.models.Topic import Topic
@@ -22,14 +23,14 @@ def download_speeches_for_topic(phrase):
   print "Downloading speeches for topic " + phrase
 
   #logic to download speeches from the API and put them in the database
-  page_number = 1
+  page_number = 0 #api starts at page 0
   speeches = []
   relevance = 0
   data = {}
 
-  while page_number == 1 or data.get('results') != []:
+  while page_number == 0 or data.get('results') != []:
     data = download_page(phrase, page_number)
-    if page_number == 1: print str(data[u'num_found']) + " speeches found"
+    if page_number == 0: print str(data[u'num_found']) + " speeches found"
 
     for speech in data[u'results']:
       try:
@@ -39,18 +40,18 @@ def download_speeches_for_topic(phrase):
         relevance += 1
         connect_speech_to_topic(s, phrase, relevance)
       except:
-        print "speech already in database " + speech['title']
+        print "ERROR: Failed to Insert Speech " + speech['id']
+        print "Unexpected error:", sys.exc_info()
         pass
-
-      print "Downloaded speech " + speech.get('id', None)
 
     # Debug Line
     # if page_number == 1: return
 
-    print "Downloaded page " + str(page_number) + " of " + str(int(ceil(data[u'num_found']/RESULTS_PER_PAGE)))
+    # print "Downloaded page " + str(page_number) + " of " + str(int(ceil(data[u'num_found']/RESULTS_PER_PAGE)))
 
     page_number += 1
-
+  
+  print "Successfully Downloaded " + str(data[u'num_found'])  +" speeches for topic '" + phrase +"'"
   return "Successfully Downloaded " + str(data[u'num_found'])  +" speeches for topic '" + phrase +"'"
 
 def download_page(topic, page):
@@ -63,21 +64,22 @@ def download_page(topic, page):
   }
   response = requests.get(endpoint, params = query_parameters)
   data = response.json()
+  print "Downloaded page " + str(page) + " of " + str(int(ceil(data[u'num_found']/RESULTS_PER_PAGE)))
   return data
 
 def connect_speech_to_topic(speech, phrase, relevance):
   '''Takes in a Speech object (instance of a peewee model) and a string phrase'''
-  try:
-    SpeechTopic.create(speech=speech, 
-          topic=Topic.get_or_create(phrase=phrase), relevance=relevance)
-  except:
-    pass
+  SpeechTopic.get_or_create(speech=speech, topic=Topic.get_or_create(phrase=phrase), relevance=relevance)
 
 
 def insert_speech_into_database(speech):
   try:
-    return Speech.get(Speech.speech_id == speech['id'])
+    speech_already_in_db = Speech.get(Speech.speech_id == speech['id'])
+    if (speech_already_in_db):
+      print "speech already in database - not inserting " + speech['id']
+    return speech_already_in_db
   except DoesNotExist:
+    print "inserting speech into database " + speech['id']
     return Speech.create(
           speech_id = speech.get('id'),
           bills = speech.get('bills'),

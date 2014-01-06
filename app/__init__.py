@@ -74,7 +74,7 @@ celery = make_celery(app)
 # Instantaite Flask Peewee Database ORM
 db = Database(app)
 db.database.get_conn().set_client_encoding('UTF8')
-
+db.set_autocommit(True)
 # Instatiate Flask Peewee REST API
 
 api = RestAPI(app)
