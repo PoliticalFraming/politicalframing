@@ -340,7 +340,7 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
     $scope.currentTab = 0;
     $scope.tabs = [
         {heading: "Select Topic", active: true},
-        {heading: "Select Speeches", active: false},
+        {heading: "Apply Filters", active: false},
         {heading: "Select Frame", active: false},
         {heading: "Analyze", active: false}
     ]
