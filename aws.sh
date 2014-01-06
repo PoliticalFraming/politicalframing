@@ -2,7 +2,6 @@
 
 export PFURL=ec2-54-224-242-94.compute-1.amazonaws.com
 export PFPEM=~/Desktop/politicalframing.pem
-
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
 # Create 1GB swap space
 pf "sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024"
@@ -30,6 +29,19 @@ git remote add aws "dokku@$PFURL:politicalframing"
 # git push aws master
 # pf "sudo dokku config:set politicalframing HEROKU=1"
 # pf "sudo dokku config:set politicalframing C_FORCE_ROOT='true'"
+
+# REMEMBER TO SEED DATABASE NOW!!!!!
+
+
+# dokku run python createdb.py
+
+# OR
+
+# sudo docker run -i -t app/politicalframing:latest /bin/bash
+# export HEROKU=1
+# export DATABASE_URL= ((get value from dokku config politicalframing))
+# export REDIS_URL= ((get value from dokku config politicalframing))
+# /app/.heroku/python/bin/python /app/createdb.py
 
 # Information
 # EC2 Instance AMI: ami-ef795786
