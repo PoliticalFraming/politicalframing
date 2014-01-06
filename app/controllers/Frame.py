@@ -7,7 +7,7 @@ from app.models.Frame import Frame
 from flask.ext.cors import origin
 
 class FrameResource(RestResource):
-	paginate_by = 100
+	paginate_by = 30
 	def get_api_name(self):
 		return "frames"
 
