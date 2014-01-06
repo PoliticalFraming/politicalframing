@@ -116,9 +116,9 @@ def plot_topic_usage(speeches, topic, n):
     
     def get_ratio(x,y):
         try:
-            float(x)/float(y)
+            return float(x)/float(y)
         except:
-            float(x)/float(.00001)
+            return float(x)/float(.001)
 
     ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
 
