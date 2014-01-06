@@ -80,7 +80,7 @@ def insert_speech_into_database(speech):
     print "inserting speech into database " + speech['id']
     return Speech.create(
           speech_id = speech.get('id'),
-          bills = speech.get('bills'),
+          bills = '',#speech.get('bills'),
           biouguide = speech.get('bioguide'),
           capitolwords_url = speech.get('capitolwords_url'),
           chamber = speech.get('chamber'),
