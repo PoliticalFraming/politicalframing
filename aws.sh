@@ -10,10 +10,8 @@ pf "sudo /sbin/mkswap /var/swap.1"
 pf "sudo /sbin/swapon /var/swap.1"
 # Set environment variables
 pf "echo 'export PFURL=$PFURL' >> ~/.bashrc"
-pf "echo 'export DOKKU_REPO=https://github.com/AlJohri/dokku.git' >> ~/.bashrc"
-pf "echo 'export STACK_URL=https://github.com/AlJohri/buildstep.git' >> ~/.bashrc"
 # Install dokku
-pf "wget -qO- https://raw.github.com/progrium/dokku/v0.2.1/bootstrap.sh | sudo BUILD_STACK=true bash"
+pf "wget -qO- https://raw.github.com/progrium/dokku/v0.2.1/bootstrap.sh | sudo DOKKU_REPO=https://github.com/AlJohri/dokku.git STACK_URL=https://github.com/AlJohri/buildstep.git BUILD_STACK=true bash"
 # Set VHOST
 pf "export PFURL=$PFURL; sudo sh -c  'echo $PFURL > /home/dokku/VHOST'"
 # Install dokku plugins
