@@ -48,3 +48,9 @@ git remote add aws "dokku@$PFURL:politicalframing"
 # EC2 Instance AMI url: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-ef795786
 # EC2 Instance Finder: http://cloud-images.ubuntu.com/locator/ec2/
 # Search Parameters: Ubuntu 13.04 raring amd64 ebs us-east-1
+
+
+
+
+
+# https://github.com/progrium/dokku/wiki/Recipes#specifying-a-custom-buildpack
