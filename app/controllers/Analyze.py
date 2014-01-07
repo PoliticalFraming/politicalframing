@@ -67,7 +67,9 @@ def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
            meta={'current': i, 'total': filenames})
     ######################################################
 
-    topic_plot = plot_topic_usage(speeches, topic, 100)
+    # topic_plot = plot_topic_usage(speeches, topic, 100)
+    topic_plot = plot_moving_topic_usage(speeches, topic, 100)
+
     frame_plot = plot_discrete_average(frame,speeches, 100)
 
 
@@ -82,8 +84,13 @@ def preprocess_speeches(speeches):
             valid_speeches.append(speech)
     return valid_speeches
 
-def graph1(speeches):
+def graph1(speeches_ordered_by_date):
+    # speeches = speeches_ordered_by_date
+    # dates = []
+    # dem_counts = []
+    # rep_counts = []
     pass
+
 
 def plot_topic_usage(speeches, topic, n):
 
@@ -135,47 +142,56 @@ def plot_topic_usage(speeches, topic, n):
     'dem_counts':dem_counts,
     'rep_counts':rep_counts}
 
+def valid_speechset(speechset):
+    """A valid speechset has at least one democrat and one republican speech"""
+    dem_speech_exists = False
+    rep_speech_exists = False
+
+    for speech in speechset:
+        if speech.speaker_party == 'D':
+            dem_speech_exists = True
+        if speech.speaker_party == 'R':
+            rep_speech_exists = True
+        if dem_speech_exists and rep_speech_exists:
+            return True
+
+    return False
+
 def plot_moving_topic_usage(speeches, topic, n):
-    offset = 10
+
+    print "plotting moving topic counts"
+    offset = 1 #offset currently not used
     window_size=n
 
-    def date_compare(self, other):
-        '''override compare to sort by date'''
-        return self.date.toordinal() - other.date.toordinal()
-
-
-    speeches = deque(sorted(speeches, cmp=date_compare))
-
-    dates = []
+    start_dates = []
+    end_dates = []
     dem_counts = []
     rep_counts = []
 
-    while speeches:
-        dem_count = 0
-        rep_count = 0
-        date_string = ""
-        for i in range(n):
-            try:
-                current_speech = speeches.popleft()
-                date_string = str(current_speech.date)
+    for i in range(len(speeches) - window_size):
+        window = speeches[i:i+window_size-1]
+        dem_count=0
+        rep_count=0
+        if valid_speechset(window):
+            for current_speech in window:
                 if current_speech.speaker_party == "D":
                     dem_count +=1
                 elif current_speech.speaker_party == "R":
                     rep_count +=1
-            except:
-                pass
 
-        dates.append(date_string)
-        dem_counts.append(dem_count)
-        rep_counts.append(rep_count)
-    
-    ratios = map(lambda x,y: float(x)/float(y), dem_counts, rep_counts)
+            start_dates.append(str(window[0].date))
+            end_dates.append(str(window[len(window)-1].date))
+            dem_counts.append(dem_count)
+            rep_counts.append(rep_count)
 
+ 
     return {
-    'title': "Ratio of Speeches about %s (%d speeches per bin)" % (topic.phrase, n),
-    'ylabel': "D/R Ratio" % (topic.phrase),
-    'dates': dates, 
-    'ratios':ratios}
+    'title': "Number of Speeches about %s (%d speeches per bin)" % (topic.phrase, n),
+    'ylabel': "Speeches Found",
+    'start_dates': start_dates, 
+    'end_dates': end_dates,
+    'dem_counts':dem_counts,
+    'rep_counts':rep_counts}
 
 
 @app.route('/analyze')
@@ -299,20 +315,6 @@ def return_framing_datum(training_set, frame):
     print predicted_logs
     return predicted_logs[0]
 
-def valid_speechset(speechset):
-    """A valid speechset has at least one democrat and one republican speech"""
-    dem_speech_exists = False
-    rep_speech_exists = False
-
-    for speech in speechset:
-        if speech.speaker_party == 'D':
-            dem_speech_exists = True
-        if speech.speaker_party == 'R':
-            rep_speech_exists = True
-        if dem_speech_exists and rep_speech_exists:
-            return True
-
-    return False
 
 def plot_discrete_average(frame, speeches, n):
     """ 
