@@ -160,7 +160,6 @@ def valid_speechset(speechset):
 def plot_moving_topic_usage(speeches, topic, n):
 
     print "plotting moving topic counts"
-    offset = 1 #offset currently not used
     window_size=n
 
     start_dates = []
@@ -169,26 +168,38 @@ def plot_moving_topic_usage(speeches, topic, n):
     rep_counts = []
     total_counts = []
 
-    for i in range(len(speeches) - window_size):
-        window = speeches[i:i+window_size-1]
+    window_first_date = speeches[0].date
+    OFFSET = datetime.timedelta(days=30)
+    window_last_date = window_first_date + OFFSET
+
+    current_first_speech_index = 0
+    while(window_last_date <= speeches[-1].date):#date of the last item
         dem_count=0
         rep_count=0
-        if valid_speechset(window):
-            for current_speech in window:
-                if current_speech.speaker_party == "D":
-                    dem_count +=1
-                elif current_speech.speaker_party == "R":
+        current_speech_index = current_first_speech_index
+        for speech in speeches[current_first_speech_index:]:
+            current_speech_index +=1
+            if speech.date >= window_first_date and speech.date <= window_last_date:
+                if speech.speaker_party == "D":
+                        dem_count +=1
+                elif speech.speaker_party == "R":
                     rep_count +=1
+            else:
+                #redefine date window to start with this speech
+                window_first_date = speech.date
+                window_last_date = window_first_date + OFFSET
+                current_first_speech_index = current_speech_index
+                break
 
-            start_dates.append(str(window[0].date))
-            end_dates.append(str(window[len(window)-1].date))
-            dem_counts.append(dem_count)
-            rep_counts.append(rep_count)
-            total_counts.append(rep_count+dem_count)
+        start_dates.append(str(window_first_date))
+        end_dates.append(str(window_last_date))
+        dem_counts.append(dem_count)
+        rep_counts.append(rep_count)
+        total_counts.append(rep_count+dem_count)
 
  
     return {
-    'title': "Number of Speeches about %s (%d speeches per bin)" % (topic.phrase, n),
+    'title': "Number of Speeches about %s" % (topic.phrase),
     'ylabel': "Speeches Found",
     'start_dates': start_dates, 
     'end_dates': end_dates,
