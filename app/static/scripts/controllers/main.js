@@ -295,7 +295,6 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                         var dateTime = new Date(thedata.topic_plot.start_dates[i]);
                         dataPoints1.push({ x: dateTime, y: thedata.topic_plot.dem_counts[i] });
                         dataPoints2.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
-                        dataPoints3.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
                         dataPoints3.push({ x: dateTime, y: thedata.topic_plot.total_counts[i] });
                     }
                     dataSeries1.dataPoints = dataPoints1;
