@@ -290,34 +290,21 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
 
                     var dataPoints1 = [];
                     var dataPoints2 = [];
-                    var theOnes = [];
+                    var dataPoints3 = [];
                     for (var i = 0; i < thedata.topic_plot.start_dates.length; i++ ) {
                         var dateTime = new Date(thedata.topic_plot.start_dates[i]);
-                        console.log(thedata.topic_plot.start_dates[i]);
-                        console.log(dateTime);                
-                        dataPoints1.push({
-                            x: dateTime,
-                            y: thedata.topic_plot.dem_counts[i]
-                        });
-                        dataPoints2.push({
-                            x: dateTime,
-                            y: thedata.topic_plot.rep_counts[i]
-                        });                        
-                        if (i==0 || i==thedata.topic_plot.start_dates.length-1){
-                            theOnes.push({
-                                x: dateTime,
-                                y: 1
-                            });
-                        }
+                        dataPoints1.push({ x: dateTime, y: thedata.topic_plot.dem_counts[i] });
+                        dataPoints2.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
+                        dataPoints3.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
+                        dataPoints3.push({ x: dateTime, y: thedata.topic_plot.total_counts[i] });
                     }
                     dataSeries1.dataPoints = dataPoints1;
                     dataSeries2.dataPoints = dataPoints2;
-                    dataSeries3.dataPoints = theOnes;
+                    dataSeries3.dataPoints = dataPoints2;
+
                     data.push(dataSeries1);
                     data.push(dataSeries2);
                     data.push(dataSeries3);
-                    console.log(data);
-
 
                     var chart = new CanvasJS.Chart("chartContainer2",
                     {
