@@ -1,7 +1,7 @@
 from app import app, api
 from peewee import *
 
-from app.models.Speech import Speech, get_speeches
+from app.models.Speech import Speech, get_speeches_in_date_order
 from app.models.Topic import Topic, get_topic
 from app.models.SpeechTopic import SpeechTopic
 
