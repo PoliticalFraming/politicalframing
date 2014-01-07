@@ -291,9 +291,9 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                     var dataPoints1 = [];
                     var dataPoints2 = [];
                     var theOnes = [];
-                    for (var i = 0; i < thedata.topic_plot.dates.length; i++ ) {
-                        var dateTime = new Date(thedata.topic_plot.dates[i]);
-                        console.log(thedata.topic_plot.dates[i]);
+                    for (var i = 0; i < thedata.topic_plot.startdates.length; i++ ) {
+                        var dateTime = new Date(thedata.topic_plot.startdates[i]);
+                        console.log(thedata.topic_plot.startdates[i]);
                         console.log(dateTime);                
                         dataPoints1.push({
                             x: dateTime,
@@ -303,7 +303,7 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                             x: dateTime,
                             y: thedata.topic_plot.rep_counts[i]
                         });                        
-                        if (i==0 || i==thedata.frame_plot.dates.length-1){
+                        if (i==0 || i==thedata.frame_plot.startdates.length-1){
                             theOnes.push({
                                 x: dateTime,
                                 y: 1
