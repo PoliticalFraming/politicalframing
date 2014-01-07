@@ -4,7 +4,7 @@ lib
 .vagrant
 .DS_Store
 *.pyc
-logs
+*.log
 database.db
 node_modules
 dist
