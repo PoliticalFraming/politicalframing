@@ -70,7 +70,7 @@ def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
     # topic_plot = plot_topic_usage(speeches, topic, 100)
     topic_plot = plot_moving_topic_usage(speeches, topic, 100)
 
-    frame_plot = plot_discrete_average(frame,speeches, 100)
+    frame_plot = plot_discrete_average(frame,speeches, 100, topic.phrase)
 
 
     return pickle.dumps({'frame_plot':frame_plot,'topic_plot':topic_plot})
@@ -330,7 +330,7 @@ def return_framing_datum(training_set, frame):
     return predicted_logs[0]
 
 
-def plot_discrete_average(frame, speeches, n):
+def plot_discrete_average(frame, speeches, n, topic):
     """ 
     frame = frame object
     speech = list of speech objects
@@ -389,7 +389,7 @@ def plot_discrete_average(frame, speeches, n):
 
     date_strings = map(lambda x: str(x), dates)
     return {
-    'title': "Usage of %s Frame " % (frame.name),
+    'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
     'ylabel': "D/R Ratio of Log-Likelihoods",
     'dates': date_strings,
     'ratios': ratios}    

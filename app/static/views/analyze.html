@@ -91,14 +91,16 @@
         <tab heading="{{tabs[3].heading}}" active="tabs[3].active" disabled="tabs[3].disabled" select="updatePercentTab(3)">
 
             <div class="row" ng-show="analyzing">
-                <h1>Selected Topic: {{selectedTopic.text}}</h1>
-                <h1>Selected Frame: {{selectedFrame.text}}</h1>
                 <div class="col-sm-12" id="chartContainer2" style="height: 300px; width: 100%;"> 
                     Loading analysis - This may take up to 5 minutes.
                     <img src= 'http://sierrafire.cr.usgs.gov/images/loading.gif' style="height: 50%;"></img>
                 </div>
 
                 <div class="col-sm-12" id="chartContainer" style="height: 300px; width: 100%;"></div>
+
+                <h1>Selected Topic: {{selectedTopic.text}}</h1>
+                <h1>Selected Frame: {{selectedFrame.text}}</h1>
+
             </div>
 
             <br>
