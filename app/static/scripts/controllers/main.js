@@ -299,7 +299,7 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                     }
                     dataSeries1.dataPoints = dataPoints1;
                     dataSeries2.dataPoints = dataPoints2;
-                    dataSeries3.dataPoints = dataPoints2;
+                    dataSeries3.dataPoints = dataPoints3;
 
                     data.push(dataSeries1);
                     data.push(dataSeries2);
