@@ -284,9 +284,9 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                     var limit = 100000;    
                     var y = 0;
                     var data = [];
-                    var dataSeries1 = { type: "line", showInLegend: true, legendText: "Dem Counts" };
-                    var dataSeries2 = { type: "line", showInLegend: true, legendText: "Repub Counts"  };
-                    var dataSeries3 = { type: "line", showInLegend: true, legendText: "Total Counts"  };
+                    var dataSeries1 = { type: "line", showInLegend: true, legendText: "Democrat Speeches" };
+                    var dataSeries2 = { type: "line", showInLegend: true, legendText: "Republican Speeches"  };
+                    var dataSeries3 = { type: "line", showInLegend: true, legendText: "Total Speeches"  };
 
                     var dataPoints1 = [];
                     var dataPoints2 = [];
