@@ -24,7 +24,7 @@ gevent-websocket==0.9.1
 greenlet==0.4.1
 gunicorn==18.0
 itsdangerous==0.23
-kombu==3.2.5
+kombu==3.0.8
 numpy==1.7.0
 peewee==2.1.7
 psycopg2==2.5.1
