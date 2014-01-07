@@ -65,7 +65,7 @@ def get_speeches_in_date_order(topic=None, states=None, start_date=None, end_dat
 
     print "start_date is " + str(start_date) + " of type " + str(type(start_date))
     print "end_date is " + str(end_date) + " of type " + str(type(end_date))
-    print type(Speech.get().date)
+    # print type(Speech.get().date)
         
 
     return query.order_by(Speech.date)
