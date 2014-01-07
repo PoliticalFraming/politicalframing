@@ -113,15 +113,17 @@ def plot_topic_usage(speeches, topic, n):
             except:
                 pass
 
-        dates.append(date_string)
-        dem_counts.append(dem_count)
-        rep_counts.append(rep_count)
-    
+        if dem_count>0 and rep_count>0:
+            #skips datapoints that don't have at least one speech in each category to avoid ZeroDivisionError
+            dates.append(date_string)
+            dem_counts.append(dem_count)
+            rep_counts.append(rep_count)
+        
     def get_ratio(x,y):
         try:
             return float(x)/float(y)
         except:
-            return float(x)/float(.001)
+            raise #if it gets here, something is really wrong (ZeroDivisionError)
 
     ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
 
@@ -297,6 +299,21 @@ def return_framing_datum(training_set, frame):
     print predicted_logs
     return predicted_logs[0]
 
+def valid_speechset(speechset):
+    """A valid speechset has at least one democrat and one republican speech"""
+    dem_speech_exists = False
+    rep_speech_exists = False
+
+    for speech in speechset:
+        if speech.get('speaker_party').lower() == 'd':
+            dem_speech_exists = True
+        if speech.get('speaker_party').lower() == 'r':
+            rep_speech_exists = True
+        if dem_speech_exists and rep_speech_exists:
+            return True
+
+    return False
+
 def plot_discrete_average(frame, speeches, n):
     """ 
     frame = frame object
@@ -325,22 +342,24 @@ def plot_discrete_average(frame, speeches, n):
             ordered_speeches.append(item[1])
         # print 'ordered_speeches is ' + str(map(lambda x: x.date, ordered_speeches)) #works fine
         # print "ordered_speeches is " + str(len(ordered_speeches)) + " items long"
-        try:
-            training_set = build_training_set(ordered_speeches)
-            #log_likelihoods        
-            log_likelihoods = return_framing_datum(training_set, frame)    
-            d_likelihoods.append(log_likelihoods[0])
-            r_likelihoods.append(log_likelihoods[1])
-            print "processed training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
-            
-        except ValueError as e:
-            print "Could not build training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
-            print e
+        
+        if valid_speechset(ordered_speeches):
+            try:
+                training_set = build_training_set(ordered_speeches)
+                #log_likelihoods        
+                log_likelihoods = return_framing_datum(training_set, frame)    
+                d_likelihoods.append(log_likelihoods[0])
+                r_likelihoods.append(log_likelihoods[1])
+                print "processed training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
+                
+            except ValueError as e:
+                print "Could not build training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
+                print e
 
-        number_of_datapoints = number_of_datapoints + 1
+            number_of_datapoints = number_of_datapoints + 1
 
-        if b.is_empty(): #to fix  error where it tries to build an extra training set with no data
-            break
+            if b.is_empty(): #to fix  error where it tries to build an extra training set with no data
+                break
 
         # print log_likelihoods[0]
         # print ""
