@@ -167,6 +167,7 @@ def plot_moving_topic_usage(speeches, topic, n):
     end_dates = []
     dem_counts = []
     rep_counts = []
+    total_counts = []
 
     for i in range(len(speeches) - window_size):
         window = speeches[i:i+window_size-1]
@@ -183,6 +184,7 @@ def plot_moving_topic_usage(speeches, topic, n):
             end_dates.append(str(window[len(window)-1].date))
             dem_counts.append(dem_count)
             rep_counts.append(rep_count)
+            total_counts.append(rep_count+dem_count)
 
  
     return {
@@ -191,7 +193,8 @@ def plot_moving_topic_usage(speeches, topic, n):
     'start_dates': start_dates, 
     'end_dates': end_dates,
     'dem_counts':dem_counts,
-    'rep_counts':rep_counts}
+    'rep_counts':rep_counts,
+    'total_counts':total_counts}
 
 
 @app.route('/analyze')
