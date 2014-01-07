@@ -18,7 +18,7 @@ git push aws master
 
 pf "dokku config:set politicalframing HEROKU=1"
 pf "dokku config:set politicalframing C_FORCE_ROOT=true"
-pf "dokku run python createdb.py"
+pf "dokku run politicalframing python createdb.py"
 
 # remove subdomain from /home/dokku/politicalframing/nginx.conf
 
