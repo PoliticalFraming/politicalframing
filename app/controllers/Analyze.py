@@ -37,7 +37,7 @@ from flask import request, session, jsonify
 from peewee import *
 from app.models.Frame import Frame
 from app.models.Topic import Topic
-from app.models.Speech import Speech, get_speeches
+from app.models.Speech import Speech, get_speeches_in_date_order
 
 from app.controllers.Speech import SpeechResource
 from collections import deque
@@ -49,23 +49,23 @@ from celery import Celery
 @celery.task(bind=True)
 def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
     # get topic as URL get parameter
-    speeches = get_speeches(topic_id, states, start_date, end_date)
+    speeches = get_speeches_in_date_order(topic_id, states, start_date, end_date)
     # get list of json objects from the database (query by topic - or also filter by some other subset of factors)
     frame = Frame.get(Frame.frame_id == frame_id)
     topic = Topic.get(Topic.topic_id == topic_id)
-
-    # speeches = get_speeches(topic)
+    
+    #preprocess speeches
     speeches = preprocess_speeches(speeches)
+    
     print str(len(speeches)) + " speeches are being analyzed"
-
-
-
+    ######################################################
+    #update state for number of speeches analyzed 
+    #(this needs to be moved into where the speeches are actually analyzed)
     i=2
     filenames=14
-
     self.update_state(state='PROGRESS', 
            meta={'current': i, 'total': filenames})
-
+    ######################################################
 
     topic_plot = plot_topic_usage(speeches, topic, 100)
     frame_plot = plot_discrete_average(frame,speeches, 100)
@@ -82,6 +82,9 @@ def preprocess_speeches(speeches):
             valid_speeches.append(speech)
     return valid_speeches
 
+def graph1(speeches):
+    pass
+    
 def plot_topic_usage(speeches, topic, n):
 
     def date_compare(self, other):
@@ -218,7 +221,7 @@ def analyze2():
     end_date = request.args.get('end_date')
     frame_id = request.args.get('frame')
 
-    speeches = get_speeches(topic_id, states, start_date, end_date)
+    speeches = get_speeches_in_date_order(topic_id, states, start_date, end_date)
     # get list of json objects from the database (query by topic - or also filter by some other subset of factors)
     frame = Frame.get(Frame.frame_id == frame_id)
     topic = Topic.get(Topic.topic_id == topic_id)
@@ -330,6 +333,10 @@ def plot_discrete_average(frame, speeches, n):
         d_likelihoods.append(log_likelihoods[0])
         r_likelihoods.append(log_likelihoods[1])
         number_of_datapoints = number_of_datapoints + 1
+
+        if b.is_empty():
+            break
+
         # print log_likelihoods[0]
         # print ""
         # print log_likelihoods[1]

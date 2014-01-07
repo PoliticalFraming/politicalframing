@@ -1,4 +1,5 @@
 import requests
+from requests import HTTPError
 import json
 import sqlite3
 from flask import jsonify, g
@@ -26,21 +27,30 @@ def download_speeches_for_topic(phrase):
   relevance = 0
   data = {}
 
-  while page_number == 0 or data.get('results') != []:
-    data = download_page(phrase, page_number)
-    if page_number == 0: print str(data[u'num_found']) + " speeches found"
+  try:
+    while page_number == 0 or data.get('results') != []:
+      data = download_page(phrase, page_number)
+      if page_number == 0: print str(data[u'num_found']) + " speeches found"
 
-    for speech in data[u'results']:
-      try:
-        #put speech in db
-        s = insert_speech_into_database(speech)
-        #connect speech to topic
-        relevance += 1
-        connect_speech_to_topic(s, phrase, relevance)
-      except:
-        print "ERROR: Failed to Insert Speech " + speech['id']
-        print "Unexpected error:", sys.exc_info()
-        pass
+      for speech in data[u'results']:
+        try:
+          #put speech in db
+          s = insert_speech_into_database(speech)
+          #connect speech to topic
+          relevance += 1
+          connect_speech_to_topic(s, phrase, relevance)
+        except:
+          print "ERROR: Failed to Insert Speech " + speech['id']
+          print "Unexpected error:", sys.exc_info()
+          pass
+  except HTTPError as e:
+    error_msg = "CapitolWordsAPI Returned a HTTPError: {0}".format(e)
+
+    print error_msg
+    return error_msg
+  except Exception:
+    print "Failed to Download Speeches: Reason Unknown"
+    return "Failed to Download Speeches: Reason Unknown"
 
     # Debug Line
     # if page_number == 1: return
@@ -61,6 +71,10 @@ def download_page(topic, page):
     'page': page
   }
   response = requests.get(endpoint, params = query_parameters)
+  
+  if not(response.ok):
+    response.raise_for_status() #Raises stored HTTPError, if one occured.
+
   data = response.json()
   print "Downloaded page " + str(page) + " of " + str(int(ceil(data[u'num_found']/RESULTS_PER_PAGE)))
   return data

@@ -30,7 +30,7 @@ class Speech(db.Model):
 
 from app.models.SpeechTopic import SpeechTopic
 from datetime import date, datetime
-def get_speeches(topic=None, states=None, start_date=None, end_date=None):
+def get_speeches_in_date_order(topic=None, states=None, start_date=None, end_date=None):
 
     #dates must be date objects
     #states must be a list
@@ -68,7 +68,7 @@ def get_speeches(topic=None, states=None, start_date=None, end_date=None):
     print type(Speech.get().date)
         
 
-    return query
+    return query.order_by(Speech.date)
     
 
 
