@@ -327,16 +327,16 @@ def plot_discrete_average(frame, speeches, n):
         # print "ordered_speeches is " + str(len(ordered_speeches)) + " items long"
         try:
             training_set = build_training_set(ordered_speeches)
-            print "built training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
+            #log_likelihoods        
+            log_likelihoods = return_framing_datum(training_set, frame)    
+            d_likelihoods.append(log_likelihoods[0])
+            r_likelihoods.append(log_likelihoods[1])
+            print "processed training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
+            
         except ValueError as e:
             print "Could not build training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
             print e
 
-
-        #log_likelihoods        
-        log_likelihoods = return_framing_datum(training_set, frame)    
-        d_likelihoods.append(log_likelihoods[0])
-        r_likelihoods.append(log_likelihoods[1])
         number_of_datapoints = number_of_datapoints + 1
 
         if b.is_empty(): #to fix  error where it tries to build an extra training set with no data
