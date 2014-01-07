@@ -305,9 +305,9 @@ def valid_speechset(speechset):
     rep_speech_exists = False
 
     for speech in speechset:
-        if speech.get('speaker_party').lower() == 'd':
+        if speech.speaker_party == 'D':
             dem_speech_exists = True
-        if speech.get('speaker_party').lower() == 'r':
+        if speech.speaker_party == 'R':
             rep_speech_exists = True
         if dem_speech_exists and rep_speech_exists:
             return True
