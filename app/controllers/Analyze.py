@@ -169,7 +169,7 @@ def plot_moving_topic_usage(speeches, topic, n):
     total_counts = []
 
     window_first_date = speeches[0].date
-    OFFSET = datetime.timedelta(days=30)
+    OFFSET = datetime.timedelta(days=90)
     window_last_date = window_first_date + OFFSET
 
     current_first_speech_index = 0
