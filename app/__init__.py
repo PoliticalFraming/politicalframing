@@ -1,7 +1,3 @@
-# from app import *
-# __all__ = ['models', 'controllers']
-# TODO: understand __all__ 
-
 import os
 import urlparse
 import psycopg2
@@ -10,15 +6,12 @@ from flask import Flask, make_response
 from flask.ext.cors import origin
 from flask_peewee.db import Database
 from flask_peewee.rest import RestAPI, RestResource
-# from flask.ext.assets import Environment, Bundle
-from logging import Formatter, FileHandler
-from logging.handlers import TimedRotatingFileHandler
+from flask.ext.assets import Environment, Bundle
 
 from celery import Celery
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL'])
-    print celery.backend
     celery.conf.update(app.config)
     TaskBase = celery.Task
     class ContextTask(TaskBase):
@@ -60,7 +53,6 @@ else:
     CELERY_BROKER_URL = 'redis://localhost:6379'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
-
 # Instantiate Flask
 
 SECRET_KEY='poop'
@@ -68,8 +60,18 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object(__name__)
-print app.config
 celery = make_celery(app)
+
+# Compile Assets
+
+assets = Environment(app)
+assets.url = app.static_url_path
+
+# css_bundle = Bundle('css/home.css.sass', filters='sass', output='all.css')
+# assets.register('css_all', css_bundle)
+
+# js_bundle = Bundle('js/test.js.coffee', filters='coffeescript', output='all.js')
+# assets.register('js_all', js_bundle)
 
 # Instantaite Flask Peewee Database ORM
 db = Database(app)
@@ -80,7 +82,6 @@ api = RestAPI(app)
 
 # Transaction
 db.database.set_autocommit(True)
-
 
 # Import All Models and Controllers
 from app import database_views
@@ -118,21 +119,39 @@ def index():
 
 # Set up Logging
 
-# if not app.debug:
-#   LOG_FILENAME = 'logs/framingapp.log'
-#   file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False) 
-#   app.logger.setLevel(logging.INFO)
-#   file_handler.setLevel(logging.INFO)
-# else:
-#   LOG_FILENAME = 'logs/framingapp_debug.log'
-#   file_handler = FileHandler(LOG_FILENAME) 
-#   app.logger.setLevel(logging.DEBUG)
-#   file_handler.setLevel(logging.DEBUG)
+from logging import Formatter, FileHandler
+from logging.handlers import TimedRotatingFileHandler
 
-# file_handler.setFormatter(Formatter(
-#     '%(asctime)s %(levelname)s: %(message)s '
-#     '[in %(pathname)s:%(lineno)d]'
-# ))
+if os.environ.get('HEROKU') is None:
+    from logging.handlers import RotatingFileHandler
+    LOG_FILENAME = 'logs/framingapp.log'
 
-# app.logger.addHandler(file_handler)
-# app.logger.info("Starting framingapp __init__ file.")
+    with open(LOG_FILENAME,'a') as file:
+        # file_handler = FileHandler(LOG_FILENAME) 
+        # file_handler = RotatingFileHandler(LOG_FILENAME, 'a', 1 * 1024 * 1024, 10)        
+        file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False) 
+
+    # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
+
+    if not app.debug:
+        app.logger.setLevel(logging.INFO)
+        file_handler.setLevel(logging.INFO)
+    else:
+        app.logger.setLevel(logging.DEBUG)
+        file_handler.setLevel(logging.DEBUG)
+
+    app.logger.addHandler(file_handler)
+else:
+    stream_handler = logging.StreamHandler()
+
+    if not app.debug:
+        app.logger.setLevel(logging.INFO)
+        stream_handler.setLevel(logging.INFO)
+    else:
+        app.logger.setLevel(logging.DEBUG)
+        stream_handler.setLevel(logging.DEBUG)
+
+    app.logger.addHandler(stream_handler)
+
+# app.logger.info('PoliticalFraming Startup')

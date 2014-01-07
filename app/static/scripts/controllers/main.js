@@ -286,28 +286,36 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
                     var data = [];
                     var dataSeries1 = { type: "line" };
                     var dataSeries2 = { type: "line" };
+                    var dataSeries3 = { type: "line" };
 
-                    var dataPoints = [];
+                    var dataPoints1 = [];
+                    var dataPoints2 = [];
                     var theOnes = [];
-                    for (var i = 0; i < thedata.topic_plot.dates.length; i++ ) {
-                        var dateTime = new Date(thedata.topic_plot.dates[i]);
-                        console.log(thedata.topic_plot.dates[i]);
+                    for (var i = 0; i < thedata.topic_plot.startdates.length; i++ ) {
+                        var dateTime = new Date(thedata.topic_plot.startdates[i]);
+                        console.log(thedata.topic_plot.startdates[i]);
                         console.log(dateTime);                
-                        dataPoints.push({
+                        dataPoints1.push({
                             x: dateTime,
-                            y: thedata.topic_plot.ratios[i]
+                            y: thedata.topic_plot.dem_counts[i]
                         });
-                        if (i==0 || i==thedata.frame_plot.dates.length-1){
+                        dataPoints2.push({
+                            x: dateTime,
+                            y: thedata.topic_plot.rep_counts[i]
+                        });                        
+                        if (i==0 || i==thedata.frame_plot.startdates.length-1){
                             theOnes.push({
                                 x: dateTime,
                                 y: 1
                             });
                         }
                     }
-                    dataSeries1.dataPoints = dataPoints;
-                    dataSeries2.dataPoints = theOnes;
+                    dataSeries1.dataPoints = dataPoints1;
+                    dataSeries2.dataPoints = dataPoints2;
+                    dataSeries3.dataPoints = theOnes;
                     data.push(dataSeries1);
                     data.push(dataSeries2);
+                    data.push(dataSeries3);
                     console.log(data);
 
 
