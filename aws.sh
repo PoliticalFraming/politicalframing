@@ -3,6 +3,7 @@
 export PFURL=ec2-54-237-115-42.compute-1.amazonaws.com
 export PFPEM=~/Desktop/politicalframing.pem
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
+alias pflogs="pf 'dokku logs politicalframing -t'"
 pf "echo 'export PFURL=$PFURL' >> ~/.bashrc"
 pf "wget -qO- https://raw.github.com/progrium/dokku/v0.2.1/bootstrap.sh | sudo bash"
 pf "export PFURL=$PFURL; sudo sh -c  'echo $PFURL > /home/dokku/VHOST'"
@@ -16,9 +17,17 @@ cat ~/.ssh/id_rsa.pub | pf "sudo sshcommand acl-add dokku progrium"
 git remote add aws "dokku@$PFURL:politicalframing"
 git push aws master
 
+
 pf "dokku config:set politicalframing HEROKU=1"
 pf "dokku config:set politicalframing C_FORCE_ROOT=true"
 pf "dokku run politicalframing python createdb.py"
+
+# nginx temp fix
+pfpush() {
+	git push aws master
+	pf "sudo sed -i 's/politicalframing\.//g' /home/dokku/politicalframing/nginx.conf"
+	pf "sudo nginx -s reload"
+}
 
 # remove subdomain from /home/dokku/politicalframing/nginx.conf
 
