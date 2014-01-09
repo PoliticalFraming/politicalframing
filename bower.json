@@ -3,27 +3,43 @@
   "version": "0.0.0",
   "directory": "app/static/bower_components",
   "dependencies": {
-    "json3": "~3.2.4",
-    "es5-shim": "~2.1.0",
-    "angular-resource": "~1.2.1",
-    "bootstrap-sass": "~3.0.1",
-    "font-awesome": "~4.0.1",
-    "bootstrap3-wysihtml5": "*",
-    "jquery": "~2.0.3",
-    "select2": "~3.4.5",
+    "angular": "~1.2.4",
+    "angular-route": "~1.2.4",
+    "angular-sanitize": "~1.2.4",
+    "angular-ui-date": "~0.0.3",
     "angular-ui-utils": "~0.0.4",
     "angular-ui-select2": "~0.0.2",
-    "angular-bootstrap": "~0.6.0",
+    "angular-bootstrap": "~0.9.0",
     "nginfinitescroll": "~1.0.0",
-    "angular-ui-date": "~0.0.3",
+    "json3": "~3.2.6",
+    "es5-shim": "~2.3.0",
+    "angular-resource": "~1.2.4",
+    "bootstrap-sass": "git://github.com/twbs/bootstrap-sass.git#v3.0.3-0",
+    "font-awesome": "~4.0.1",
+    "jquery": "~1.10.2",
     "jquery-ui": "~1.10.3",
+    "select2": "~3.4.5",
     "ng-grid": "~2.0.7",
-    "angular": "~1.2.1",
-    "angular-route": "~1.2.1",
-    "angular-sanitize": "~1.2.4"
+    "bootstrap3-wysihtml5-bower": "~0.2.6",
+    "x-editable": "~1.5.1",
+    "fullcalendar": "~1.6.4",
+    "jquery.ibutton": "http://www.givainc.com/labs/downloads/jquery.ibutton.zip",
+    "justgage-bower": "~1.0.0",
+    "jQuery-Validation-Engine": "~2.6.4",
+    "bootstrap-application-wizard": "*",
+    "bootstrap-hover-dropdown": "~2.0.1",
+    "datatables": "~1.9.4",
+    "jquery.easy-pie-chart": "~2.1.1",
+    "jquery.gritter": "*",
+    "jquery.uniform": "~2.1.2",
+    "d3": "~3.3.13",
+    "xcharts": "http://tenxer.github.io/xcharts/xcharts-build.tar.gz"
   },
   "devDependencies": {
-    "angular-mocks": "~1.2.1",
-    "angular-scenario": "~1.2.1"
+    "angular-mocks": "~1.2.4",
+    "angular-scenario": "~1.2.4"
+  },
+  "resolutions": {
+    "jquery": "~1.10.2"
   }
 }

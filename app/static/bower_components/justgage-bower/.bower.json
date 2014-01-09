@@ -1,0 +1,23 @@
+{
+  "name": "justgage-bower",
+  "version": "1.0.0",
+  "main": "justgage.js",
+  "ignore": [
+    "R&D"
+  ],
+  "dependencies": {
+    "raphael": "~2.1.2"
+  },
+  "devDependencies": {},
+  "homepage": "https://github.com/remasis/justgage",
+  "_release": "1.0.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.0",
+    "commit": "58cd4c6bb2aab8257e016250334c91e1817714ef"
+  },
+  "_source": "git://github.com/remasis/justgage.git",
+  "_target": "~1.0.0",
+  "_originalSource": "justgage-bower",
+  "_direct": true
+}
