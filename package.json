@@ -1,5 +1,8 @@
 {
   "name": "politicalframing",
+  "config": {
+    "unsafe-perm": "false"
+  },
   "version": "1.0.0",
   "dependencies": {
     "bower": "~1.2"
@@ -9,6 +12,10 @@
     "npm": "1.3.x"
   },
   "scripts": {
-    "postinstall": "bower --allow-root install"
+    "postinstall": "bower install"
+  },
+  "repository": { 
+    "type" : "git"
+  , "url" : "http://bitbucket.org/politicalframing/politicalframing.git"
   }
 }
