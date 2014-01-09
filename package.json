@@ -1,7 +1,7 @@
 {
   "name": "politicalframing",
   "config": {
-    "unsafe-perm": "false"
+    "unsafe-perm": "true"
   },
   "version": "1.0.0",
   "dependencies": {
