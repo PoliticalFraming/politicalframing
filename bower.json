@@ -1,7 +1,7 @@
 {
   "name": "framing",
   "version": "0.0.0",
-  "directory": "app/static/bower_components",
+  "directory": "app/assets/components",
   "dependencies": {
     "angular": "~1.2.4",
     "angular-route": "~1.2.4",

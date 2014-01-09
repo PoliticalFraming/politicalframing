@@ -1,0 +1,245 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 47.0,
+		"selected_items":
+		[
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 146.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/atul/Dropbox/Development/politicalframing/node_modules/bower/lib/commands/init.js",
+		"/Users/atul/Dropbox/Development/politicalframing/app/templates/index.html",
+		"/Users/atul/Dropbox/Development/politicalframing/bower.json",
+		"/Users/atul/Dropbox/Development/politicalframing/.bowerrc",
+		"/Users/atul/Dropbox/Development/politicalframing/app/__init__.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/models/Frame.py",
+		"/Users/atul/Dropbox/Development/politicalframing/package.json",
+		"/Users/atul/Dropbox/Development/politicalframing/.npmrc",
+		"/Users/atul/Dropbox/Development/core-admin/atul/source/javascripts/vendor/package.json",
+		"/Users/atul/Dropbox/Development/core-admin/atul/source/javascripts/vendor/.buildpacks",
+		"/Users/atul/Dropbox/Development/politicalframing/.env",
+		"/Users/atul/Dropbox/Development/core-admin/atul/source/javascripts/vendor/d3.js",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/bower_components/fullcalendar/bower.json",
+		"/Users/atul/Dropbox/Development/politicalframing/createdb.py",
+		"/Users/atul/Dropbox/Development/politicalframing/manage.py",
+		"/Users/atul/Dropbox/Development/politicalframing/old.txt",
+		"/Users/atul/Dropbox/Development/politicalframing/README.md",
+		"/Users/atul/Dropbox/Development/politicalframing/todo.txt",
+		"/Users/atul/Dropbox/Development/politicalframing/populate_dummy_data.py",
+		"/Users/atul/Dropbox/Development/politicalframing/requirements.txt",
+		"/Users/atul/Dropbox/Development/politicalframing/runtime.txt",
+		"/Users/atul/Dropbox/Development/politicalframing/notes",
+		"/Users/atul/Dropbox/Development/politicalframing/setup.sh",
+		"/Users/atul/Dropbox/Development/politicalframing/provision.sh",
+		"/Users/atul/Dropbox/Development/buildstep/stack/packages.txt",
+		"/Users/atul/Dropbox/Development/buildstep/stack/prepare",
+		"/Users/atul/Dropbox/Development/buildstep/Makefile",
+		"/Users/atul/Dropbox/Development/buildstep/buildstep",
+		"/Users/atul/Dropbox/Development/buildstep/stack/builder",
+		"/Users/atul/Dropbox/Development/buildstep/stack/buildpacks.txt",
+		"/Users/atul/Dropbox/Development/politicalframing/aws.sh",
+		"/Users/atul/Dropbox/Development/buildstep/Dockerfile",
+		"/Users/atul/Dropbox/Development/core-admin/release_bs3 atul/.bundle/install.log",
+		"/Users/atul/Dropbox/Northwestern University/MECH_ENG 333/Homework4",
+		"/Users/atul/Dropbox/Development/dokku/tests/run_ec2",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/.websocket.disabled/README.md",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/config/web.js",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/config/Procfile",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/config/package.json",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/config/check_deploy",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/python-flask/check_deploy",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/python-flask/hello.py",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/python-flask/Procfile",
+		"/Users/atul/Dropbox/Development/dokku/tests/apps/python-flask/requirements.txt",
+		"/Users/atul/Dropbox/Development/dokku/tests/run_vagrant",
+		"/Users/atul/Dropbox/Development/dokku/contrib/dokku-installer.rb",
+		"/Users/atul/Desktop/nuvention.txt",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/scripts/controllers/According to Robin Dunbar, a professor of evolutio",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/scripts/controllers/main.js",
+		"/Users/atul/Dropbox/Development/politicalframing/app/models/Topic.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/controllers/Analyze.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/views/analyze.html",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/scripts/controllers/analyze.js",
+		"/Users/atul/Dropbox/Development/politicalframing/app/manage.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/database_views.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/decorators.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/styles/main.scss",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/styles/main.css",
+		"/Users/atul/Dropbox/Development/politicalframing/app.py",
+		"/Users/atul/Dropbox/Development/Capitol-Words/api/nohup.out",
+		"/Users/atul/Dropbox/Development/Capitol-Words/api/local_settings.py",
+		"/Users/atul/Dropbox/Development/Capitol-Words/api/bioguide_lookup.csv",
+		"/Users/atul/Dropbox/Development/Capitol-Words/api/capitolwords",
+		"/Users/atul/Dropbox/Development/Capitol-Words/scraper/scraper.py",
+		"/Users/atul/Dropbox/Development/politicalframing/loggsssssssssssssss",
+		"/Users/atul/Dropbox/Development/politicalframing/Procfile",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/views/browse.html",
+		"/Users/atul/Dropbox/Development/politicalframing/app/static/scripts/app.js",
+		"/Users/atul/Dropbox/Development/politicalframing/app/controllers/User.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/controllers/Topic.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/controllers/SpeechTopic.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/controllers/Speech.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/controllers/Frame.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/models/Speech.py",
+		"/Users/atul/Dropbox/Development/politicalframing/app/models/SpeechTopic.py",
+		"/Users/atul/Downloads/Little Snitch 3.3/Little Snitch Reseter/Little Snitch Reseter.scpt"
+	],
+	"find":
+	{
+		"height": 40.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"-/Users/atul/Dropbox/Development/politicalframing/app/assets",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"populate_frames_dummy_data",
+			"software-properties-common",
+			"python-software-properties",
+			"ec2-ami-tools.zip",
+			"aws",
+			"ec2",
+			"ec2-run-instances",
+			"domains",
+			"usage of",
+			"selected topic",
+			"Warning: FastRBTree not available, using Python version RBTree.",
+			"bintrees",
+			"assets",
+			"self.datestring",
+			"Congress was not in session",
+			"api",
+			"political party",
+			"Select ",
+			"Select Spe",
+			"pagin",
+			"total",
+			"100",
+			"heroku",
+			"app.debug",
+			"xls",
+			"master"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"components"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 34.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 183.0,
+	"status_bar_visible": true
+}

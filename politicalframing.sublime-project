@@ -1,0 +1,9 @@
+{
+	"folders":
+	[
+		{
+			"path": "/Users/atul/Dropbox/Development/politicalframing",
+			"folder_exclude_patterns": ["node_modules", "app/assets/components"]
+		}
+	]
+}
