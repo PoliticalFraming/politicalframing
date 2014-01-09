@@ -5,7 +5,9 @@
   },
   "version": "1.0.0",
   "dependencies": {
-    "bower": "~1.2"
+    "bower": "~1.2",
+    "clean-css": "~2.0.6",
+    "uglify-js": "1.0.1"
   },
   "engines": {
     "node": "0.10.24",
