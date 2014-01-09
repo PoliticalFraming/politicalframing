@@ -1,7 +1,7 @@
 {
   "name": "politicalframing",
   "config": {
-    "unsafe-perm": "false"
+      "unsafe-perm":true
   },
   "version": "1.0.0",
   "dependencies": {
@@ -9,7 +9,7 @@
   },
   "engine": {
     "node": "0.10.24",
-    "npm": "1.3.x"
+    "npm": "1.3.21"
   },
   "scripts": {
     "postinstall": "bower install"
