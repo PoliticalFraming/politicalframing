@@ -5,10 +5,10 @@
     "bower": "~1.2"
   },
   "engine": {
-    "node": "0.10.x",
+    "node": "0.10.24",
     "npm": "1.3.x"
   },
   "scripts": {
-    "postinstall": "bower install"
+    "postinstall": "bower --allow-root install"
   }
 }
