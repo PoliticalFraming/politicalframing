@@ -27,6 +27,9 @@ def createdb():
 	db.database.execute_sql("ALTER TABLE speech_topic ADD CONSTRAINT speech_topic_unique UNIQUE(speech_id,topic_id);")
 	populate_frames_dummy_data()
 
+@manager.command
+def deletedb():
+	db.database.execute_sql("DROP TABLE frames, speeches, topics, speech_topic, users;")
 
 if __name__ == "__main__":
     manager.run()
