@@ -62,9 +62,9 @@ function pfpush() {
 	fi
 
 	if git branch | grep -qi $1; then
-	    pf "git push $1 $1:master"
+	    git push $1 $1:master
 	else
-	    pf "git push $1 master"
+	    git push $1 master
 	fi
 
 }
