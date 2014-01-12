@@ -55,7 +55,7 @@ function pfpush() {
 	    return -1
 	fi	
 
-	if [ ! git remote | grep -qi $1 ]; then
+	if ! git remote | grep -qi $1; then
 	    echo "$1 is not a remote of this repo"
 	    echo "check git remote -v"
 	    return -1
