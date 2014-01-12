@@ -1,6 +1,6 @@
 # Dokku Setup on EC2 Instructions
 
-export PFURL=ec2-54-237-115-42.compute-1.amazonaws.com
+export PFURL=aljohri.com
 export PFPEM=~/Desktop/politicalframing.pem
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
 alias pflogs="pf 'dokku logs politicalframing -t'"
