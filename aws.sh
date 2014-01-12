@@ -12,6 +12,8 @@
 # Remember that the PEM file must have permissions 400.
 # chmod 400 politicalframing.pem
 
+# Attempted to create a profile.d folder with environment variables but that didn't seem to work.
+
 export PFURL=aljohri.com
 export PFPEM=~/Desktop/politicalframing.pem
 export APP=alpha
