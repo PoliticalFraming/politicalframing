@@ -83,11 +83,10 @@ pf "sudo dokku plugins-install"
 
 cat ~/.ssh/id_rsa.pub | pf "sudo sshcommand acl-add dokku progrium"
 
-# pf "dokku config:set $APP HEROKU=1"
-# pf "dokku config:set $APP C_FORCE_ROOT=true"
+pf "dokku config:set $APP HEROKU=1"
+pf "dokku config:set $APP C_FORCE_ROOT=true"
 pf "sudo dokku postgresql:create $APP"
 pf "sudo dokku redis:create $APP"
-pf "dokku run $APP python createdb.py"
 pf "dokku run $APP python manage.py createdb"
 
 # 1 GB swap space
