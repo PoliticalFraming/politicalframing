@@ -1,37 +1,94 @@
 # Dokku Setup on EC2 Instructions
 
+# Because our AWS instance is associated with an elastic IP address, the PFURL should persist
+# across deleting and re-creating the instance given the elastic IP is reassociated.
+
+# Please note when doing anything that may change the instance's public IP (e.g. re-creating
+# or upgrading) you will recieve an error "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!".
+# It will be accompanied with a line in known_hosts to remove such as:
+# Offending RSA key in /Users/atul/.ssh/known_hosts:18
+# Simply delete this line and repeat the command.
+
+# Remember that the PEM file must have permissions 400.
+# chmod 400 politicalframing.pem
+
 export PFURL=aljohri.com
 export PFPEM=~/Desktop/politicalframing.pem
+export APP=alpha
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
-alias pflogs="pf 'dokku logs politicalframing -t'"
+
+function pflogs() {
+
+	if [ -z "$1" ]; then
+	  	echo "missing app name"
+	    echo "usage: pflogs app"
+	    return -1
+	fi
+
+  pf "dokku logs $1 -t"
+}
+
+function pfcreate() {
+
+	if [ -z "$1" ]; then
+	  	echo "missing app name"
+	    echo "usage: pfcreate app"
+	    return -1
+	fi
+
+	git remote add $APP "dokku@$PFURL:$1"
+}
+
+function pfpush() {
+
+	if [ -z "$1" ]; then
+	  	echo "missing app name"
+	    echo "usage: pfush app"
+	    return -1
+	fi
+
+	if [ "$1" = "-h" ]; then
+		echo "usage: pfush app"
+		echo "note: if 'app' is a branch in git"
+	    echo "pfpush will push the branch named 'app' to aws"
+	    echo "otherwise, it will push the master branch"
+	    return -1
+	fi	
+
+	if [ ! git remote | grep -qi $1 ]; then
+	    echo "$1 is not a remote of this repo"
+	    echo "check git remote -v"
+	    return -1
+	fi
+
+	if git branch | grep -qi $1; then
+	    pf "git push $1 $1:master"
+	else
+	    pf "git push $1 master"
+	fi
+
+}
+
 pf "echo 'export PFURL=$PFURL' >> ~/.bashrc"
 pf "wget -qO- https://raw.github.com/progrium/dokku/v0.2.1/bootstrap.sh | sudo bash"
 pf "export PFURL=$PFURL; sudo sh -c  'echo $PFURL > /home/dokku/VHOST'"
 pf "sudo git clone https://github.com/statianzo/dokku-shoreman.git /var/lib/dokku/plugins/dokku-shoreman"
-pf "sudo git clone https://github.com/teemow/dokku-pg-plugin /var/lib/dokku/plugins/postgresql"
+pf "sudo git clone https://github.com/Kloadut/dokku-pg-plugin /var/lib/dokku/plugins/postgresql"
 pf "sudo git clone https://github.com/luxifer/dokku-redis-plugin /var/lib/dokku/plugins/redis"
+# pf "sudo git clone https://github.com/jeffutter/dokku-postgresql-plugin.git /var/lib/dokku/plugins/postgresql"
+# pf "sudo git clone https://github.com/jeffutter/dokku-mongodb-plugin.git /var/lib/dokku/plugins/mongodb"
 pf "sudo dokku plugins-install"
-pf "sudo dokku postgresql:create politicalframing"
-pf "sudo dokku redis:create politicalframing"
+
 cat ~/.ssh/id_rsa.pub | pf "sudo sshcommand acl-add dokku progrium"
-git remote add aws "dokku@$PFURL:politicalframing"
-git push aws master
 
+# pf "dokku config:set $APP HEROKU=1"
+# pf "dokku config:set $APP C_FORCE_ROOT=true"
+pf "sudo dokku postgresql:create $APP"
+pf "sudo dokku redis:create $APP"
+pf "dokku run $APP python createdb.py"
+pf "dokku run $APP python manage.py createdb"
 
-pf "dokku config:set politicalframing HEROKU=1"
-pf "dokku config:set politicalframing C_FORCE_ROOT=true"
-pf "dokku run politicalframing python createdb.py"
-
-# nginx temp fix
-pfpush() {
-	git push aws master
-	pf "sudo sed -i 's/politicalframing\.//g' /home/dokku/politicalframing/nginx.conf"
-	pf "sudo nginx -s reload"
-}
-
-# remove subdomain from /home/dokku/politicalframing/nginx.conf
-
-# for micro instance only - 1 GB swap space
+# 1 GB swap space
 # pf "sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024"
 # pf "sudo /sbin/mkswap /var/swap.1"
 # pf "sudo /sbin/swapon /var/swap.1"
