@@ -5,28 +5,37 @@ export PFPEM=~/Desktop/politicalframing.pem
 export APP=alpha
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
 
+echo "Creating 1GB swap space on EC2 instance."
 pf "sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024"
 pf "sudo /sbin/mkswap /var/swap.1"
 pf "sudo /sbin/swapon /var/swap.1"
-pf "sudo sh -c 'echo /var/swap.1 swap swap defaults 0 0 > /etc/fstab'"
+pf "sudo sh -c 'echo /var/swap.1 swap swap defaults 0 0 >> /etc/fstab'"
 
+echo "Installing Dokku"
 pf "echo 'export PFURL=$PFURL' >> ~/.bashrc"
 pf "wget -qO- https://raw.github.com/progrium/dokku/v0.2.1/bootstrap.sh | sudo bash"
 pf "export PFURL=$PFURL; sudo sh -c  'echo $PFURL > /home/dokku/VHOST'"
+
+echo "Installing Dokku Plugins"
 pf "sudo git clone https://github.com/statianzo/dokku-shoreman.git /var/lib/dokku/plugins/dokku-shoreman"
 pf "sudo git clone https://github.com/Kloadut/dokku-pg-plugin /var/lib/dokku/plugins/postgresql"
 pf "sudo git clone https://github.com/luxifer/dokku-redis-plugin /var/lib/dokku/plugins/redis"
 pf "sudo dokku plugins-install"
 
+echo "Send Public Key to EC2 Instance"
 cat ~/.ssh/id_rsa.pub | pf "sudo sshcommand acl-add dokku progrium"
 
+echo "Create Databases"
 pf "sudo dokku postgresql:create $APP"
 pf "sudo dokku redis:create $APP"
 
+echo "Configure git and push"
 git remote rm $APP
 git remote add $APP "dokku@$PFURL:$APP"
 git push $APP $APP:master
 
+echo "Add environment variables"
+pf "dokku postgresql:link $APP $APP"
 pf "dokku config:set $APP HEROKU=1"
 pf "dokku config:set $APP C_FORCE_ROOT=true"
 
