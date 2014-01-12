@@ -94,6 +94,9 @@
                 <div class="col-sm-12" id="chartContainer2" style="height: 300px; width: 100%;"> 
                     Loading analysis - This may take up to 5 minutes.
                     <img src= 'http://sierrafire.cr.usgs.gov/images/loading.gif' style="height: 50%;"></img>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{(percentAnalyzed.current / percentAnalyzed.total) *100 }}%;"></div>
+                    </div>  
                 </div>
 
                 <div class="col-sm-12" id="chartContainer" style="height: 300px; width: 100%;"></div>

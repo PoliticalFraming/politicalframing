@@ -212,7 +212,8 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
     }, true);
 
     $scope.analyzeData = null;
-
+    $scope.percentAnalyzed = {};
+    
     $scope.analyzeSpeeches = function (parameters, fine) {
 
         $scope.analyzing = true;
@@ -232,7 +233,6 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
 
             (function pollforAnalyzeData() {
               AnalyzeData.getData(CURRENT_SERVER + '/check?task_id=' + resp.data).then(function (response) {
-
                 if (response.data.state == "SUCCESS") {
                     console.log(response.data);
 
@@ -319,8 +319,14 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $filter, $
 
                 }
                 else {
-                  console.log(response.data);
-                  setTimeout(pollforAnalyzeData, 5000);
+                    if (response.data.state=="PROGRESS"){
+                        $scope.percentAnalyzed = response.data.meta;
+                        console.log("pooooooooooohyooooooooo");
+                        console.log($scope.percentAnalyzed);
+                    }
+                
+                    console.log(response.data);
+                    setTimeout(pollforAnalyzeData, 5000);
                 }
 
               });
