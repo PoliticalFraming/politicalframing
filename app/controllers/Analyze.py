@@ -58,19 +58,11 @@ def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
     speeches = preprocess_speeches(speeches)
     
     print str(len(speeches)) + " speeches are being analyzed"
-    ######################################################
-    #update state for number of speeches analyzed 
-    #(this needs to be moved into where the speeches are actually analyzed)
-    i=2
-    filenames=14
-    self.update_state(state='PROGRESS', 
-           meta={'current': i, 'total': filenames})
-    ######################################################
 
     # topic_plot = plot_topic_usage(speeches, topic, 100)
     topic_plot = plot_moving_topic_usage(speeches, topic, 100)
 
-    frame_plot = plot_discrete_average(frame,speeches, 100, topic.phrase)
+    frame_plot = plot_discrete_average(self, frame,speeches, 100, topic.phrase)
 
 
     return pickle.dumps({'frame_plot':frame_plot,'topic_plot':topic_plot})
@@ -330,7 +322,7 @@ def return_framing_datum(training_set, frame):
     return predicted_logs[0]
 
 
-def plot_discrete_average(frame, speeches, n, topic):
+def plot_discrete_average(self,frame, speeches, n, topic):
     """ 
     frame = frame object
     speech = list of speech objects
@@ -338,6 +330,15 @@ def plot_discrete_average(frame, speeches, n, topic):
 
     returns json with dates that correlate to log_likelihoods to plot
     """
+
+    ######################################################
+    #update state for number of speeches analyzed 
+    #(this needs to be moved into where the speeches are actually analyzed)
+    # i=2
+    # filenames=14
+    # self.update_state(state='PROGRESS', 
+    #        meta={'current': i, 'total': filenames})
+    ######################################################
 
     print 'entering plot discrete average'
     b = build_btree(speeches)
@@ -366,7 +367,10 @@ def plot_discrete_average(frame, speeches, n, topic):
                 log_likelihoods = return_framing_datum(training_set, frame)    
                 d_likelihoods.append(log_likelihoods[0])
                 r_likelihoods.append(log_likelihoods[1])
-                print "processed training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
+                num_of_trainigsets = int(math.ceil(len(speeches)/float(n)))
+                print "processed training set " + str(count) + " of " + str(num_of_trainigsets)
+                self.update_state(state='PROGRESS', meta={'current': count, 'total': num_of_trainigsets})
+
                 
             except ValueError as e:
                 print "Could not build training set " + str(count) + " of " + str(int(math.ceil(len(speeches)/float(n))))
