@@ -30,15 +30,26 @@ function pflogs() {
   pf "dokku logs $1 -t"
 }
 
-function pfcreate() {
+function pfcreatedb() {
 
 	if [ -z "$1" ]; then
 	  	echo "missing app name"
-	    echo "usage: pfcreate app"
+	    echo "usage: pfcreatedb app"
 	    return -1
 	fi
 
-	git remote add $APP "dokku@$PFURL:$1"
+	pf "dokku run $1 python manage.py createdb"
+}
+
+function pfdeletedb() {
+
+	if [ -z "$1" ]; then
+	  	echo "missing app name"
+	    echo "usage: pfdeletedb app"
+	    return -1
+	fi
+
+	pf "dokku run $1 python manage.py deletedb"
 }
 
 function pfpush() {
@@ -87,7 +98,8 @@ pf "dokku config:set $APP HEROKU=1"
 pf "dokku config:set $APP C_FORCE_ROOT=true"
 pf "sudo dokku postgresql:create $APP"
 pf "sudo dokku redis:create $APP"
-pf "dokku run $APP python manage.py createdb"
+
+git remote add $APP "dokku@$PFURL:$APP"
 
 # 1 GB swap space
 # pf "sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024"
