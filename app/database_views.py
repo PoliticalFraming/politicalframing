@@ -43,6 +43,7 @@ def download_speeches_for_topic(phrase):
           print "ERROR: Failed to Insert Speech " + speech['id']
           print "Unexpected error:", sys.exc_info()
           pass
+      page_number += 1
   except HTTPError as e:
     error_msg = "CapitolWordsAPI Returned a HTTPError: {0}".format(e)
 
@@ -56,8 +57,6 @@ def download_speeches_for_topic(phrase):
     # if page_number == 1: return
 
     # print "Downloaded page " + str(page_number) + " of " + str(int(ceil(data[u'num_found']/RESULTS_PER_PAGE)))
-
-    page_number += 1
   
   print "Successfully Downloaded " + str(data[u'num_found'])  +" speeches for topic '" + phrase +"'"
   return "Successfully Downloaded " + str(data[u'num_found'])  +" speeches for topic '" + phrase +"'"
