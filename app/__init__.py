@@ -9,6 +9,11 @@ from flask_peewee.rest import RestAPI, RestResource
 from flask.ext.assets import Environment, Bundle
 
 from celery import Celery
+from celery.signals import task_prerun
+
+@task_prerun.connect
+def on_task_init(*args, **kwargs):
+    db.database.close()
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL'])

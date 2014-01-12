@@ -106,6 +106,10 @@ git remote add $APP "dokku@$PFURL:$APP"
 # pf "sudo /sbin/mkswap /var/swap.1"
 # pf "sudo /sbin/swapon /var/swap.1"
 
+/etc/fstab
+
+/var/swap.1 swap swap defaults 0 0
+
 # Information
 # EC2 Instance AMI: ami-ef795786
 # EC2 Instance AMI url: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-ef795786
