@@ -12,3 +12,4 @@ dist
 .tmp
 .sass-cache
 .webassets-cache
+*.pem
