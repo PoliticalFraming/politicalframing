@@ -9,8 +9,8 @@ $(document).ready(function(){
    $('body').append('<div id="converse-chat"></div>');
    var domContent = [
   '<div class="converse-menu">Click for live chat</div>',
-  '<div class="converse-chatbox">',
-  '    <div class="converse-conversation" style="display: none;">',
+  '<div class="converse-chatbox" style="display: none;">',
+  '    <div class="converse-conversation">',
   '    </div>',
   '    <div class="converse-chat-input">',
   '        <input type="text" name="chat_text" id="converse-chat-input" placeholder="Type here and hit <enter> to chat">',
