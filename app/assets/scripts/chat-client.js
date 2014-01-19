@@ -10,7 +10,7 @@ $(document).ready(function(){
    var domContent = [
   '<div class="converse-menu">Click for live chat</div>',
   '<div class="converse-chatbox">',
-  '    <div class="converse-conversation">',
+  '    <div class="converse-conversation" style="display: none;">',
   '    </div>',
   '    <div class="converse-chat-input">',
   '        <input type="text" name="chat_text" id="converse-chat-input" placeholder="Type here and hit <enter> to chat">',
