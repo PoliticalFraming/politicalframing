@@ -18,7 +18,7 @@
     height: 170px;
     background-color : #fff;
     padding: 5px 12px 0 12px;
-    overflow: scroll;
+    overflow: auto;
     font-size: 14px;
     font-family: 'Helvetica Neue', Arial, Helvetica, Geneva, sans-serif;
 }
@@ -52,7 +52,7 @@
 }
 
 #converse-chat .converse-menu {
-    background-color : #57663D;
+    background-color : #11161a;
     padding : 10px;
     border-top-right-radius : 5px;
     border-top-left-radius : 5px;

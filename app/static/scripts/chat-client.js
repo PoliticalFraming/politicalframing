@@ -69,6 +69,8 @@ function send_message(msg) {
             .cnode(Strophe.copyElement(message_xml));
   append_message('Me',  msg, 'converse-self'); 
   connection.send(reply.tree());
+  document.getElementById("converse-chat");
+  objDiv.scrollTop = objDiv.scrollHeight; 
 }
 
 
