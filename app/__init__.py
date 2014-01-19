@@ -63,7 +63,7 @@ else:
 SECRET_KEY='poop'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
-app = Flask(__name__, static_folder='static', static_url_path='')
+app = Flask(__name__, static_folder='assets', static_url_path='')
 app.config.from_object(__name__)
 celery = make_celery(app)
 

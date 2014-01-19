@@ -21,5 +21,6 @@
   },
   "_source": "git://github.com/angular-ui/ui-utils.git",
   "_target": "~0.0.4",
-  "_originalSource": "angular-ui-utils"
+  "_originalSource": "angular-ui-utils",
+  "_direct": true
 }

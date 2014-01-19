@@ -10,46 +10,39 @@ This directive allows you to enhance your select elements with behaviour from th
 
 ## Setup
 
-1. Install **Karma**, **Grunt** and **Bower**
-  `$ npm install -g karma grunt-cli bower`
-2. Install development dependencies
-  `$ npm install`
-3. Install components
+1. Install **karma**
+  `$ npm install -g karma`
+2. Install **bower**
+  `$ npm install -g bower`
+4. Install components
   `$ bower install`
 4. ???
 5. Profit!
 
 ## Testing
 
-We use [Grunt](http://gruntjs.com/) to check for JavaScript syntax errors and execute all unit tests. To run Grunt, simply execute:
-
-`$ grunt`
-
-This will lint and test the code, then exit. To have Grunt stay open and automatically lint and test your files whenever you make a code change, use:
-
-`$ grunt karma:server watch`
-
-This will start a Karma server in the background and run unit tests in Firefox and PhantomJS whenever the source code or spec file is saved.
+`$ karma start test/test.conf.js --browsers=Chrome`
 
 # Usage
 
-We use [bower](https://github.com/bower/bower) for dependency management. Install AngularUI Select2 into your project by running the command
+We use [bower](http://twitter.github.com/bower/) for dependency management.  Add
 
-`$ bower install angular-ui-select2`
-
-If you use a `bower.json` file in your project, you can have Bower save ui-select2 as a dependency by passing the `--save` or `--save-dev` flag with the above command.
-
-This will copy the ui-select2 files into your `bower_components` folder, along with its dependencies. Load the script files in your application:
-```html
-<link rel="stylesheet" href="bower_components/select2/select2.css">
-<script type="text/javascript" src="bower_components/jquery/jquery.js"></script>
-<script type="text/javascript" src="bower_components/select2/select2.js"></script>
-<script type="text/javascript" src="bower_components/angular/angular.js"></script>
-<script type="text/javascript" src="bower_components/angular-ui-select2/src/select2.js"></script>
+```javascript
+dependencies: {
+    "angular-ui-select2": "latest"
+}
 ```
 
-(Note that `jquery` must be loaded before `angular` so that it doesn't use `jqLite` internally)
+To your `components.json` file. Then run
 
+    bower install
+
+This will copy the ui-select2 files into your `components` folder, along with its dependencies. Load the script files in your application:
+```html
+<script type="text/javascript" src="components/jquery/jquery.js"></script>
+<script type="text/javascript" src="components/angular/angular.js"></script>
+<script type="text/javascript" src="components/angular-ui-select2/src/select2.js"></script>
+```
 
 Add the select2 module as a dependency to your application module:
 
@@ -109,7 +102,7 @@ If you add the ng-model directive to same the element as ui-select2 then the pic
 ```html
 <select ui-select2 ng-model="select2" data-placeholder="Pick a number">
     <option value=""></option>
-    <option ng-repeat="number in range" value="{{number.value}}">{{number.text}}</option>
+    <option ng-repeat="{{number in range}}" value="{{number.value}}">{{number.text}}</option>
 </select>
 ```
 
@@ -137,29 +130,4 @@ Note: Remember that the ng-required directive must be explicitly set, i.e. to "t
     <option value="two">Second</option>
     <option value="three">Third</option>
 </select>
-```
-
-## Using simple tagging mode
-
-When AngularJS View-Model tags are stored as a list of strings, setting
-the ui-select2 specific option `simple_tags` will allow to keep the model
-as a list of strings, and not convert it into a list of Select2 tag objects.
-
-```html
-<input
-    type="text"
-    ui-select2="select2Options"
-    ng-model="list_of_string"
-    >
-```
-
-```javascript
-myAppModule.controller('MyController', function($scope) {
-    $scope.list_of_string = ['tag1', 'tag2']
-    $scope.select2Options = {
-        'multiple': true,
-        'simple_tags': true,
-        'tags': ['tag1', 'tag2', 'tag3', 'tag4']  // Can be empty list.
-    };
-});
 ```

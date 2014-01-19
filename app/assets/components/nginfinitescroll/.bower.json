@@ -10,5 +10,6 @@
   },
   "_source": "git://github.com/BinaryMuse/ngInfiniteScroll.git",
   "_target": "~1.0.0",
-  "_originalSource": "nginfinitescroll"
+  "_originalSource": "nginfinitescroll",
+  "_direct": true
 }
