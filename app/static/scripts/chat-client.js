@@ -8,7 +8,7 @@ $(document).ready(function(){
  var add_chatbox = function() {
    $('body').append('<div id="converse-chat"></div>');
    var domContent = [
-  '<div class="converse-menu"><a href="#">Click for live chat</a></div>',
+  '<div class="converse-menu"><a href="">Click for live chat</a></div>',
   '<div class="converse-chatbox">',
   '    <div class="converse-conversation">',
   '    </div>',
