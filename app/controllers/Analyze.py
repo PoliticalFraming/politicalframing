@@ -35,7 +35,7 @@ from bintrees import BinaryTree
 from app import app, celery
 from flask import request, session, jsonify
 from peewee import *
-from app.models.Frame import Frame
+from app.models.Frame import Frame, get_frame
 from app.models.Topic import Topic
 from app.models.Speech import Speech, get_speeches_in_date_order
 
@@ -50,6 +50,7 @@ from celery import Celery
 def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
     # get topic as URL get parameter
     speeches = get_speeches_in_date_order(topic_id, states, start_date, end_date)
+    
     # get list of json objects from the database (query by topic - or also filter by some other subset of factors)
     frame = Frame.get(Frame.frame_id == frame_id)
     topic = Topic.get(Topic.topic_id == topic_id)
@@ -60,9 +61,9 @@ def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
     print str(len(speeches)) + " speeches are being analyzed"
 
     # topic_plot = plot_topic_usage(speeches, topic, 100)
-    topic_plot = plot_moving_topic_usage(speeches, topic, 100)
+    topic_plot = plot_moivng_topic_usage(speeches, topic, 100)
 
-    frame_plot = plot_discrete_average(self, frame,speeches, 100, topic.phrase)
+    frame_plot = plot_discrete_average(self, frame, speeches, 100, topic.phrase)
 
 
     return pickle.dumps({'frame_plot':frame_plot,'topic_plot':topic_plot})
@@ -152,7 +153,7 @@ def valid_speechset(speechset):
 def plot_moving_topic_usage(speeches, topic, n):
 
     print "plotting moving topic counts"
-    window_size=n
+    # window_size=n
 
     start_dates = []
     end_dates = []
@@ -199,6 +200,37 @@ def plot_moving_topic_usage(speeches, topic, n):
     'rep_counts':rep_counts,
     'total_counts':total_counts}
 
+def order_by_frame_prevalance(speeches, frame):
+    """ Orders speehes by frame prevelance. """
+
+    speech_prevalances = [] #array of tuples containing speeches and ther prevalance values
+    for speech in speeches:
+        framewords_count = 0
+        for word in frame.word_string.split():
+            if word in speech.speaking:
+                framewords_count += 1
+        
+        # adjust count for speech length
+        frame_prevalance = framewords_count / len(speech.speaking.split())
+
+        speech_prevalances.append((speech, frame_prevalance))
+
+    return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1]))
+
+
+
+
+    # ################################################################
+    # # Better Implementaiton Stub - if simple counts don't work well
+    # ################################################################
+    #for speech in speeches:
+    #     frame_words = {} #dict containing word:count_in_speech
+    #     for word in frame.word_string.split():
+    #         if word in speech.speaking:
+    #             frame_words[word] = frame_words.get(word,0) + 1
+    #     # do better ordering using frame_words dictionary 
+    #     # (maybe something like tf/idf based counts) 
+    # ################################################################
 
 @app.route('/analyze')
 def analyze():
@@ -215,6 +247,37 @@ def analyze():
     result = analyze_task.delay(topic_id, states, start_date, end_date, frame_id)
     celery.close()
     return result.id
+
+@app.route('/analyze/datapoint')
+def show_datapoint():
+    #Parse URL parameters
+    topic_id = request.args.get('topic')
+    states = request.args.get('speaker_state')
+    if states: states = states.split(',')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    frame_id = request.args.get('frame')
+
+    #Get speeches and Frame
+    speeches = get_speeches_in_date_order(topic_id, states, start_date, end_date)
+    frame = get_frame(frame_id)
+    
+    #more data about the speeches
+    num_democrat = 0
+    num_republican = 0
+    for speech in speeches:
+        if speech.speaker_party.lower() == 'd':
+            num_democrat +=1
+        elif speech.speaker_party.lower() == 'r':
+            num_republican +=1
+
+    return jsonify(speeches=order_by_frame_prevalance(speeches, frame),
+        start_date = start_date,
+        end_date = end_date,
+        num_speeches = len(speeches),
+        democrat_speeches = num_democrat,
+        republican_speeches = num_republican)
+
     
 @app.route('/check')
 def check_if_complete():
@@ -235,7 +298,8 @@ def check_if_complete():
 @app.route('/analyze2')
 def analyze2():
     
-    # get topic as URL get parameter
+    # get topic as URL get parameterTraining set.
+
     topic_id = request.args.get('topic')
     states = request.args.get('speaker_state')
     if states: states = states.split(',')
@@ -267,8 +331,8 @@ def build_btree(speeches):
         speech_tree.insert(date_id_key, speech)  
     return speech_tree
     # find the earliest and latest date in the folder
-    min_speech_date = speech_tree.min_item()
-    max_speech_date = speech_tree.max_item()
+    # min_speech_date = speech_tree.min_item()
+    # max_speech_date = speech_tree.max_item()
 
 def build_training_set(speeches):
     '''This function is an alternative form of the loads in sklearn which loads 
@@ -285,7 +349,6 @@ def build_training_set(speeches):
             return 1
         else:
             print "Speech must be categorized as D or R : " + str(speech.speech_id)
-                
 
     bunch['target'] = [] #1 or 0 for D or R    
     bunch['target_names'] = ['D','R'] #target_names
@@ -322,25 +385,18 @@ def return_framing_datum(training_set, frame):
     return predicted_logs[0]
 
 
-def plot_discrete_average(self,frame, speeches, n, topic):
+def plot_discrete_average(self,frame, speeches, n, topic, testing=False):
     """ 
     frame = frame object
     speech = list of speech objects
     n = number of data points to plot
+    testing = True if accessing this method from unit tests
 
     returns json with dates that correlate to log_likelihoods to plot
     """
 
-    ######################################################
-    #update state for number of speeches analyzed 
-    #(this needs to be moved into where the speeches are actually analyzed)
-    # i=2
-    # filenames=14
-    # self.update_state(state='PROGRESS', 
-    #        meta={'current': i, 'total': filenames})
-    ######################################################
-
-    print 'entering plot discrete average'
+    app.logger.debug('entering plot discrete average')
+    
     b = build_btree(speeches)
     number_of_datapoints = 0
     dates = []
@@ -369,7 +425,10 @@ def plot_discrete_average(self,frame, speeches, n, topic):
                 r_likelihoods.append(log_likelihoods[1])
                 num_of_trainigsets = int(math.ceil(len(speeches)/float(n)))
                 print "processed training set " + str(count) + " of " + str(num_of_trainigsets)
-                self.update_state(state='PROGRESS', meta={'current': count, 'total': num_of_trainigsets})
+                
+
+                if not testing: #Don't update state if accessing from unit tests (there is no self)
+                    self.update_state(state='PROGRESS', meta={'current': count, 'total': num_of_trainigsets})
 
                 
             except ValueError as e:
@@ -405,13 +464,12 @@ def plot_moving_average(frame, speeches,n):
     offset = 10 #slide 50 across each time
     num_bins=len(speeches)/offset
     current_bin = 0
-    print 'entering plot moving '
+    print 'entering plot moving average'
     b = build_btree(speeches)
     number_of_datapoints = 0
     dates = []
     r_likelihoods = []
     d_likelihoods = []
-    import datetime
     
     while not b.is_empty():
         ordered_speeches = []
@@ -441,4 +499,4 @@ def plot_moving_average(frame, speeches,n):
     return {'title': "Usage of %s Frame " % (frame.name),
     'ylabel': "D/R Ratio of Log-Likelihoods",
     'dates': date_strings, 
-    'ratios': ratios}    
+    'ratios': ratios} 
