@@ -1,0 +1,17 @@
+@import "mixin_helpers";
+
+.error-box {
+  margin-top: 100px;
+  color: rgba(0, 0, 0, 0.2);
+  @include text-shadow(1px 1px 1px rgba(255, 255, 255, 0.6), 0 0 1px rgba(0, 0, 0, 0.3));
+  text-align: center;
+  font-weight: 600;
+
+  .message-small {
+    font-size: 25px;
+  }
+
+  .message-big {
+    font-size: 160px;
+  }
+}

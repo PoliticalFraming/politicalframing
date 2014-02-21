@@ -1,0 +1,63 @@
+@import "mixin_helpers";
+
+@media (max-width: 767px) {
+
+  body {
+    padding: 0;
+  }
+
+  .btn-block {
+    margin-bottom: 10px;
+  }
+
+  .user-avatar {
+    padding-bottom: 0;
+  }
+
+//data tables don't show "showing xx entries"
+  .dataTables_info {
+    display: none;
+  }
+
+  .dataTables_filter input[type="text"] {
+    width: 130px;;
+  }
+
+  .dataTables_length {
+    display: none;
+  }
+
+  .next.paginate_button , .previous.paginate_button {
+    display: none;
+  }
+
+  .area-top {
+
+    text-align: center;
+
+    .header {
+      margin-top: 0;
+      margin-bottom: 7px;
+      text-align: center;
+      float: none !important;
+      i {
+        float: none;
+      }
+    }
+
+    .sparkline-box {
+      float: none !important;
+      display: inline-block;
+    }
+  }
+}
+
+@media (max-width: 550px) {
+  .area-top {
+    .sparkline-box {
+      .sparkline {
+        display: none;
+      }
+    }
+  }
+}

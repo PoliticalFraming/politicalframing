@@ -1,0 +1,149 @@
+@import "mixin_helpers";
+
+.ui-slider {
+  position: relative;
+  text-align: left;
+  .ui-slider-handle {
+    position: absolute;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    cursor: default;
+    border: none;
+    cursor: pointer;
+  }
+  .ui-slider-range {
+    position: absolute;
+    z-index: 1;
+    height: 6px;
+    font-size: .7em;
+    display: block;
+    border: 1px solid #5ba8e1;
+    box-shadow: 0 1px 0 #aad6f6 inset;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    @include std-bg(#a0d4f5, #81b8f3);
+    @include box-sizing(content-box);
+  }
+}
+
+.ui-slider-horizontal {
+  @include box-sizing(content-box);
+  height: 4px;
+  background: #d7d7d7;
+  border: 1px solid #bababa;
+  box-shadow: 0 1px 0 #fff, 0 1px 0 #cfcfcf inset;
+  clear: both;
+  margin: 8px 0;
+  @include border-radius(6px);
+
+  .ui-slider-handle {
+    top: -6px;
+    margin-left: -0.6em;
+  }
+  .ui-slider-range {
+    top: -1px;
+    height: 100%;
+  }
+  .ui-slider-range-min {
+    left: 0;
+  }
+  .ui-slider-range-max {
+    right: 0;
+  }
+}
+
+.ui-slider-vertical {
+  .ui-slider-handle {
+    left: -6px;
+    margin-left: 0;
+    margin-bottom: -0.6em;
+  }
+  .ui-slider-range {
+    left: 0;
+    width: 4px;
+    @include std-bg(#a0d4f5, #81b8f3);
+  }
+
+  .ui-slider-range-min {
+    bottom: 0;
+  }
+
+  .ui-slider-range-max {
+    top: 0;
+  }
+}
+
+
+.ui-slider-vertical {
+  height: 100px;
+  width: 6px;
+  background: #d7d7d7;
+  box-shadow: 0 1px 0 white, 0 1px 0 #cfcfcf inset;
+  @include border-radius(6px);
+}
+.ui-slider .ui-slider-handle {
+  border-radius: 50%;
+  @include std-bg(#c7ced6, #f9fbfa);
+  width: 22px;
+  height: 22px;
+
+  @include box-shadow(0 2px 3px -1px rgba(0,0,0,.6), 0 -1px 0px 1px rgba(0,0,0,.15) inset, 0 1px 0px 1px rgba(255,255,255,.9) inset);
+  @include transition(box-shadow .3s);
+
+  &:active {
+    @include box-shadow(0 1px 2px -1px rgba(0,0,0,.6), 0 -1px 0px 1px rgba(0,0,0,.15) inset, 0 1px 0px 1px rgba(255,255,255,.9) inset);
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    top: 50%;
+    margin-top: -4px;
+    left: 50%;
+    margin-left: -4px;
+    background: #30a2d2;
+    @include box-shadow(0 1px 1px 1px rgba(22, 73, 163, 0.7) inset, 0 1px 0px 0px rgba(255,255,255,1));
+  }
+}
+
+.ui-slider-horizontal .ui-slider-handle {
+  top: -10px;
+}
+
+.ui-slider-vertical .ui-slider-handle {
+  left: -8px;
+}
+
+.ranged-slider-ui {
+  label {
+    color: #858585;
+  }
+
+  input {
+    background: none;
+    border: none;
+    @include box-shadow(none);
+    margin: 0;
+
+    &:focus {
+      background: none;
+      border: none;
+      @include box-shadow(none);
+    }
+  }
+
+  &.vertical-bars {
+    span {
+      height: 120px;
+      float: left;
+      margin-right: 30px;
+      display: block;
+    }
+  }
+}

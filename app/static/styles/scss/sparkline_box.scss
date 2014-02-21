@@ -1,0 +1,101 @@
+@import "mixin_helpers";
+
+.sparkline-box {
+
+  &.side {
+    .sparkline {
+      margin-top: 5px;
+    }
+
+    .sparkline-row {
+      padding:0;
+      float: none;
+      border: none;
+    }
+
+    h4 {
+      margin-right: 20px;
+      min-width: 70px;
+      @include text-shadow(none);
+
+      span {
+        color: inherit;
+      }
+    }
+  }
+
+  margin: 0;
+  padding: 0;
+  margin-top: 10px;
+
+  .sparkline {
+    margin-top: 8px;
+    display: inline-block;
+    vertical-align: top;
+    height: 30px;
+  }
+
+  .big {
+    width: 83px;
+    height: 30px;
+  }
+
+  .sparkline-row {
+    @include clearfix;
+    text-align: center;
+    padding: 0;
+    padding-right: 15px;
+    float: left;
+
+    border-right: 1px dotted #aaa;
+    border-left: 1px dotted #fff;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &:first-child {
+      border-left: none;
+    }
+  }
+
+  h4 {
+    display: inline-block;
+    text-align: center;
+    margin: 0;
+    @include text-shadow-bottom(#fff);
+    min-width: 70px;
+
+    &.red {
+      color: $chart-red;
+    }
+
+    &.orange {
+      color: $chart-orange;
+    }
+
+    &.blue {
+      color: $chart-blue;
+    }
+
+    &.gray {
+      color: $chart-gray;
+    }
+
+    &.green {
+      color: $chart-green;
+    }
+
+    &.dark-green {
+      color: $chart-dark-green;
+    }
+
+    span {
+      color: #717e88;
+      font-size: 12px;
+      display: block;
+      text-align: center;
+      font-weight: normal;
+    }
+  }
+}

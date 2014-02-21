@@ -13,9 +13,11 @@
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
         <!-- build:css(.tmp) styles/main.css -->
-        <link rel="stylesheet" href="styles/main.css">
-        <link rel="stylesheet" href="components/jquery-ui/themes/smoothness/jquery-ui.css">
-        <link rel="stylesheet" href="components/ng-grid/ng-grid.css">
+        <!-- <link rel="stylesheet" href="components/jquery-ui/themes/smoothness/jquery-ui.css"> -->
+        <link rel="stylesheet" href="/components/addyosmani-jquery-ui-bootstrap/css/custom-theme/jquery-ui-1.10.0.custom.css">
+        <link rel="stylesheet" href="/components/angular-chosen-localytics/chosen-spinner.css">
+        <link rel="stylesheet" href="/components/chosen/chosen.css">
+        <link rel="stylesheet" href="/styles/main.css">
         <!-- endbuild -->
 
 </head>
@@ -137,9 +139,6 @@
             <span>Analyze</span>
           </a>
         </li>
-
-        
-  
       </ul>
     </div>
 
@@ -227,23 +226,20 @@
     <script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
         <!-- build:js scripts/modules.js -->
-        <link rel="stylesheet" href="components/select2/select2.css">
-        <script type="text/javascript" src="components/select2/select2.js"></script>        
-        <script type="text/javascript" src="components/angular-resource/angular-resource.js"></script> 
-        <script type="text/javascript" src="components/angular-ui-utils/modules/utils.js"></script>
-        <script type="text/javascript" src="components/angular-bootstrap/ui-bootstrap.js"></script>
-        <script type="text/javascript" src="components/angular-route/angular-route.js"></script>
-        <script type="text/javascript" src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-        <script type="text/javascript" src="components/angular-ui-select2/src/select2.js"></script>
-        <script type="text/javascript" src="components/angular-ui-select2/src/select2.js"></script>
-        <script type="text/javascript" src="components/angular-ui-date/src/date.js"></script>
-        <script type="text/javascript" src="components/ng-grid/build/ng-grid.js"></script>
-        <script type="text/javascript" src="components/ng-grid/plugins/ng-grid-layout.js"></script>
-        <!--<script type="text/javascript" src="components/angular-sanitize/angular-sanitize.min.js"></script>-->
-
-        <!-- <script type="text/javascript" src="components/twitter-bootstrap-wizard/jquery.bootstrap.wizard.js"></script> -->
-        <!-- nginfinitescroll only checks $windows -->
-        <!-- <script type="text/javascript" src="components/nginfinitescroll/build/ng-infinite-scroll.js"></script> -->
+        <script type="text/javascript" src="/components/angular-chosen-localytics/chosen.js"></script>
+        <script type="text/javascript" src="/components/angular-resource/angular-resource.js"></script> 
+        <script type="text/javascript" src="/components/angular-ui-utils/modules/utils.js"></script>
+        <script type="text/javascript" src="/components/angular-bootstrap/ui-bootstrap.js"></script>
+        <script type="text/javascript" src="/components/angular-route/angular-route.js"></script>
+        <script type="text/javascript" src="/components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+        <script type="text/javascript" src="/components/angular-ui-select2/src/select2.js"></script>
+        <script type="text/javascript" src="/components/angular-ui-select2/src/select2.js"></script>
+        <script type="text/javascript" src="/components/angular-ui-date/src/date.js"></script>
+        <script type="text/javascript" src="/components/lodash/dist/lodash.js"></script>
+        <script type="text/javascript" src="/components/async/lib/async.js"></script>
+        <script type="text/javascript" src="/components/chosen/chosen.jquery.js"></script>
+        <script type="text/javascript" src="/components/active-support/active-support.js"></script>
+        <script type="text/javascript" src="/components/ngActiveResource/dist/ng-active-resource.js"></script>
         <!-- endbuild -->
 
         <!-- build:js({.tmp,app}) scripts/scripts.js -->
@@ -252,7 +248,12 @@
         <script type="text/javascript" src="scripts/filters.js"></script>
         <script type="text/javascript" src="scripts/controllers/main.js"></script>
         <script type="text/javascript" src="scripts/controllers/analyze.js"></script>
+        <script type="text/javascript" src="scripts/models/speech.js"></script>
+        <script type="text/javascript" src="scripts/models/topic.js"></script>
+        <script type="text/javascript" src="scripts/models/frame.js"></script>
+
         <script type="text/javascript" src="scripts/directives/when-scrolled.js"></script>
+        <script type="text/javascript" src="scripts/directives/speechBrowser.js"></script>
         <!-- endbuild -->
 
     <link rel="stylesheet" type="text/css" href="styles/chat.css">

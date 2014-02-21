@@ -1,6 +1,6 @@
 from flask.ext.script import Manager
 from flask.ext.assets import ManageAssets
-from app import app, assets, db
+from app import app, db
 
 from peewee import *
 from app.models.Frame import Frame, populate_frames_dummy_data
@@ -11,7 +11,7 @@ from app.models.User import User
 
 manager = Manager(app)
 
-manager.add_command("assets", ManageAssets(assets))
+# manager.add_command("assets", ManageAssets(assets))
 
 @manager.command
 def hello():

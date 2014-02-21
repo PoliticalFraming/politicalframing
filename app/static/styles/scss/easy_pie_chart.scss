@@ -1,0 +1,16 @@
+.easyPieChart {
+  position: relative;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+
+  &.easy-pie-chart-small {
+    font-size: 10px;
+  }
+}
+
+.easyPieChart canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

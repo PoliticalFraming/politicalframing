@@ -1,0 +1,66 @@
+@import "mixin_helpers";
+
+$side-border-color: lighten(#b5b7c3,10);
+
+.table-normal {
+
+  margin-bottom: 0;
+  color: $link-hover-color;
+
+  tbody td, thead td {
+    border-left: 1px solid #eaebef;
+  }
+
+  tbody td:first-child, thead td:first-child {
+    border-left: none;
+  }
+
+  tbody td {
+    border-top: 1px solid #eaebef;
+  }
+
+  thead td {
+    text-align: center;
+    font-size: 11px;
+    padding: 3px 5px 2px 5px;
+    color: #666;
+    height: 25px;
+    line-height: 25px;
+    font-weight: 600;
+    font-size: 12px;
+    @include text-shadow-bottom(#fff);
+
+    @include std-bg($header-gradient-top, $header-gradient-bottom);
+
+    border-left: 1px solid $side-border-color;
+    border-right: 1px solid $side-border-color;
+    border-bottom: 1px solid $side-border-color;
+
+    &:first-child {
+      border-left: none;
+    }
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  tbody {
+    td {
+      padding: 7px 11px;
+      vertical-align: middle;
+    }
+    tr {
+      border-top: 1px solid #eaebef;
+
+      &:nth-child(even) {
+        background: #F3F4F8;
+      }
+    }
+  }
+
+  .icon {
+    width: 30px;
+    text-align: center;
+  }
+}

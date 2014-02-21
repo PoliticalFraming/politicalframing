@@ -39,7 +39,7 @@ from app.models.Frame import Frame, get_frame
 from app.models.Topic import Topic
 from app.models.Speech import Speech, get_speeches_in_date_order
 
-from app.controllers.Speech import SpeechResource
+# from app.controllers.Speech import SpeechResource
 from collections import deque
 from flask_peewee.rest import RestAPI, RestResource
 import math

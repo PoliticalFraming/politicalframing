@@ -1,0 +1,59 @@
+@import "mixin_helpers";
+@import "compass";
+@import "variables";
+
+@mixin triangle-button-color($color) {
+  &:before {
+    border-right-color: $color;
+  }
+
+  &:hover:before {
+    border-right-color: lighten($color,3);
+  }
+
+  &:active:before {
+    border-right-color: darken($color,3);
+  }
+}
+
+.triangle-button {
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  top: 0;
+  right: 0;
+  color: #fff;
+  overflow: hidden;
+  height: 32px;
+  width: 32px;
+  @include text-shadow(none);
+
+  i, .inner {
+    z-index: 1;
+    position: absolute;
+    right: 3px;
+    top: 2px;
+  }
+
+  &:before {
+    content: '';
+    display: inline-block;
+    border-right: 32px solid;
+    border-bottom: 32px solid transparent;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  &:hover, &:active {
+    color: #fff;
+  }
+
+  @each $pair in $triangleColors {
+    &.#{nth($pair, 1)} {
+      @include triangle-button-color(nth($pair, 2));
+    }
+  }
+}

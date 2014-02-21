@@ -2,7 +2,6 @@
 bin
 include
 lib
-.vagrant
 .DS_Store
 *.pyc
 *.log
@@ -10,6 +9,12 @@ database.db
 node_modules
 dist
 .tmp
-.sass-cache
 .webassets-cache
 *.pem
+app/static/dist
+app/static/.tmp
+app/static/components
+.sass-cache
+.bundle
+.vagrant
+

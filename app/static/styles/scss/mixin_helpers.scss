@@ -1,0 +1,106 @@
+@import "compass";
+@import "variables";
+$experimental-support-for-svg: true;
+
+@mixin font-awesome-char {
+  font-family: FontAwesome;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  text-decoration: inherit;
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  text-align: center;
+  line-height: 18px;
+  font-size: 14px;
+  color: #888;
+}
+
+@mixin clearfix {
+  *zoom: 1;
+
+  &:before, &:after {
+    display: table;
+    content: "";
+    line-height: 0;
+  }
+
+  &:after {
+    clear: both;
+  }
+}
+
+@mixin text-shadow-bottom($color) {
+  @include text-shadow(0 1px rgba($color, 0.5));
+}
+
+@mixin navbar-inner {
+  //@include std-bg(#383838, #272728);
+  border-bottom: 1px solid #1C1C1C;
+  background: image-url("backgrounds/top.jpg") repeat-x 0 0;
+  @include box-shadow(0 2px 4px rgba(0, 0, 0, 0.2), 0 -1px 0 #313131 inset);
+}
+
+@mixin std-bg($color1, $color2) {
+  background: $color2;
+  @include background-image(linear-gradient(top, $color1, $color2));
+}
+
+@mixin placeholder {
+  &::-webkit-input-placeholder {
+  @content;
+  }
+
+  &:-moz-placeholder {
+  @content;
+  }
+}
+
+@mixin flat-chzn {
+  @include border-radius(0);
+  @include std-bg(#fff, #f5f5f5);
+  @include box-shadow(0 1px 0 rgba(255, 255, 255, .5));
+  border: 1px solid #ccc;
+  font-size: 12px;
+  height: 28px;
+  line-height: 28px;
+  color: #666;
+}
+
+@mixin box-header-aspect {
+  @include std-bg($header-gradient-top, $header-gradient-bottom);
+  @include text-shadow(0 1px #fff);
+  border-bottom: 1px solid #CDCDCD;
+  color: #636363;
+  font-weight: 600;
+}
+
+@mixin sidebar-size($width) {
+  .main-content {
+    margin-left: $width + 1;
+  }
+
+  .sidebar-background {
+    width: $width;
+
+    .primary-sidebar-background {
+      width: $width;
+    }
+  }
+
+  .primary-sidebar {
+    width: $width;
+  }
+
+  @media (max-width: 979px) {
+    .main-content {
+      margin: 0;
+    }
+
+    .primary-sidebar {
+      width: auto;
+    }
+  }
+}

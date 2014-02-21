@@ -1,0 +1,12 @@
+@import "compass";
+@import "mixin_helpers";
+
+.jqstooltip {
+  z-index: 10001;
+  border: 1px solid #333!important;
+  @include box-shadow(none);
+  @include std-bg(rgba(0,0,0,.5), rgba(0,0,0,.7));
+  @include border-radius(2px);
+  display: inline-block;
+  @include box-sizing(content-box);
+}

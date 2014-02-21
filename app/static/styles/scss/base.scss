@@ -1,0 +1,155 @@
+@import "mixin_helpers";
+@import "variables";
+
+* {
+  margin: 0px;
+  padding: 0px;
+  text-decoration: none;
+  outline: none;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  font: normal 12px 'Open Sans', HelveticaNeue, Helvetica, Arial;
+  //@include std-bg(#f1f1f1, #eee);
+  background: image-url("bg.png");
+  //background: #f1f1f1;
+  min-height: 100%;
+  color: #707070;
+  //force hide the horizontal navbar
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: 'Open Sans', HelveticaNeue, Helvetica, Arial;
+  line-height: 20px;
+}
+
+strong, b {
+  font-weight: 600;
+}
+
+a {
+
+  color: $link-color;
+
+  &:hover, &:active, &:focus {
+    cursor: pointer;
+    outline: 0px none;
+    text-decoration: none;
+    color: $link-hover-color;
+  }
+
+}
+
+.label {
+  font-size: 10px;
+  @include text-shadow(none);
+}
+
+i {
+  font-size: 14px;
+}
+
+.main-content {
+  position: relative;
+  margin-left: $primary-sidebar-width+1;
+}
+
+.padded {
+  padding: 15px;
+}
+
+.nopadding {
+  padding: 0;
+}
+
+.hpadded {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.vpadded {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.separate-sections {
+  margin: 0;
+  list-style: none;
+  padding-bottom: 5px;
+
+  > li, > div {
+    margin-bottom: 15px !important;
+
+    &:last-child {
+      margin-bottom: 0px;
+    }
+  }
+}
+
+h1, h2, h3, h4, h5, h6, th {
+  color: #5f5f5f;
+  font-weight: 600;
+}
+
+//the-icons is markup for the icons page only, feel free to remove it (you probably won't use the icons page in your app)
+.the-icons {
+  list-style: none;
+}
+
+.avatar {
+  display: inline-block;
+  img {
+    @include border-radius(50%);
+    @include box-shadow(0 1px 3px 0px rgba(0,0,0,.3));
+  }
+}
+
+.avatar-small {
+  max-width: 32px;
+  max-height: 32px;
+}
+
+.twitter-color {
+  color: #4099ff;
+}
+
+.facebook-color {
+  color: #35508F;
+}
+
+.note {
+  color: #909090;
+  font-style: italic;
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+.close {
+  line-height: 14px;
+}
+
+.relative {
+  position: relative;
+}
+
+.indent {
+  margin-left: 10px;
+}
+
+.strikethrough {
+  text-decoration:line-through;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+
+  &.padded > .row {
+    margin: 0;
+  }
+}

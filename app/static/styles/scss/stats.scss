@@ -1,0 +1,59 @@
+@import "mixin_helpers";
+
+.dashboard-stats {
+  .glyph {
+    padding: 0;
+    background: #86B6DA;
+    @include border-radius(4px);
+    border: 1px solid #5F9FCE;
+    height: 32px;
+    width: 32px;
+    text-align: center;
+    @include box-sizing(border-box);
+
+    i {
+      color: white;
+      line-height: 29px;
+    }
+  }
+
+  .count {
+    font-size: 32px;
+    line-height: 32px;
+    height: 32px;
+  }
+
+  ul.inline li {
+    vertical-align: middle;
+  }
+
+  .stats-label {
+    color: #999999;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+
+  &.small {
+
+    .glyph {
+      height: 24px;
+      width: 24px;
+
+      i {
+        line-height: 23px;
+      }
+    }
+
+    .count {
+      font-size: 16px;
+      line-height: 16px;
+      height: 16px;
+    }
+  }
+
+  .progress {
+    margin-bottom: 0;
+    height: 5px;
+  }
+}

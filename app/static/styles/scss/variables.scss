@@ -1,0 +1,66 @@
+//BOOTSTRAP OVERRIDES
+
+// $icon-font-path: "font-awesome/fonts";
+$iconSpritePath: "../images/glyphicons-halflings.png";
+$iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
+$fa-font-path:        "//netdna.bootstrapcdn.com/font-awesome/4.0.1/fonts" !default;
+
+$grid-float-breakpoint: 992px;
+// So media queries don't overlap when required, provide a maximum
+$grid-float-breakpoint-max: ($grid-float-breakpoint - 1) !default;
+
+
+//THEME VARS
+
+$header-gradient-top: #fdfdfd;
+$header-gradient-bottom: #eaeaea;
+
+//every color array has the base color class name in the left, and the actual color on the right
+$triangleColors: red #aa433a, green #8fae53, blue #7fb3d4, orange #CF6E20;
+$buttonColors:
+  default $header-gradient-top,
+  red #c57979,
+  green #96c161,
+  blue #5ba5cb,
+  gray #8c97a6,
+  black #838383,
+  lightblue #6db5d5,
+  gold #d5a44c,
+  sea #5a837e,
+  brown #bb934f,
+  twitter lighten(#4099ff, 10),
+  facebook (lighten(#35508F, 10));
+
+
+$news-colors: blue #7FB3D4, green #8CC079, cyan #81BABD, purple #AEA7CF;
+$barColors:  green #97af32, blue darken(#9bcff5, 10), orange #d28346, black #4c4c4c, red #c8514e;
+$sideColors: green #83DA05, red #E15307, orange #EF8132;
+$numeric-stats-colors: blue #6e97aa, red #ba6d6d, green #8fae53;
+$badge-colors: blue #7FB3D4, gray #767676, green #8CC079, red #b35d5d, dark-red #b5473e, black #666, cyan #81BABD, purple #AEA7CF;
+$primary-sidebar-width: 200px;
+$primary-sidebar-dropdown-width: 90px;
+
+//top header height (above breadcrumbs)
+$breadcrumbs-header-height: 60px;
+
+$box-background: #fbfbfb;
+$box-border-color: #cdcdcd;
+$box-header-text-color: #636363;
+
+$header-height: 37px;
+
+$avatar-border-color: #328194;
+
+$link-color: #78808a;
+$link-hover-color: #5a6573;
+
+$chart-red: #C75D5D;
+$chart-blue: #6e97aa;
+$chart-orange: #ff9f01;
+$chart-gray: #6B787F;
+$chart-lightBlue: #D4E5DE;
+$chart-green: #8FAE53;
+$chart-dark-green: #779148;
+
+
+$glow-height: 40px;
