@@ -7,7 +7,7 @@
           <div class="col-sm-12">
             <h4>Select a Topic</h4>
             <select chosen id="topics" 
-              ng-model="currentFilter.topic"
+              ng-model="filters.topic"
               ng-options="topic.topic_id as topic.phrase for topic in topics" 
               data-placeholder="Select a Topic"
               no-results-text="'Could not find any topics'"
@@ -19,7 +19,7 @@
           </div>
         </div>
 
-        <div class="row" ng-show="currentFilter.topic">
+        <div class="row" ng-show="filters.topic">
 
           <div class="col-sm-7">
             <speech-browser speeches="speeches" filters="filters"></speech-browser>
@@ -37,7 +37,7 @@
             <select chosen 
               id="states" 
               multiple
-              ng-model="currentFilter.states"
+              ng-model="filters.states"
               ng-options="state.abbreviation as state.name for state in USStateList"
               data-placeholder="Select States"
               no-results-text="'Could not find any States'"
@@ -45,7 +45,7 @@
             </select>
 
             <h4>Filter By Date</h4>
-            <input type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="currentFilter.start_date" placeholder="Start"> to <input type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="currentFilter.end_date" placeholder="End">
+            <input type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="filters.start_date" placeholder="Start"> to <input type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="filters.end_date" placeholder="End">
 
             <h4>Current Filter</h4>
             <pre>{{currentFilter | json}}</pre>
