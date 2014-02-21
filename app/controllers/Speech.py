@@ -58,8 +58,7 @@ class SpeechListController(Resource):
 
         query = Speech.select() \
             .join(SpeechTopic).where(SpeechTopic.topic==args['topic']) \
-            .order_by(Speech.speech_id).paginate(args['page'],20)
-
+            .order_by(Speech.speech_id)
         if args['states']:
             query = query.where(Speech.speaker_state << args['states'].split(','))
 
@@ -68,8 +67,15 @@ class SpeechListController(Resource):
             elif args['end_date'] == None: query=query.where(Speech.date >= args['start_date'])
             else: query=query.where(Speech.date >= args['start_date']).where(Speech.date <= args['end_date'])
 
-        speeches = map(lambda x: get_dictionary_from_model(x), query)
-        return speeches
+        count = query.count()
+
+        speeches = map(lambda x: get_dictionary_from_model(x), query.paginate(args['page'],20))
+
+        return {
+            'meta': {'count':count},
+            'data': speeches
+            }
+    
 
     # def post(self):
         # args = parser.parse_args()
