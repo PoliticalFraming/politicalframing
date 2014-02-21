@@ -61,10 +61,8 @@ def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
     print str(len(speeches)) + " speeches are being analyzed"
 
     # topic_plot = plot_topic_usage(speeches, topic, 100)
-    topic_plot = plot_moivng_topic_usage(speeches, topic, 100)
-
+    topic_plot = plot_moving_topic_usage(speeches, topic, 100)
     frame_plot = plot_discrete_average(self, frame, speeches, 100, topic.phrase)
-
 
     return pickle.dumps({'frame_plot':frame_plot,'topic_plot':topic_plot})
     # return str(jsonify(topic_plot=topic_plot, frame_plot=frame_plot))
@@ -76,14 +74,6 @@ def preprocess_speeches(speeches):
         if speech.speaker_party=="D" or speech.speaker_party=="R":
             valid_speeches.append(speech)
     return valid_speeches
-
-def graph1(speeches_ordered_by_date):
-    # speeches = speeches_ordered_by_date
-    # dates = []
-    # dem_counts = []
-    # rep_counts = []
-    pass
-
 
 def plot_topic_usage(speeches, topic, n):
 
@@ -365,6 +355,34 @@ def build_training_set(speeches):
     
     return bunch    
 
+
+class classifier:
+    def __init__():
+        self.data_sparse_matrix
+        self.target_array
+        self.classifier
+
+    def remove_first(n):
+        """removes first n speeches from the classifier's consideration"""
+
+        #remove speeches from sparse matrix
+        #remove speeches from target array
+        #recreate classifier (can it be modified?)
+
+        pass
+
+    def add(speeches):
+        """adds speeches to the end of the classifier"""
+        #add speeches to sparse matrix
+        #add speeches to target array
+        #re-create classifier (can it be modified?)
+        pass
+
+
+
+
+
+
 def return_framing_datum(training_set, frame):
     '''This is hacky- fix it later'''
 
@@ -376,7 +394,7 @@ def return_framing_datum(training_set, frame):
     tfidf_transformer = TfidfTransformer()
     X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
     
-    clf = MultinomialNB(alpha=1.0,fit_prior=False).fit(X_train_tfidf,training_set.target)
+    clf = MultinomialNB(alpha=1.0,fit_prior=True).fit(X_train_tfidf,training_set.target)
     
     X_new_counts = count_vect.transform(frames)
     X_new_tfidf = tfidf_transformer.transform(X_new_counts)

@@ -59,4 +59,3 @@ def write_framing_data(training_set, output_filepath):
     f.write('Training Set:\n'+str(training_set.target_names)+'\n\n')
     f.write('Log-Likelihoods:\n'+str(predicted_logs)+'\n\n')
     f.close()
-    

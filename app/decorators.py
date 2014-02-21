@@ -74,5 +74,3 @@
 #         f.required_methods = ['OPTIONS'] # added by Al as per comment
 #         return update_wrapper(wrapped_function, f)
 #     return decorator
-
-
