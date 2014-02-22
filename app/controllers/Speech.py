@@ -1,9 +1,9 @@
 from app import app, api, db
 from peewee import *
 
-from app.models.Speech import Speech, highlight_speech
-from app.models.Topic import Topic, get_topic
-from app.models.SpeechTopic import SpeechTopic
+from app.models.speech import Speech, highlight_speech
+from app.models.topic import Topic, get_topic
+from app.models.speechtopic import SpeechTopic
 
 from flask.ext.restful import Resource, reqparse, fields, marshal_with
 from flask_peewee.utils import get_dictionary_from_model

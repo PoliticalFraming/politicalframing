@@ -115,17 +115,16 @@ db.database.set_autocommit(True)
 # Import All Models and Controllers
 from app import database_views
 from app import decorators
-from app.models import Topic
-from app.models import Frame 
-from app.models import User
-from app.models import Speech
-from app.models import SpeechTopic
-from app.controllers import Topic
-from app.controllers import Frame
-from app.controllers import User
-from app.controllers import Speech
-from app.controllers import SpeechTopic
-from app.controllers import Analyze
+from app.models import topic
+from app.models import frame 
+from app.models import user
+from app.models import speech
+from app.models import speechtopic
+from app.controllers import topic
+from app.controllers import frame
+from app.controllers import user
+from app.controllers import speech
+from app.controllers import analyze
 
 # # Set up Cross Origin Requests
 # @app.after_request 

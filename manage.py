@@ -1,13 +1,13 @@
-from flask.ext.script import Manager
+from flask.ext.script import Manager, Server
 from flask.ext.assets import ManageAssets
 from app import app, db
 
 from peewee import *
-from app.models.Frame import Frame, populate_frames_dummy_data
-from app.models.Speech import Speech
-from app.models.Topic import Topic
-from app.models.SpeechTopic import SpeechTopic
-from app.models.User import User
+from app.models.frame import Frame, populate_frames_dummy_data
+from app.models.speech import Speech
+from app.models.topic import Topic
+from app.models.speechtopic import SpeechTopic
+from app.models.user import User
 
 manager = Manager(app)
 manager.add_command("runserver", Server(host="0.0.0.0", port=5000))
@@ -31,7 +31,7 @@ def createdb():
 def deletedb():
 	db.database.execute_sql("DROP TABLE frames, speeches, topics, speech_topic, users;")
 
-from app.controllers.Analyze import * 
+from app.controllers.analyze import * 
 ## UNIT TESTS
 @manager.command
 def test_core_algorithm(): 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 # print "new database created"
 
 # #Populate Frames
-# from app.models.Frame import populate_frames_dummy_data
+# from app.models.frame import populate_frames_dummy_data
 # populate_frames_dummy_data()
 
 # #Populate Speeches

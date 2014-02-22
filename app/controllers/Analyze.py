@@ -35,9 +35,9 @@ from bintrees import BinaryTree
 from app import app, celery
 from flask import request, session, jsonify
 from peewee import *
-from app.models.Frame import Frame, get_frame
-from app.models.Topic import Topic
-from app.models.Speech import Speech, get_speeches_in_date_order
+from app.models.frame import Frame, get_frame
+from app.models.topic import Topic
+from app.models.speech import Speech, get_speeches_in_date_order
 
 # from app.controllers.Speech import SpeechResource
 from collections import deque

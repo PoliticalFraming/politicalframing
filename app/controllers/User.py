@@ -1,7 +1,7 @@
 # from app import app, api
 # from peewee import *
 
-# from app.models.User import User
+# from app.models.user import user
 
 # from flask_peewee.rest import RestAPI, RestResource
 

@@ -7,11 +7,11 @@ from math import ceil
 import sys
 
 from peewee import *
-from app.models.Topic import Topic
-from app.models.Frame import Frame
-from app.models.Speech import Speech
+from app.models.topic import Topic
+from app.models.frame import Frame
+from app.models.speech import Speech
 
-from app.models.SpeechTopic import SpeechTopic
+from app.models.speechtopic import SpeechTopic
 from app import app
 
 CAPITOL_WORDS_API_KEY = '8e87cf0e8a92499e9d14b67165f7018f'

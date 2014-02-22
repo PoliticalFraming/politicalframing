@@ -1,9 +1,9 @@
 from app import app, db
 from peewee import *
 
-from app.models.Speech import Speech
-from app.models.Topic import Topic
-from app.models.Frame import Frame
+from app.models.speech import Speech
+from app.models.topic import Topic
+from app.models.frame import Frame
 
 class SpeechTopic(db.Model):
     relevance = IntegerField(null=True)

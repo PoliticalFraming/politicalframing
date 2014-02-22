@@ -1,7 +1,7 @@
 from app import app, api, db
 from peewee import *
 
-from app.models.Frame import Frame
+from app.models.frame import Frame
 
 from flask.ext.restful import Resource, reqparse, fields, marshal_with
 from flask_peewee.utils import get_dictionary_from_model

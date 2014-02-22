@@ -2,7 +2,7 @@ from app import app, db
 from peewee import *
 from dateutil import parser
 
-from app.models.Frame import get_frame
+from app.models.frame import get_frame
 
 class Speech(db.Model):
     speech_id = CharField(null=False, db_column='id', primary_key=True, unique=True)
@@ -29,7 +29,7 @@ class Speech(db.Model):
     class Meta:
         db_table = 'speeches'
 
-from app.models.SpeechTopic import SpeechTopic
+from app.models.speechtopic import SpeechTopic
 from datetime import date, datetime
 
 def get_speeches_in_date_order(topic=None, states=None, start_date=None, end_date=None):
