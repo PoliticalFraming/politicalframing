@@ -5,13 +5,19 @@ angular.module('framingApp').directive('speechBrowser', function() {
     restrict: 'E',
     transclude: true,
     controller: function ($scope) {
-      $scope.headers = ['speech_id', 'title', 'speaker_raw'];
+      $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
     },
     scope: {
       speeches: '=',
       filters: '=',
       count: '='
     },
-    templateUrl: '/partials/speech-browser.html'
+    templateUrl: '/partials/speech-browser.html',
+    link: function(scope, element, attrs) {
+      
+      // console.log($table);
+      // console.log($table.closest('.table-wrapper'));
+
+    }
   };
 });

@@ -26,5 +26,9 @@ var app = angular.module('framingApp', [
       .otherwise({
         redirectTo: '/'
       });
-    // $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode(true);
   });
+
+angular.module('framingApp').run(function($rootScope, $location) {
+  $rootScope.location = $location;
+});

@@ -1,7 +1,6 @@
 @import "scss/variables";
 @import "sass-bootstrap/lib/bootstrap";
 @import "scss/uniform_default";
-@import "scss/base";
 @import "scss/box";
 @import "scss/message_box";
 @import "scss/dropdowns";
@@ -25,6 +24,8 @@
 @import "scss/charts";
 @import "scss/select2";
 @import "scss/select2_overrides";
+@import "scss/chosen";
+@import "scss/chosen_overrides";
 @import "scss/ui_custom";
 @import "scss/icheck_blue";
 @import "scss/xcharts";
@@ -49,18 +50,13 @@
 @import "scss/validation_engine";
 @import "scss/bootstrap-editable";
 @import "scss/bootstrap-editable-fix";
+
+@import "scss/base";
 @import "scss/responsive992";
 @import "scss/responsive768";
 @import "scss/responsive480";
 
-// @import "scss/navigation";
-// @import "scss/sidebar";
-// @import "scss/breadcrumbs";
-// @import "scss/badges";
-// @import "scss/dropdowns";
-// @import "scss/form_elements";
-// @import "scss/action_nav";
-// @import "./scss/*.*";
+// ::-webkit-scrollbar { width: 0 !important }
 
 // @import "jquery-ui-sass/stylesheets/themes/jquery.ui.base";
 // @import "jquery-ui-sass/stylesheets/jquery.ui.theme";
@@ -82,11 +78,20 @@ ul {
 
 .current-speech {
 	height: 500px;
-	overflow: scroll;
+	overflow-y: scroll;
 	overflow-x:hidden;
 }
 
-.chosen-container .chosen-results { height: 150px; }
+.speech-browser-table {
+	overflow-y: scroll;
+	overflow-x:hidden;
+	display: block;
+	height: 420px;
+}
+
+.pagination {
+	margin: 0;
+}
 
 // .filter {
 // 	min-width: 400px;
@@ -102,3 +107,8 @@ ul {
 // 	background: none;
 // 	border-left: none;
 // }
+
+.datepicker {
+	height: $input-height-base;
+	color: red;
+}

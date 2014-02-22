@@ -2,7 +2,7 @@ import os
 import urlparse
 import psycopg2
 import logging
-from flask import Flask, make_response
+from flask import Flask, make_response, render_template
 from flask.ext.cors import origin
 from flask.ext.restful import Api
 from flask_peewee.db import Database
@@ -134,13 +134,19 @@ from app.controllers import Analyze
 
 # Set Root Route
 
-@app.route("/")
-def index():
-    if not app.debug:
-      return send_file('app/templates/index.html') # production (cached response sent)
-    else:
-      return make_response(open('app/templates/index.html').read()) # development (no cached response)
+# @app.route("/")
+# def index():
+#     if not app.debug:
+#       return send_file('app/templates/index.html') # production (cached response sent)
+#     else:
+#       return make_response(open('app/templates/index.html').read()) # development (no cached response)
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    print path
+    return render_template('index.html')
+    
 # Set up Logging
 
 from logging import Formatter, FileHandler

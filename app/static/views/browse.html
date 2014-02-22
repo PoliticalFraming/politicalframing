@@ -1,57 +1,78 @@
 <div class="row">
   <div class="col-sm-12">
+
     <tabset type="navType">
       
       <tab heading="Browse Speeches">
-        <div class="row">
-          <div class="col-sm-12">
-            <h4>Select a Topic</h4>
-            <select chosen id="topics" 
-              ng-model="current.filters.topic"
-              ng-options="topic.topic_id as topic.phrase for topic in topics" 
-              data-placeholder="Select a Topic"
-              no-results-text="'Could not find any topics'"
-              style="width:200px;">
-              <option value=""></option>
-            </select>
-            <br>
-            <br>
-          </div>
-        </div>
-
-        <div class="row" ng-show="current.filters.topic">
-
-          <div class="col-sm-7">
-            <speech-browser speeches="speeches" filters="current.filters" count="current.count"></speech-browser>
-          </div>
-
-          <div class="col-sm-5 current-speech" ng-show="currentSpeech">
-            <pre>{{ mySelections[0].toJSON({ prettyPrint: true }) }}</pre>
-          </div>
-
-        </div>
 
         <div class="row">
-          <div class="col-sm-12">
-            <h4>Filter By State</h4>
-            <select chosen 
-              id="states" 
-              multiple
-              ng-model="current.filters.states"
-              ng-options="state.abbreviation as state.name for state in USStateList"
-              data-placeholder="Select States"
-              no-results-text="'Could not find any States'"
-              style="width:200px;">
-            </select>
 
-            <h4>Filter By Date</h4>
-            <input type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.start_date" placeholder="Start"> to <input type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.end_date" placeholder="End">
+          <!-- Left Column - Filters -->
+          <div class="col-sm-6">
 
-            <h4>Current Filter</h4>
-            <pre>{{currentFilter | json}}</pre>
+            <!-- Filter Phrase -->
+            <div class="row">
+              <div class="col-sm-12">
+                <h4>Filter by phrase</h4>
+                <select chosen id="topics" 
+                  ng-model="current.filters.topic"
+                  ng-options="topic.topic_id as topic.phrase for topic in topics" 
+                  data-placeholder="Select a Topic"
+                  no-results-text="'Could not find any topics'"
+                  width="'200px'">
+                  <option value=""></option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Filter State -->
+            <div class="row" ng-show="current.filters.topic">
+              <div class="col-sm-12">
+                <h4>Filter By State</h4>
+                <select chosen 
+                  id="states" 
+                  multiple
+                  ng-model="current.filters.states"
+                  ng-options="state.abbreviation as state.name for state in USStateList"
+                  data-placeholder="Select States"
+                  no-results-text="'Could not find any States'"
+                  width="'100%'">
+                </select>
+              </div>
+            </div>
+
+            <!-- Filter State -->
+            <div class="row" ng-show="current.filters.topic">
+              <div class="col-sm-12">
+                <h4>Filter By Date</h4>
+                <input class="datepicker" type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.start_date" placeholder="Start"> to <input class="datepicker" type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.end_date" placeholder="End">
+              </div>
+            </div>
+
+            <!-- List of Filters -->
+            <div class="row" ng-show="current.filters.topic">
+              <div class="col-sm-12">
+                <h4>Current Filter</h4>
+                <pre>{{current.filters | json}}</pre>        
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column - Current Speech Browser -->
+          <div class="col-sm-6">
+            <div class="row" ng-show="speeches">
+              <div class="col-sm-12">
+                <speech-browser speeches="speeches" filters="current.filters" count="current.count"></speech-browser>
+              </div>
+              <div class="col-sm-12 current-speech" ng-show="currentSpeech">
+                <pre>{{ mySelections[0].toJSON({ prettyPrint: true }) }}</pre>
+              </div>
+            </div>
           </div>
         </div>
-      </tab>
+
+      </tab>        
 
       <tab heading="Browse Frame">
         <div class="row">
