@@ -32,7 +32,6 @@ module.exports = function (grunt) {
       compass: {
         files: ['<%= yeoman.app %>/static/styles/{,*/}*.{scss,sass}'],
         tasks: ['compass:server']
-        // tasks: ['compass:server', 'autoprefixer']
       },
       gruntfile: {
         files: ['Gruntfile.js']
@@ -85,21 +84,6 @@ module.exports = function (grunt) {
       },
       server: '<%= yeoman.app %>/static/.tmp'
     },
-
-    // Add vendor prefixed styles
-    autoprefixer: {
-      options: {
-        browsers: ['last 1 version']
-      },
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '<%= yeoman.app %>/static/.tmp/styles/',
-          src: '{,*/}*.css',
-          dest: '<%= yeoman.app %>/static/.tmp/styles/'
-        }]
-      }
-    },
     
     jade: {
       compile: {
@@ -119,10 +103,25 @@ module.exports = function (grunt) {
     },
 
     // Automatically inject Bower components into the app
-    'bower-install': {
+    bowerInstall: {
       app: {
-        html: '<%= yeoman.app %>/templates/index.html',
-        ignorePath: '<%= yeoman.app %>/static'
+        src: [
+          '<%= yeoman.app %>/templates/index.html',
+          '<%= yeoman.app %>/styles/main.scss'
+        ],
+        ignorePath: '<%= yeoman.app %>/static',
+        exclude: [
+          'app/static/components/font-awesome',
+          'app/static/components/jquery-ui-sass',
+          'app/static/components/wysihtml5',
+          'app/static/components/x-editable',
+          'app/static/components/jQuery-Validation-Engine',
+          'app/static/components/bootstrap-application-wizard',
+          'app/static/components/async',
+          'app/static/components/chosen',
+          'app/static/components/addyosmani-jquery-ui-bootstrap',
+          'app/static/components/bootstrap'
+        ]
       }
     },
 
@@ -144,7 +143,7 @@ module.exports = function (grunt) {
         httpFontsPath: '/styles/fonts',
         relativeAssets: false,
         assetCacheBuster: false,
-        raw: 'Sass::Script::Number.precision = 10\nrequire "sass-globbing"\n'
+        raw: 'Sass::Script::Number.precision = 10\n'
       },
       dist: {
         options: {
@@ -338,9 +337,8 @@ module.exports = function (grunt) {
 
     grunt.task.run([
       'clean:server',
-      'bower-install',
+      'bowerInstall',
       'compass:server',
-      // 'autoprefixer',
       'jade',
       'watch'
     ]);
@@ -348,27 +346,24 @@ module.exports = function (grunt) {
 
   grunt.registerTask('heroku', [
     'clean:server',
-    'bower-install',
+    'bowerInstall',
     'compass:server',
-    // 'autoprefixer',
     'jade'
   ]);
 
   grunt.registerTask('test', [
     'clean:server',
     'compass',
-    // 'autoprefixer',
     // 'connect:test',
     'karma'
   ]);
 
   grunt.registerTask('build', [
     'clean:dist',
-    'bower-install',
+    'bowerInstall',
     'useminPrepare',
     'jade',
     'concurrent:dist',
-    // 'autoprefixer',
     'concat',
     'ngmin',
     'copy:dist',
