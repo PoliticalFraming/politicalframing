@@ -112,3 +112,12 @@ ul {
 	height: $input-height-base;
 	color: red;
 }
+
+.speech-browser-table > tr {
+    cursor: pointer;
+    cursor: hand;
+}
+
+.modal-dialog {
+  width: 1000px;/* your width */
+}

@@ -9,8 +9,8 @@
 	    </tr>
 	  </thead>
 	  <tbody>
-		  <tr ng-repeat="speech in speeches">
-		    <td>{{$index+1}}</td>
+		  <tr ng-repeat="speech in speeches" ng-click="open($index)">
+		    <td>0</td>
 		    <td>{{speech.title}}</td>
 		    <td>{{speech.date}}</td>
 		    <td>{{speech.speaker_raw}}</td>

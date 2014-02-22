@@ -1,0 +1,35 @@
+<div class="modal-header">
+    <h3>{{currentSpeech.title}}</h3>
+</div>
+<div class="modal-body">
+  <p ng-bind-html="currentSpeech.speaking | unsafe"></p>
+
+  <pre>{{currentSpeech.toJSON({ prettyPrint: true }) }}</pre>
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="ok()">OK</button>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>
+
+<!--   
+  <span ng-show="currentSpeech.speech_id">ID: {{currentSpeech.speech_id}}</span>
+  <span ng-show="currentSpeech.bills">Bills: {{currentSpeech.bills}}</span>
+  <span ng-show="currentSpeech.biouguide">BioGuide: {{currentSpeech.biouguide}}</span>
+  <span ng-show="currentSpeech.capitolwords_url">CapitolWords URL: {{currentSpeech.capitolwords_url}}</span>
+  <span ng-show="currentSpeech.chamber">Chamber: {{currentSpeech.chamber}}</span>
+  <span ng-show="currentSpeech.congress">Congress: {{currentSpeech.congress}}</span>
+  <span ng-show="currentSpeech.date">Date: {{currentSpeech.date}}</span>
+  <span ng-show="currentSpeech.number">Number: {{currentSpeech.number}}</span>
+  <span ng-show="currentSpeech.order">Order: {{currentSpeech.order}}</span>
+  <span ng-show="currentSpeech.origin_url">Orign URL: {{currentSpeech.origin_url}}</span>
+  <span ng-show="currentSpeech.pages">Pages: {{currentSpeech.pages}}</span>
+  <span ng-show="currentSpeech.session">Session: {{currentSpeech.session}}</span>
+  <span ng-show="currentSpeech.speaker_first">Speaker First: {{currentSpeech.speaker_first}}</span>
+  <span ng-show="currentSpeech.speaker_last">Speaker Last: {{currentSpeech.speaker_last}}</span>
+  <span ng-show="currentSpeech.speaker_party">Speaker Party: {{currentSpeech.speaker_party}}</span>
+  <span ng-show="currentSpeech.speaker_raw">Speaker Raw: {{currentSpeech.speaker_raw}}</span>
+  <span ng-show="currentSpeech.speaker_state">Speaker State: {{currentSpeech.speaker_state}}</span>
+  <span ng-show="currentSpeech.title">Title: {{currentSpeech.title}}</span>
+  <span ng-show="currentSpeech.volume">Volume: {{currentSpeech.volume}}</span> 
+-->
