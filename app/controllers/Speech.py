@@ -49,10 +49,12 @@ class SpeechListController(Resource):
     parser.add_argument('start_date', type = str, required = False, location = 'values')
     parser.add_argument('end_date', type = str, required = False, location = 'values')
     parser.add_argument('states', type = str, required = False, location = 'values')
+    parser.add_argument('limit', type = int, required = False, location = 'values')
 
     def get(self):
         args = parser.parse_args()
         if not args['page']: args['page'] = 1
+        if not args['limit']: args['limit'] = 100
         if args['start_date']: args['start_date'] = dateparser.parse(args['start_date']).date()
         if args['end_date']: args['end_date'] = dateparser.parse(args['end_date']).date()
 
@@ -69,7 +71,7 @@ class SpeechListController(Resource):
 
         count = query.count()
 
-        speeches = map(lambda x: get_dictionary_from_model(x), query.paginate(args['page'],20))
+        speeches = map(lambda x: get_dictionary_from_model(x), query.paginate(args['page'],args['limit']))
 
         return {
             'meta': {'count':count},

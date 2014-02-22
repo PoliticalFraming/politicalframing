@@ -13,6 +13,7 @@ dist
 *.pem
 app/static/dist
 app/static/.tmp
+app/static/styles/main.css
 app/static/components
 .sass-cache
 .bundle

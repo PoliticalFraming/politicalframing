@@ -20,7 +20,6 @@
     "jquery-ui": "~1.10.3",
     "jquery-ui-sass": "git://github.com/AlJohri/jquery-ui-sass-rails#master",
     "select2": "~3.4.5",
-    "ng-grid": "git://github.com/getuliojr/ng-grid.git#master",
     "bootstrap3-wysihtml5-bower": "~0.2.6",
     "x-editable": "~1.5.1",
     "fullcalendar": "~1.6.4",

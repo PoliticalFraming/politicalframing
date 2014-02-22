@@ -9,7 +9,8 @@ angular.module('framingApp').directive('speechBrowser', function() {
     },
     scope: {
       speeches: '=',
-      filters: '='
+      filters: '=',
+      count: '='
     },
     templateUrl: '/partials/speech-browser.html'
   };

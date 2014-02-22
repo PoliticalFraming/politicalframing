@@ -3,11 +3,11 @@
 angular.module('framingApp').factory('myHttpInterceptor', function($q) {
   return {
     'response': function(response) {
-      if (response.config.url.search('/api/') !== -1) {
-        console.log(response.config.url);
+      // if (response.config.url.search('/api/') !== -1) {
+        // console.log(response.config.url);
         // console.log(response.data);
         // console.log(response.headers());
-      }
+      // }
       return response || $q.when(response);
     },
 

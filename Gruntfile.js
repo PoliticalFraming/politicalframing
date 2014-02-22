@@ -31,7 +31,8 @@ module.exports = function (grunt) {
       // },
       compass: {
         files: ['<%= yeoman.app %>/static/styles/{,*/}*.{scss,sass}'],
-        tasks: ['compass:server', 'autoprefixer']
+        tasks: ['compass:server']
+        // tasks: ['compass:server', 'autoprefixer']
       },
       gruntfile: {
         files: ['Gruntfile.js']
@@ -152,7 +153,7 @@ module.exports = function (grunt) {
       },
       server: {
         options: {
-          debugInfo: true
+          debugInfo: false
         }
       }
     },
@@ -339,7 +340,7 @@ module.exports = function (grunt) {
       'clean:server',
       'bower-install',
       'compass:server',
-      'autoprefixer',
+      // 'autoprefixer',
       'jade',
       'watch'
     ]);
@@ -349,14 +350,14 @@ module.exports = function (grunt) {
     'clean:server',
     'bower-install',
     'compass:server',
-    'autoprefixer',
+    // 'autoprefixer',
     'jade'
   ]);
 
   grunt.registerTask('test', [
     'clean:server',
     'compass',
-    'autoprefixer',
+    // 'autoprefixer',
     // 'connect:test',
     'karma'
   ]);
@@ -367,7 +368,7 @@ module.exports = function (grunt) {
     'useminPrepare',
     'jade',
     'concurrent:dist',
-    'autoprefixer',
+    // 'autoprefixer',
     'concat',
     'ngmin',
     'copy:dist',

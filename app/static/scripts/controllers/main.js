@@ -6,26 +6,31 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, Speech, To
 
   Topic.all().then(function(response) { $scope.topics = response.data; });
   Frame.all().then(function(response) { $scope.frames = response.data; });
-  $scope.USStateList = State.getStates();
 
-  $scope.filters = {
-    page: 1,
-    states: [],
-    frame: null,
-    topic: null,
-    start_date: null,
-    end_date: null
+  $scope.USStateList = State.getStates();
+  $scope.speeches = [];
+  $scope.current = {
+    count: 0,
+    filters: {
+      page: 1,
+      states: [],
+      frame: null,
+      topic: null,
+      start_date: null,
+      end_date: null,
+      limit: 20
+    }
   };
 
   $scope.loadSpeeches = function () {
-    if ($scope.filters.topic === null) { return; }
-    Speech.where($scope.filters).then(function (response) {
+    if ($scope.current.filters.topic === null) { return; }
+    Speech.where($scope.current.filters).then(function (response) {
       $scope.speeches = response.data;
-      console.log(response.meta);
+      $scope.current.count = response.meta.count;
     });
   };
 
-   $scope.$watch('filters', function (newVal, oldVal) {
+   $scope.$watch('current.filters', function (newVal, oldVal) {
       if (oldVal == newVal) return;
       $scope.loadSpeeches();
     }, true);
