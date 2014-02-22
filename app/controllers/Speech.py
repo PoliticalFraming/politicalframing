@@ -1,7 +1,7 @@
 from app import app, api, db
 from peewee import *
 
-from app.models.Speech import Speech, get_speeches_in_date_order
+from app.models.Speech import Speech, highlight_speech
 from app.models.Topic import Topic, get_topic
 from app.models.SpeechTopic import SpeechTopic
 
@@ -9,6 +9,7 @@ from flask.ext.restful import Resource, reqparse, fields, marshal_with
 from flask_peewee.utils import get_dictionary_from_model
 
 from dateutil import parser as dateparser
+import json
 
 speech_fields = {
     'speech_id': fields.String,
@@ -50,6 +51,8 @@ class SpeechListController(Resource):
     parser.add_argument('end_date', type = str, required = False, location = 'values')
     parser.add_argument('states', type = str, required = False, location = 'values')
     parser.add_argument('limit', type = int, required = False, location = 'values')
+    parser.add_argument('order', type = str, required = False, location = 'values')
+    parser.add_argument('frame', type = int, required = False, location = 'values')
 
     def get(self):
         args = parser.parse_args()
@@ -73,8 +76,13 @@ class SpeechListController(Resource):
 
         speeches = map(lambda x: get_dictionary_from_model(x), query.paginate(args['page'],args['limit']))
 
+        if args['frame']:
+            speeches = map(lambda x: highlight_speech(x, args['frame']), speeches)
+        else:
+            for speech in speeches: speech['speaking'] = eval(speech['speaking'])
+
         return {
-            'meta': {'count':count},
+            'meta': {'count': count },
             'data': speeches
             }
     

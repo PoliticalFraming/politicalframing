@@ -48,23 +48,15 @@ from celery import Celery
 
 @celery.task(bind=True)
 def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
-    # get topic as URL get parameter
     speeches = get_speeches_in_date_order(topic_id, states, start_date, end_date)
-    
-    # get list of json objects from the database (query by topic - or also filter by some other subset of factors)
     frame = Frame.get(Frame.frame_id == frame_id)
     topic = Topic.get(Topic.topic_id == topic_id)
-    
-    #preprocess speeches
     speeches = preprocess_speeches(speeches)
-    
     print str(len(speeches)) + " speeches are being analyzed"
 
     # topic_plot = plot_topic_usage(speeches, topic, 100)
     topic_plot = plot_moivng_topic_usage(speeches, topic, 100)
-
     frame_plot = plot_discrete_average(self, frame, speeches, 100, topic.phrase)
-
 
     return pickle.dumps({'frame_plot':frame_plot,'topic_plot':topic_plot})
     # return str(jsonify(topic_plot=topic_plot, frame_plot=frame_plot))
@@ -77,20 +69,11 @@ def preprocess_speeches(speeches):
             valid_speeches.append(speech)
     return valid_speeches
 
-def graph1(speeches_ordered_by_date):
-    # speeches = speeches_ordered_by_date
-    # dates = []
-    # dem_counts = []
-    # rep_counts = []
-    pass
-
-
 def plot_topic_usage(speeches, topic, n):
 
     def date_compare(self, other):
         '''override compare to sort by date'''
         return self.date.toordinal() - other.date.toordinal()
-
 
     speeches = deque(sorted(speeches, cmp=date_compare))
 
