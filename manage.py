@@ -10,7 +10,7 @@ from app.models.SpeechTopic import SpeechTopic
 from app.models.User import User
 
 manager = Manager(app)
-
+manager.add_command("runserver", Server(host="0.0.0.0", port=5000))
 # manager.add_command("assets", ManageAssets(assets))
 
 @manager.command
