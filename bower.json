@@ -35,7 +35,7 @@
     "jquery.uniform": "~2.1.2",
     "d3": "~3.3.13",
     "xcharts": "http://tenxer.github.io/xcharts/xcharts-build.tar.gz",
-    "ngActiveResource": "~0.7.0",
+    "ngActiveResource": "git://github.com/AlJohri/ngActiveResource#master",
     "active-support": "~0.0.7",
     "lodash": "~2.4.1",
     "async": "~0.2.5",

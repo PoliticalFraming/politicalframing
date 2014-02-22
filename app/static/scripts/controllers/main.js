@@ -4,8 +4,8 @@
 
 angular.module('framingApp').controller('MainCtrl', function ($scope, Speech, Topic, Frame, State) {
 
-  Topic.all().then(function(response) { $scope.topics = response; });
-  Frame.all().then(function(response) { $scope.frames = response; });
+  Topic.all().then(function(response) { $scope.topics = response.data; });
+  Frame.all().then(function(response) { $scope.frames = response.data; });
   $scope.USStateList = State.getStates();
 
   $scope.filters = {
@@ -20,7 +20,8 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, Speech, To
   $scope.loadSpeeches = function () {
     if ($scope.filters.topic === null) { return; }
     Speech.where($scope.filters).then(function (response) {
-      $scope.speeches = response;
+      $scope.speeches = response.data;
+      console.log(response.meta);
     });
   };
 
