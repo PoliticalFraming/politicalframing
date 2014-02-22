@@ -126,7 +126,8 @@ module.exports = function (grunt) {
           'app/static/components/json3',
           'app/static/components/meld',
           'app/static/components/canvasjs',
-          'app/static/components/sass-bootstrap/'
+          'app/static/components/sass-bootstrap/',
+          'app/static/components/underscore/underscore.js'
         ]
       }
     },
