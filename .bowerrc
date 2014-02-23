@@ -1,4 +1,9 @@
 {
   "directory" : "app/static/components",
-  "save": true
+  "save": true,
+  "storage": {
+     "packages": ".bower-cache",
+     "registry": ".bower-registry"
+  },
+  "tmp": ".bower-tmp"
 }
