@@ -21,6 +21,8 @@ pf "sudo git clone https://github.com/statianzo/dokku-shoreman.git /var/lib/dokk
 pf "sudo git clone https://github.com/Kloadut/dokku-pg-plugin /var/lib/dokku/plugins/postgresql"
 pf "sudo git clone https://github.com/luxifer/dokku-redis-plugin /var/lib/dokku/plugins/redis"
 pf "sudo git clone https://github.com/AlJohri/dokku-bower-grunt-build-plugin.git /var/lib/dokku/plugins/bower-grunt"
+pf "sudo git clone https://github.com/Kloadut/dokku-md-plugin.git /var/lib/dokku/plugins/mariadb"
+pf "sudo git clone https://github.com/dyson/dokku-persistent-storage.git /var/lib/dokku/plugins/persistent-storage"
 pf "sudo dokku plugins-install"
 
 echo "Send Public Key to EC2 Instance"
@@ -39,6 +41,15 @@ echo "Add environment variables"
 pf "dokku postgresql:link $APP $APP"
 pf "dokku config:set $APP HEROKU=1"
 pf "dokku config:set $APP C_FORCE_ROOT=true"
+
+# /home/dokku/piwik/storage/tmp:/app/tmp
+# /home/dokku/piwik/storage/config:/app/config
+
+# Wordpress
+# GOOG_UA_ID:   UA-37924780-2
+
+# PIWIK
+# GOOG_UA_ID:   UA-37924780-2
 
 # Because our AWS instance is associated with an elastic IP address, the PFURL should persist
 # across deleting and re-creating the instance given the elastic IP is reassociated.
