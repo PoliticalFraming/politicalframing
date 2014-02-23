@@ -1,8 +1,9 @@
 # Dokku Setup on EC2 Instructions
 
+set -e
 export PFURL=politicalframing.com
 export PFPEM=~/Desktop/politicalframing.pem
-export APP=alpha
+export APP=dev
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
 
 echo "Creating 1GB swap space on EC2 instance."
