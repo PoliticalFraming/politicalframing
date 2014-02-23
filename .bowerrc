@@ -1,3 +1,4 @@
 {
-  "directory" : "app/assets/components"
+  "directory" : "app/static/components",
+  "save": true
 }

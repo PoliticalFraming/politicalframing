@@ -1,0 +1,123 @@
+@import "scss/variables";
+@import "sass-bootstrap/lib/bootstrap";
+@import "scss/uniform_default";
+@import "scss/box";
+@import "scss/message_box";
+@import "scss/dropdowns";
+@import "font-awesome/scss/font-awesome.scss";
+@import "scss/responsive-tables";
+@import "scss/fullcalendar";
+@import "scss/gritter";
+@import "scss/numeric_stats";
+@import "scss/form_elements";
+@import "scss/tags";
+@import "scss/navigation";
+@import "scss/sidebar";
+@import "scss/breadcrumbs";
+@import "scss/triangle_button";
+@import "scss/tooltips";
+@import "scss/buttons";
+@import "scss/action_nav";
+@import "scss/stats";
+@import "scss/ibutton";
+@import "scss/content_progress";
+@import "scss/charts";
+@import "scss/select2";
+@import "scss/select2_overrides";
+@import "scss/chosen";
+@import "scss/chosen_overrides";
+@import "scss/ui_custom";
+@import "scss/icheck_blue";
+@import "scss/xcharts";
+@import "scss/justgage";
+@import "scss/easy_pie_chart";
+@import "scss/sparkline_box";
+@import "scss/chat-box";
+@import "scss/dataTables";
+@import "scss/accordion";
+@import "scss/thumbnails";
+@import "scss/bootstrap_alerts";
+@import "scss/pagination";
+@import "scss/modal";
+@import "scss/touchTouch";
+@import "scss/tables";
+@import "scss/scrollable";
+@import "scss/news";
+@import "scss/badges";
+@import "scss/bootstrap-wizard";
+@import "scss/error_pages";
+@import "scss/bootstrap-wysihtml5";
+@import "scss/validation_engine";
+@import "scss/bootstrap-editable";
+@import "scss/bootstrap-editable-fix";
+
+@import "scss/base";
+@import "scss/responsive992";
+@import "scss/responsive768";
+@import "scss/responsive480";
+
+// ::-webkit-scrollbar { width: 0 !important }
+
+// @import "jquery-ui-sass/stylesheets/themes/jquery.ui.base";
+// @import "jquery-ui-sass/stylesheets/jquery.ui.theme";
+// @import "jquery-ui-sass/stylesheets/jquery.ui.base";
+
+
+// http://stackoverflow.com/questions/21357719/configure-grunt-bower-install-path-for-a-component/21363134#21363134
+// http://iain.nl/using-sass-with-jquery-ui
+
+ul {
+   list-style-position: inside;
+}
+
+// .speech-list {
+// 	height: 500px;
+// 	overflow: scroll;
+// 	overflow-x:hidden;
+// }
+
+.current-speech {
+	height: 500px;
+	overflow-y: scroll;
+	overflow-x:hidden;
+}
+
+.speech-browser-table {
+	overflow-y: scroll;
+	overflow-x:hidden;
+	display: block;
+	height: 420px;
+}
+
+.pagination {
+	margin: 0;
+}
+
+// .filter {
+// 	min-width: 400px;
+// }
+
+// .gridStyle {
+//     border: 1px solid rgb(212,212,212);
+//     /*width: 60%; */
+//     height: 500px;
+// }
+
+// .select2-arrow {
+// 	background: none;
+// 	border-left: none;
+// }
+
+.datepicker {
+	height: $input-height-base;
+	color: red;
+}
+
+.speech-browser-table > tr {
+    cursor: pointer;
+    cursor: hand;
+}
+
+.modal-dialog {
+  width: 1000px;/* your width */
+}

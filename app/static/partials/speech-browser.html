@@ -1,0 +1,36 @@
+
+<!-- <h1>Found ({{customersCount}}) Customers</h1> -->
+
+<div class="">
+	<table class="table table-striped table-responsive table-hover table-condensed speech-browser-table">
+	  <thead>
+	    <tr>
+	      <th ng-repeat="header in headers">{{header | titlecase}}</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+		  <tr ng-repeat="speech in speeches" ng-click="open($index)">
+		    <td>0</td>
+		    <td>{{speech.title}}</td>
+		    <td>{{speech.date}}</td>
+		    <td>{{speech.speaker_raw}}</td>
+		    <td>{{speech.speaker_state}}</td>
+		  </tr>
+	  </tbody>
+	</table>
+</div>
+
+<pagination total-items="count/filters.limit" page="filters.page" max-size="5"></pagination>
+
+
+	<!--         <sort-by onsort="onSort" sortdir="filterCriteria.sortDir" sortedby="filterCriteria.sortedBy" sortvalue="{{ header.value }}">{{ header.title }}</sort-by> -->
+
+
+<!-- 
+<div ng-show="customersCount == 0">
+  <h3>No Customers Found</h3>
+</div>
+<div ng-show="totalPages > 1" class="align-center">
+  <pagination num-pages="totalPages" current-page="filterCriteria.pageNumber" max-size="10" class="" boundary-links="true"
+            on-select-page="selectPage(page)"></pagination>
+</div> -->

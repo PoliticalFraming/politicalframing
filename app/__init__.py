@@ -2,14 +2,21 @@ import os
 import urlparse
 import psycopg2
 import logging
-from flask import Flask, make_response
+from flask import Flask, make_response, render_template
 from flask.ext.cors import origin
+from flask.ext.restful import Api
 from flask_peewee.db import Database
-from flask_peewee.rest import RestAPI, RestResource
-from flask.ext.assets import Environment, Bundle
+from flask.ext import restful
+from werkzeug.wsgi import SharedDataMiddleware
+# from flask_peewee.rest import RestAPI, RestResource
+# from flask.ext.assets import Environment, Bundle
 
 from celery import Celery
 from celery.signals import task_prerun
+
+class Api(restful.Api):
+    def unauthorized(self, response):
+        return response
 
 @task_prerun.connect
 def on_task_init(*args, **kwargs):
@@ -63,14 +70,17 @@ else:
 SECRET_KEY='poop'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
-app = Flask(__name__, static_folder='assets', static_url_path='')
+app = Flask(__name__)
 app.config.from_object(__name__)
 celery = make_celery(app)
 
+app.wsgi_app = SharedDataMiddleware(app.wsgi_app, { '/': os.path.join(os.path.dirname(__file__), 'static') })
+app.wsgi_app = SharedDataMiddleware(app.wsgi_app, { '/': os.path.join(os.path.dirname(__file__), 'static/.tmp') })
+
 # Compile Assets
 
-assets = Environment(app)
-assets.url = app.static_url_path
+# assets = Environment(app)
+# assets.url = app.static_url_path
 
 # css_bundle = Bundle('css/home.css.sass', filters='sass', output='all.css')
 # assets.register('css_all', css_bundle)
@@ -83,45 +93,59 @@ db = Database(app)
 db.database.get_conn().set_client_encoding('UTF8')
 
 # Instatiate Flask Peewee REST API
-api = RestAPI(app)
+# api = RestAPI(app)
+api = Api(app)
+
+@api.representation('application/json')
+def restful_json(data, code, headers=None):
+
+    def serialize_date(obj):
+        import datetime
+        if isinstance(obj, datetime.date):
+            return obj.strftime("%Y-%m-%d")
+
+    import json
+    resp = make_response(json.dumps(data, default=serialize_date), code)
+    resp.headers.extend(headers or {})
+    return resp
 
 # Transaction
 db.database.set_autocommit(True)
 
 # Import All Models and Controllers
-from app import database_views
+# from app import database_views
 from app import decorators
-from app.models import Topic
-from app.models import Frame 
-from app.models import User
-from app.models import Speech
-from app.models import SpeechTopic
-from app.controllers import Topic
-from app.controllers import Frame
-from app.controllers import User
-from app.controllers import Speech
-from app.controllers import SpeechTopic
-from app.controllers import Analyze
+from app.models import topic
+from app.models import frame 
+from app.models import user
+from app.models import speech
+from app.models import speechtopic
+from app.controllers import topic
+from app.controllers import frame
+from app.controllers import user
+from app.controllers import speech
+from app.controllers import analyze
 
-# Register API
-
-api.setup()
-
-# Set up Cross Origin Requests
-
-@app.after_request 
-@origin("*") #allow all origins all methods everywhere in the app
-def after(response): return response
+# # Set up Cross Origin Requests
+# @app.after_request 
+# @origin("*") #allow all origins all methods everywhere in the app
+# def after(response): return response
 
 # Set Root Route
 
-@app.route("/")
-def index():
-    if not app.debug:
-      return send_file('app/templates/index.html') # production (cached response sent)
-    else:
-      return make_response(open('app/templates/index.html').read()) # development (no cached response)
+# @app.route("/")
+# def index():
+#     if not app.debug:
+#       return send_file('app/templates/index.html') # production (cached response sent)
+#     else:
+#       return make_response(open('app/templates/index.html').read()) # development (no cached response)
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    print path
+    return render_template('index.html')
+    
 # Set up Logging
 
 from logging import Formatter, FileHandler

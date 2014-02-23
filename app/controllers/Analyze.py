@@ -35,11 +35,11 @@ from bintrees import BinaryTree
 from app import app, celery
 from flask import request, session, jsonify
 from peewee import *
-from app.models.Frame import Frame, get_frame
-from app.models.Topic import Topic
-from app.models.Speech import Speech, get_speeches_in_date_order
+from app.models.frame import Frame, get_frame
+from app.models.topic import Topic
+from app.models.speech import Speech, get_speeches_in_date_order
 
-from app.controllers.Speech import SpeechResource
+# from app.controllers.Speech import SpeechResource
 from collections import deque
 from flask_peewee.rest import RestAPI, RestResource
 import math
@@ -48,16 +48,10 @@ from celery import Celery
 
 @celery.task(bind=True)
 def analyze_task(self,topic_id, states, start_date, end_date, frame_id):
-    # get topic as URL get parameter
     speeches = get_speeches_in_date_order(topic_id, states, start_date, end_date)
-    
-    # get list of json objects from the database (query by topic - or also filter by some other subset of factors)
     frame = Frame.get(Frame.frame_id == frame_id)
     topic = Topic.get(Topic.topic_id == topic_id)
-    
-    #preprocess speeches
     speeches = preprocess_speeches(speeches)
-    
     print str(len(speeches)) + " speeches are being analyzed"
 
     # topic_plot = plot_topic_usage(speeches, topic, 100)
@@ -80,7 +74,6 @@ def plot_topic_usage(speeches, topic, n):
     def date_compare(self, other):
         '''override compare to sort by date'''
         return self.date.toordinal() - other.date.toordinal()
-
 
     speeches = deque(sorted(speeches, cmp=date_compare))
 

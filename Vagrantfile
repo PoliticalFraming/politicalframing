@@ -7,7 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "precise64"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
-  config.vm.provision :shell, :path => "provision.sh", :privileged => false
+  config.vm.provision :shell, :path => "config/provision.sh", :privileged => false
   config.vm.network :forwarded_port, guest: 5000, host: 5000
   config.vm.network :forwarded_port, guest: 5432, host: 6000
   config.vm.network :forwarded_port, guest: 8000, host: 8000
