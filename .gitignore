@@ -18,4 +18,5 @@ app/static/components
 .sass-cache
 .bundle
 .vagrant
-
+.bower-cache
+.bower-registry
