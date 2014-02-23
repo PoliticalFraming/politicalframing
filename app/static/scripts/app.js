@@ -5,6 +5,7 @@ var app = angular.module('framingApp', [
   'ui.bootstrap',
   'ngRoute',
   'ngResource',
+  'ngAnimate',
   'framingServices',
   'framingFilters',
   'ActiveResource',

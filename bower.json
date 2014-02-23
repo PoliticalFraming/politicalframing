@@ -3,15 +3,15 @@
   "version": "0.0.0",
   "directory": "app/static/components",
   "dependencies": {
-    "angular": "~1.2.1",
-    "angular-route": "~1.2.1",
-    "angular-sanitize": "~1.2.1",
+    "angular": "~1.2.13",
+    "angular-route": "~1.2.13",
+    "angular-sanitize": "~1.2.13",
     "angular-ui-date": "git://github.com/angular-ui/ui-date#master",
     "angular-ui-utils": "~0.0.4",
     "angular-bootstrap": "~0.9.0",
     "json3": "~3.2.6",
     "es5-shim": "~2.3.0",
-    "angular-resource": "~1.2.1",
+    "angular-resource": "~1.2.13",
     "sass-bootstrap": "~3.0.2",
     "font-awesome": "~4.0.3",
     "jquery": "~1.10.2",
@@ -40,11 +40,12 @@
     "chosen": "https://github.com/harvesthq/chosen/releases/download/1.0.0/chosen_v1.0.0.zip",
     "addyosmani-jquery-ui-bootstrap": "*",
     "underscore": "~1.6.0",
-    "canvasjs": "http://canvasjs.com/\\?wpdmdl=1"
+    "canvasjs": "http://canvasjs.com/\\?wpdmdl=1",
+    "angular-animate": "~1.2.13"
   },
   "devDependencies": {
-    "angular-mocks": "~1.2.1",
-    "angular-scenario": "~1.2.1"
+    "angular-mocks": "~1.2.13",
+    "angular-scenario": "~1.2.13"
   },
   "resolutions": {
     "jquery": "~1.10.2",
