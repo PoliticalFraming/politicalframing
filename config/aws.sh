@@ -1,6 +1,6 @@
 # Dokku Setup on EC2 Instructions
 
-export PFURL=aljohri.com
+export PFURL=politicalframing.com
 export PFPEM=~/Desktop/politicalframing.pem
 export APP=alpha
 alias pf="ssh -i $PFPEM ubuntu@$PFURL"
