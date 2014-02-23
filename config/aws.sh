@@ -20,6 +20,7 @@ echo "Installing Dokku Plugins"
 pf "sudo git clone https://github.com/statianzo/dokku-shoreman.git /var/lib/dokku/plugins/dokku-shoreman"
 pf "sudo git clone https://github.com/Kloadut/dokku-pg-plugin /var/lib/dokku/plugins/postgresql"
 pf "sudo git clone https://github.com/luxifer/dokku-redis-plugin /var/lib/dokku/plugins/redis"
+pf "sudo git clone https://github.com/AlJohri/dokku-bower-grunt-build-plugin.git /var/lib/dokku/plugins/bower-grunt"
 pf "sudo dokku plugins-install"
 
 echo "Send Public Key to EC2 Instance"
