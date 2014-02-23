@@ -113,7 +113,7 @@ def restful_json(data, code, headers=None):
 db.database.set_autocommit(True)
 
 # Import All Models and Controllers
-from app import database_views
+# from app import database_views
 from app import decorators
 from app.models import topic
 from app.models import frame 
