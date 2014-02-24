@@ -65,7 +65,7 @@ class AnalysisListController(Resource):
 
 class AnalysisController(Resource):
 
-	parser.add_argument('analysis_id', type=int, required=True, location='values')
+	# parser.add_argument('analysis_id', type=int, required=True, location='values')
 
 	def get(self):
 		"""
@@ -82,6 +82,6 @@ class AnalysisController(Resource):
 		"""Delete analysis from persistant storage"""
 		pass
 
-	
-api.add_resource(AnalysisController, '/api/analyses/', endpoint = 'analyses')
-api.add_resource(AnalysisListController, '/api/analyses/<string:speech_id>/', endpoint = 'analysis')
+
+api.add_resource(AnalysisListController, '/api/analyses/', endpoint = 'analyses')
+api.add_resource(AnalysisController, '/api/analysis/<string:speech_id>/', endpoint = 'analysis')
