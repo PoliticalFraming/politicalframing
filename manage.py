@@ -8,6 +8,7 @@ from app.models.speech import Speech
 from app.models.topic import Topic
 from app.models.speechtopic import SpeechTopic
 from app.models.user import User
+from app.models.analysis import Analysis
 
 manager = Manager(app)
 manager.add_command("runserver", Server(host="0.0.0.0", port=5000))
@@ -20,6 +21,7 @@ def hello():
 @manager.command
 def createdb():
 	Frame.create_table(fail_silently=True)
+	Analysis.create_table(fail_silently=True)
 	Speech.create_table(fail_silently=True)
 	Topic.create_table(fail_silently=True)
 	SpeechTopic.create_table(fail_silently=True)
@@ -31,7 +33,7 @@ def createdb():
 def deletedb():
 	db.database.execute_sql("DROP TABLE frames, speeches, topics, speech_topic, users;")
 
-from app.controllers.analyze import * 
+from app.controllers.analysis import * 
 ## UNIT TESTS
 @manager.command
 def test_core_algorithm(): 

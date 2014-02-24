@@ -1,8 +1,10 @@
-from app import app, db
+from app import app, db, celery
 from peewee import *
 
 from app.models.topic import Topic
 from app.models.frame import Frame
+
+from celery import Celery
 
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
@@ -30,7 +32,7 @@ class Analysis(db.Model):
     analysis_id = PrimaryKeyField(null=True, db_column='id')
     celery_id = IntegerField(Null=True)    
 
-    update = BooleanValue(Null=True)
+    update = BooleanField(Null=True)
 
     frame = ForeignKeyField(Frame)
     topic = ForeignKeyField(Topic)

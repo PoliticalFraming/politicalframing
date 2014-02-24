@@ -4,7 +4,6 @@ from peewee import *
 from app.models.frame import Frame
 from app.models.topic import Topic
 from app.models.analysis import Analysis
-from app.models.analysis.Analysis import compute_analysis
 
 from flask.ext.restful import Resource, fields, reqparse
 from datetime import datetime
@@ -53,7 +52,7 @@ class AnalysisListController(Resource):
 			args['start_date'] = dateparser.parse(args['start_date']).date()
 			args['end_date'] = dateparser.parse(args['start_date']).date()
 
-		analysis_id = compute_analysis(
+		analysis_id = Analysis.compute_analysis(
 			topic = args.get('phrase'), 
 			frame = args.get('frame'), 
 			start_date=args.get('start_date'), 
@@ -84,5 +83,5 @@ class AnalysisController(Resource):
 		pass
 
 	
-api.add_resource(SpeechListController, '/api/analyses/', endpoint = 'speeches')
-api.add_resource(SpeechController, '/api/analyses/<string:speech_id>/', endpoint = 'speech')
+api.add_resource(AnalysisController, '/api/analyses/', endpoint = 'analyses')
+api.add_resource(AnalysisListController, '/api/analyses/<string:speech_id>/', endpoint = 'analysis')

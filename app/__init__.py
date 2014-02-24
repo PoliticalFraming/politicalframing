@@ -124,7 +124,7 @@ from app.controllers import topic
 from app.controllers import frame
 from app.controllers import user
 from app.controllers import speech
-from app.controllers import analyze
+from app.controllers import analysis
 
 # # Set up Cross Origin Requests
 # @app.after_request 
