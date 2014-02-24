@@ -5,8 +5,6 @@ from app import app, db
 from peewee import *
 from app.models.frame import Frame, populate_frames_dummy_data
 from app.models.speech import Speech
-from app.models.topic import Topic
-from app.models.speechtopic import SpeechTopic
 from app.models.user import User
 
 manager = Manager(app)

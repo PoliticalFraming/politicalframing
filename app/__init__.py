@@ -115,12 +115,8 @@ db.database.set_autocommit(True)
 # Import All Models and Controllers
 # from app import database_views
 from app import decorators
-from app.models import topic
 from app.models import frame 
 from app.models import user
-from app.models import speech
-from app.models import speechtopic
-from app.controllers import topic
 from app.controllers import frame
 from app.controllers import user
 from app.controllers import speech
