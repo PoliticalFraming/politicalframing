@@ -68,7 +68,10 @@ class AnalysisController(Resource):
 		Return percent complete (meta). 
 		Return either empty json or completed frame and topic plot (text).
 		"""
-		pass
+		analysis = Analysis.get(Analysis.analysis_id == analysis_id)
+		info = analysis.check_if_complete()
+
+		return{'meta':info,	'data':analysis}
 
 	def put(self):
 		"""Update analysis in persistant storage"""
