@@ -44,6 +44,9 @@ pf "dokku postgresql:link $APP $APP"
 pf "dokku config:set $APP HEROKU=1"
 pf "dokku config:set $APP C_FORCE_ROOT=true"
 
+echo "Install JDK 7 for running Solr"
+pf "sudo apt-get install -y openjdk-7-jdk"
+
 # /home/dokku/piwik/storage/tmp:/app/tmp
 # /home/dokku/piwik/storage/config:/app/config
 
