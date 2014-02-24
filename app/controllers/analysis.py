@@ -9,8 +9,6 @@ from flask.ext.restful import Resource, fields, reqparse
 from datetime import datetime
 from dateutil import parser as dateparser
 
-
-
 topic_plot_fields = {
 	'democrat_speeches':fields.List(fields.Integer),
 	'republican_speeches':fields.List(fields.Integer),
@@ -53,15 +51,13 @@ class AnalysisListController(Resource):
 			args['end_date'] = dateparser.parse(args['start_date']).date()
 
 		analysis_id = Analysis.compute_analysis(
-			topic = args.get('phrase'), 
+			phrase = args.get('phrase'), 
 			frame = args.get('frame'), 
 			start_date=args.get('start_date'), 
 			end_date=args.get('end_date'), 
 			states=args.get('states'))
 
 		return analysis_id
-
-
 
 class AnalysisController(Resource):
 
