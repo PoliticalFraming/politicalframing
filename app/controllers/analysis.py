@@ -52,10 +52,12 @@ class AnalysisListController(Resource):
 
 		analysis_id = Analysis.compute_analysis(
 			phrase = args.get('phrase'), 
-			frame = args.get('frame'), 
-			start_date=args.get('start_date'), 
-			end_date=args.get('end_date'), 
-			states=args.get('states'))
+			frame = args.get('frame'),
+			start_date = args.get('start_date'), 
+			end_date = args.get('end_date'), 
+			states = args.get('states'),
+			to_update=False
+		)
 
 		return analysis_id
 

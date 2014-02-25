@@ -1,8 +1,26 @@
 from app import app, db, celery
 from peewee import *
+from collections import deque
+import datetime
 
 from app.models.topic import Topic
 from app.models.frame import Frame
+from app.models.speech import get_speeches_in_date_order
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.datasets.base import Bunch
+
+
+
+@celery.task(bind=True)
+def analyze_task(self, analysis_obj, topic, frame, speeches):
+    print str(len(speeches)) + " speeches are being analyzed"
+
+    analysis_obj.plot_topic_usage(speeches, topic, 100)
+    analysis_obj.plot_frame_usage(frame, speeches, 100, 100, topic)
+
+    return analysis_obj
 
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
@@ -13,9 +31,9 @@ class Classifier:
         self.vectorizer = TfidfVectorizer()
         self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
-    def learn_vocabulary(self, vocabulary):
-        self.vocabulary = vocabulary
-        self.vectorizer.fit(vocabulary)
+    def learn_vocabulary(self, document):
+        # self.vocabulary = vocabulary
+        self.vectorizer.fit([document])
 
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.transform(data)
@@ -27,17 +45,15 @@ class Classifier:
 
 class Analysis(db.Model):
 
-    analysis_id = PrimaryKeyField(null=True, db_column='id')
-    celery_id = IntegerField(Null=True)    
+    analysis_id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
+    frame = ForeignKeyField(Frame, null=False)
+    topic = ForeignKeyField(Topic, null=False)
 
-    update = BooleanValue(Null=True)
-
-    frame = ForeignKeyField(Frame)
-    topic = ForeignKeyField(Topic)
+    celery_id = CharField(null=True)
+    to_update = BooleanField(null=True)
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
     states = TextField(null=True) #example: [MA, TX, CA]
-
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
 
@@ -45,7 +61,7 @@ class Analysis(db.Model):
         db_table = 'analyses'
 
     @classmethod
-    def compute_analysis(cls, phrase, frame, start_date=None, end_date=None, states=None):
+    def compute_analysis(cls, phrase, frame, start_date=None, end_date=None, states=None, to_update=None):
         """
         Class Method:
         - Queries DB for speeches with parameters specified in args.
@@ -58,20 +74,22 @@ class Analysis(db.Model):
         topic = Topic.get(Topic.phrase == phrase)
 
         speeches = get_speeches_in_date_order(topic.topic_id, states, start_date, end_date)
-        speeches = self.remove_irrelevant_speeches(speeches)
+        speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
 
         analysis_obj = Analysis(
-            update = False, 
-            frame = frame,
+            frame = frame, 
             topic = topic,
-            start_date = start_date,
-            end_date = end_date,
-            states = states)
+            start_date = start_date, 
+            end_date = end_date, 
+            states = states, 
+            to_update = to_update
+        )
+        analysis_obj.save()
 
-        result = analysis_obj.analyze_task.delay(topic, frame, speeches)
+        result = analyze_task.delay(analysis_obj, topic, frame, speeches)
         analysis_obj.celery_id = result.id
+        analysis_obj.save()
         celery.close()
-
 
         app.logger.debug("Computed Analysis %d for topic=%s and frame=%s", 
             analysis_obj.analysis_id,
@@ -79,25 +97,18 @@ class Analysis(db.Model):
             frame.name)
 
         return analysis_obj.analysis_id
-    
-    @celery.task(bind=True)
-    def analyze_task(self, topic, frame, speeches):
-        print str(len(speeches)) + " speeches are being analyzed"
-
-        topic_plot = plot_moving_topic_usage(speeches, topic, 100)
-        frame_plot = plot_discrete_average(self, frame, speeches, 100, topic.phrase)
-
-        return topic_plot, frame_plot
 
     ####################### UTILITIES #######################
 
-    def party_fn(self, speeches):
+    @classmethod
+    def party_fn(cls, speech):
         if speech.speaker_party=="D" or speech.speaker_party=="R":
             return True
         else:
             return False
 
-    def preprocess_speeches(self, speeches, relevance_fn):
+    @classmethod
+    def preprocess_speeches(cls, speeches, relevance_fn):
         '''Includes only speeches that the '''
         relevant = relevance_fn #plug in what is relevant
 
@@ -163,13 +174,14 @@ class Analysis(db.Model):
 
         ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
 
-        return {
+        self.topic_plot = {
             'title': "Speeches about %s" % topic.phrase,
             'ylabel': "Number of Speeches",
             'dates': dates, 
             'ratios':ratios,
             'dem_counts':dem_counts,
-            'rep_counts':rep_counts}
+            'rep_counts':rep_counts
+        }
 
     def build_training_set(self, speeches):
         '''This function is an alternative form of the loads in sklearn which loads 
@@ -206,7 +218,7 @@ class Analysis(db.Model):
             data = data,
             DESCR = DESCR)
         
-    def plot_frame_usage(self,frame, ordered_speeches, window_size, offset, topic, testing=False):
+    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, topic, testing=False):
         """ 
         frame = frame object
         speeches = list of speech objects in date order
@@ -245,7 +257,7 @@ class Analysis(db.Model):
             start_dates.append(current_window[0].date)
             end_dates.append(current_window[-1].date)
 
-            training_set = build_training_set(current_window)
+            training_set = self.build_training_set(current_window)
 
             #train classifier on speeches in current window
             naive_bayes.train_classifier(training_set.data, training_set.target)
@@ -268,9 +280,10 @@ class Analysis(db.Model):
             start_dates = map(lambda x: str(x), start_dates)
             end_dates = map(lambda x: str(x), end_dates)
 
-            return {
+            self.frame_plot = {
                 'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
                 'ylabel': "D/R Ratio of Log-Likelihoods",
                 'start_dates': start_dates,
-                'end_dates': date_strings,
-                'ratios': ratios}
+                'end_dates': end_dates,
+                'ratios': ratios
+            }
