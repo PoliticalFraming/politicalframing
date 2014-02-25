@@ -4,13 +4,10 @@ from peewee import *
 from app.models.frame import Frame
 from app.models.topic import Topic
 from app.models.analysis import Analysis
-from app.models.analysis.Analysis import compute_analysis
 
 from flask.ext.restful import Resource, fields, reqparse
 from datetime import datetime
 from dateutil import parser as dateparser
-
-
 
 topic_plot_fields = {
 	'democrat_speeches':fields.List(fields.Integer),
@@ -53,27 +50,30 @@ class AnalysisListController(Resource):
 			args['start_date'] = dateparser.parse(args['start_date']).date()
 			args['end_date'] = dateparser.parse(args['start_date']).date()
 
-		analysis_id = compute_analysis(
-			topic = args.get('phrase'), 
-			frame = args.get('frame'), 
-			start_date=args.get('start_date'), 
-			end_date=args.get('end_date'), 
-			states=args.get('states'))
+		analysis_id = Analysis.compute_analysis(
+			phrase = args.get('phrase'), 
+			frame = args.get('frame'),
+			start_date = args.get('start_date'), 
+			end_date = args.get('end_date'), 
+			states = args.get('states'),
+			to_update=False
+		)
 
 		return analysis_id
 
-
-
 class AnalysisController(Resource):
 
-	parser.add_argument('analysis_id', type=int, required=True, location='values')
+	# parser.add_argument('analysis_id', type=int, required=True, location='values')
 
 	def get(self):
 		"""
 		Return percent complete (meta). 
 		Return either empty json or completed frame and topic plot (text).
 		"""
-		pass
+		analysis = Analysis.get(Analysis.analysis_id == analysis_id)
+		info = analysis.check_if_complete()
+
+		return{'meta':info,	'data':analysis}
 
 	def put(self):
 		"""Update analysis in persistant storage"""
@@ -83,6 +83,6 @@ class AnalysisController(Resource):
 		"""Delete analysis from persistant storage"""
 		pass
 
-	
-api.add_resource(SpeechListController, '/api/analyses/', endpoint = 'speeches')
-api.add_resource(SpeechController, '/api/analyses/<string:speech_id>/', endpoint = 'speech')
+
+api.add_resource(AnalysisListController, '/api/analyses/', endpoint = 'analyses')
+api.add_resource(AnalysisController, '/api/analysis/<string:speech_id>/', endpoint = 'analysis')
