@@ -1,92 +1,276 @@
-from app import app, api, db
+from app import app, db, celery
 from peewee import *
 
-from app.models.frame import Frame
 from app.models.topic import Topic
-from app.models.analysis import Analysis
-from app.models.analysis.Analysis import compute_analysis
+from app.models.frame import Frame
 
-from flask.ext.restful import Resource, fields, reqparse
-from datetime import datetime
-from dateutil import parser as dateparser
+class Classifier:
+    """Used to allow the adding and removing of speeches to the classifer.
+    This could be made faster by actually modifying or extending the MultinomialNB 
+    in scikit-learn rather than creating a new MultinomialNB object each time."""
 
+    def __init__(self):
+        self.vectorizer = TfidfVectorizer()
+        self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
+    def learn_vocabulary(self, vocabulary):
+        self.vocabulary = vocabulary
+        self.vectorizer.fit(vocabulary)
 
-topic_plot_fields = {
-    'democrat_speeches':fields.List(fields.Integer),
-    'republican_speeches':fields.List(fields.Integer),
-    'start_dates':fields.DateTime,
-    'end_dates':fields.DateTime
-}
+    def train_classifier(self, data, target):
+        sparse_data = self.vectorizer.transform(data)
+        self.classifier.fit(sparse_data, target)
 
-frame_plot_fields = {
-    'ratios':fields.List(fields.Float),
-    'start_dates':fields.DateTime,
-    'end_dates':fields.DateTime
-}
+    def classify_document(self, document):
+        tfidf_frames_vector = self.vectorizer.transform(document)
+        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
-analysis_fields = {
-    'topic_plot':fields.Nested(topic_plot_fields),
-    'frame_plot':fields.Nested(frame_plot_fields)
-}
+class Analysis(db.Model):
 
-parser = reqparse.RequestParser()
+    analysis_id = PrimaryKeyField(null=True, db_column='id')
+    celery_id = IntegerField(Null=True)    
 
-class AnalysisListController(Resource):
+    update = BooleanValue(Null=True)
 
-    parser.add_argument('frame', type = str, required = True, location = 'values')
-    parser.add_argument('phrase', type = str, required = True, location = 'values')
-    parser.add_argument('start_date', type = str, required = False, location = 'values')
-    parser.add_argument('end_date', type = str, required = False, location = 'values')
-    parser.add_argument('states', type = list, required = False, location = 'values')
-    parser.add_argument('analysis_id', type = int, required = False, location = 'values')
+    frame = ForeignKeyField(Frame)
+    topic = ForeignKeyField(Topic)
+    start_date = DateTimeField(null=True)
+    end_date = DateTimeField(null=True)
+    states = TextField(null=True) #example: [MA, TX, CA]
 
-    def get(self):
-        """Search persistant storage for analysis matching argument paramenters."""
-        pass
+    topic_plot = TextField(null=True)
+    frame_plot = TextField(null=True)
 
-    def post(self):
-        """Compute analysis. Place in persistant storage."""
-        args = parser.parse_args()
+    class Meta:
+        db_table = 'analyses'
 
-        if args['start_date']: 
-            args['start_date'] = dateparser.parse(args['start_date']).date()
-            args['end_date'] = dateparser.parse(args['start_date']).date()
-
-        analysis_id = compute_analysis(
-            topic = args.get('phrase'), 
-            frame = args.get('frame'), 
-            start_date=args.get('start_date'), 
-            end_date=args.get('end_date'), 
-            states=args.get('states'))
-
-        return analysis_id
-
-
-
-class AnalysisController(Resource):
-
-    parser.add_argument('analysis_id', type=int, required=True, location='values')
-
-    def get(self, analysis_id):
+    @classmethod
+    def compute_analysis(cls, phrase, frame, start_date=None, end_date=None, states=None):
         """
-        Return percent complete (meta). 
-        Return either empty json or completed frame and topic plot (text).
+        Class Method:
+        - Queries DB for speeches with parameters specified in args.
+        - Computes an analysis
+        - stores results of the analysis in an instance of the Analysis class.
+        - returns ID of that instance
         """
 
-        analysis = Analysis.get(Analysis.analysis_id == analysis_id)
-        info = analysis.check_if_complete()
+        frame = Frame.get(Frame.name == frame)
+        topic = Topic.get(Topic.phrase == phrase)
 
-        return{'meta':info, 'data':analysis}
+        speeches = get_speeches_in_date_order(topic.topic_id, states, start_date, end_date)
+        speeches = self.remove_irrelevant_speeches(speeches)
 
-    def put(self):
-        """Update analysis in persistant storage"""
-        pass
+        analysis_obj = Analysis(
+            update = False, 
+            frame = frame,
+            topic = topic,
+            start_date = start_date,
+            end_date = end_date,
+            states = states)
 
-    def delete(self):
-        """Delete analysis from persistant storage"""
-        pass
+        result = analysis_obj.analyze_task.delay(topic, frame, speeches)
+        analysis_obj.celery_id = result.id
+        celery.close()
 
+
+        app.logger.debug("Computed Analysis %d for topic=%s and frame=%s", 
+            analysis_obj.analysis_id,
+            topic.phrase,
+            frame.name)
+
+        return analysis_obj.analysis_id
     
-api.add_resource(SpeechListController, '/api/analyses/', endpoint = 'speeches')
-api.add_resource(SpeechController, '/api/analyses/<string:speech_id>/', endpoint = 'speech')
+    @celery.task(bind=True)
+    def analyze_task(self, topic, frame, speeches):
+        print str(len(speeches)) + " speeches are being analyzed"
+
+        topic_plot = plot_moving_topic_usage(speeches, topic, 100)
+        frame_plot = plot_discrete_average(self, frame, speeches, 100, topic.phrase)
+
+        return topic_plot, frame_plot
+
+    ####################### UTILITIES #######################
+
+    def party_fn(self, speeches):
+        if speech.speaker_party=="D" or speech.speaker_party=="R":
+            return True
+        else:
+            return False
+
+    def preprocess_speeches(self, speeches, relevance_fn):
+        '''Includes only speeches that the '''
+        relevant = relevance_fn #plug in what is relevant
+
+        valid_speeches=[]
+        for speech in speeches:
+            if relevant(speech):
+                valid_speeches.append(speech)
+        return valid_speeches
+
+    def check_if_complete(self):
+
+        if not self.celery_id: 
+            return {'state':"No Celery Task", 'porcent_complete':"n/a"}
+
+        async_res = celery.AsyncResult(self.celery_id)
+
+        if async_res.ready() == True:
+            return {'state':async_res.state, 'percent_complete':async_res.info}
+        
+
+    ####################### LOGIC #######################
+
+    def plot_topic_usage(self, ordered_speeches, topic, n):
+        """
+        ordered_speeches - list of speech objects in date order
+        topic - Topic object
+
+        *** needs to be modified
+        """
+        app.logger.debug("plot_topic_usage")
+
+        speeches = deque(ordered_speeches)
+        dates = []
+        dem_counts = []
+        rep_counts = []
+
+        while speeches:
+            dem_count = 0
+            rep_count = 0
+            date_string = ""
+            for i in range(n):
+                try:
+                    current_speech = speeches.popleft()
+                    date_string = str(current_speech.date)
+                    if current_speech.speaker_party == "D":
+                        dem_count +=1
+                    elif current_speech.speaker_party == "R":
+                        rep_count +=1
+                except:
+                    pass
+
+            if dem_count>0 and rep_count>0:
+                #skips datapoints that don't have at least one speech in each category to avoid ZeroDivisionError
+                dates.append(date_string)
+                dem_counts.append(dem_count)
+                rep_counts.append(rep_count)
+            
+        def get_ratio(x,y):
+            try:
+                return float(x)/float(y)
+            except:
+                raise #if it gets here, something is really wrong (ZeroDivisionError)
+
+        ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
+
+        return {
+            'title': "Speeches about %s" % topic.phrase,
+            'ylabel': "Number of Speeches",
+            'dates': dates, 
+            'ratios':ratios,
+            'dem_counts':dem_counts,
+            'rep_counts':rep_counts}
+
+    def build_training_set(self, speeches):
+        '''This function is an alternative form of the loads in sklearn which loads 
+        from a partiular file structure. This function allows me to load from a the database
+        '''
+        
+        app.logger.debug('Building training set.')
+
+        def target_function(speech):
+            if speech.speaker_party == 'D':
+                return 0
+            elif speech.speaker_party == 'R':
+                return 1
+            else:
+                print "Speech must be categorized as D or R : " + str(speech.speech_id)
+
+        target = [] #0 and 1 for D or R respectively  
+        target_names = ['D','R'] #target_names
+        data = [] #data
+
+        for speech in speeches:  
+            target.append(target_function(speech))
+            speech_string = ''
+            for sentence in speech.speaking:
+                speech_string += sentence    
+            data.append(speech_string)
+        
+        DESCR = "Trained D vs R classifier"
+
+        #Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
+        return Bunch(
+            target = target,
+            target_names = target_names,
+            data = data,
+            DESCR = DESCR)
+        
+    def plot_frame_usage(self,frame, ordered_speeches, window_size, offset, topic, testing=False):
+        """ 
+        frame = frame object
+        speeches = list of speech objects in date order
+        n = number of data points to plot
+        testing = True if accessing this method from unit tests
+
+        returns json with dates that correlate to log_likelihoods to plot
+        """
+
+        app.logger.debug('entering plot discrete average')
+
+        speeches = deque(ordered_speeches)
+
+        #setup current window
+        current_window = []
+        try:
+            for _ in range(window_size):
+                current_window.append(speeches.popleft())
+        except:
+            app.logger.error('window_size smaller than number of speeches! waaaaay to small')
+            raise
+
+        #create_classifier
+        naive_bayes = Classifier()
+        naive_bayes.learn_vocabulary(frame.word_string)
+
+        #declare return variables
+        start_dates = []
+        end_dates = []
+        r_likelihoods = []
+        d_likelihoods = []
+        ratios = []
+
+        #loop through and plot each point
+        while speeches:
+            start_dates.append(current_window[0].date)
+            end_dates.append(current_window[-1].date)
+
+            training_set = build_training_set(current_window)
+
+            #train classifier on speeches in current window
+            naive_bayes.train_classifier(training_set.data, training_set.target)
+
+            #populate return data
+            log_probabilities = naive_bayes.classify_document(frame.word_string)
+            d_likelihoods.append(log_probabilities[0])
+            r_likelihoods.append(log_probabilities[1])
+
+            #move current window over by 'offset'
+            for _ in range(offset):
+                if speeches:
+                    current_window.append(speeches.popleft())
+                    current_window = current_window[1:]
+
+            # do something about the div by zero error
+            ratios = map(lambda x,y: x/y, d_likelihoods, r_likelihoods)
+
+            #stringify dates
+            start_dates = map(lambda x: str(x), start_dates)
+            end_dates = map(lambda x: str(x), end_dates)
+
+            return {
+                'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
+                'ylabel': "D/R Ratio of Log-Likelihoods",
+                'start_dates': start_dates,
+                'end_dates': date_strings,
+                'ratios': ratios}
