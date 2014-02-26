@@ -15,13 +15,13 @@ angular.module('framingApp').factory('Speech', ['ActiveResource', function(Activ
 		this.string('origin_url');
 		this.string('pages');
 		this.integer('session');
-		this.string('speaker_first');
-		this.string('speaker_last');
+		this.string('speaker_firstname');
+		this.string('speaker_lastname');
 		this.string('speaker_party');
 		this.string('speaker_raw');
 		this.string('speaker_state');
 		this.string('speaking');
-		this.string('title');
+		this.string('document_title');
 		this.integer('volume');
 
 		// this.hasMany('topics');

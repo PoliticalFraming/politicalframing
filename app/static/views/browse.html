@@ -14,19 +14,13 @@
             <div class="row">
               <div class="col-sm-12">
                 <h4>Filter by phrase</h4>
-                <select chosen id="topics" 
-                  ng-model="current.filters.topic"
-                  ng-options="topic.topic_id as topic.phrase for topic in topics" 
-                  data-placeholder="Select a Topic"
-                  no-results-text="'Could not find any topics'"
-                  width="'200px'">
-                  <option value=""></option>
-                </select>
+                <input type="text" class="phrase-input" ng-model="current.filters.phrase" />
+                <input type="button" class="btn btn-xs btn-primary" ng-click="loadSpeeches()" value="Browse"/>
               </div>
             </div>
 
             <!-- Filter State -->
-            <div class="row" ng-show="current.filters.topic">
+            <div class="row" ng-show="speeches">
               <div class="col-sm-12">
                 <h4>Filter By State</h4>
                 <select chosen 
@@ -42,7 +36,7 @@
             </div>
 
             <!-- Filter State -->
-            <div class="row" ng-show="current.filters.topic">
+            <div class="row" ng-show="speeches">
               <div class="col-sm-12">
                 <h4>Filter By Date</h4>
                 <input class="datepicker" type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.start_date" placeholder="Start"> to <input class="datepicker" type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.end_date" placeholder="End">
@@ -50,10 +44,10 @@
             </div>
 
             <!-- List of Filters -->
-            <div class="row" ng-show="current.filters.topic">
+            <div class="row" ng-show="speeches">
               <div class="col-sm-12">
                 <h4>Current Filter</h4>
-                <pre>{{current.filters | json}}</pre>        
+                <pre>{{current | json}}</pre>        
               </div>
             </div>
 
@@ -63,7 +57,7 @@
           <div class="col-sm-6">
             <div class="row" ng-show="speeches">
               <div class="col-sm-12">
-                <speech-browser speeches="speeches" filters="current.filters" count="current.count"></speech-browser>
+                <speech-browser speeches="speeches" current="current"></speech-browser>
               </div>
             </div>
           </div>

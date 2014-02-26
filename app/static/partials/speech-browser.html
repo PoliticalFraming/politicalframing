@@ -10,20 +10,23 @@
 	  </thead>
 	  <tbody>
 		  <tr ng-repeat="speech in speeches" ng-click="open($index)">
-		    <td>0</td>
-		    <td>{{speech.title}}</td>
+		    <td>{{$index}}</td>
+		    <td>{{speech.document_title}}</td>
 		    <td>{{speech.date}}</td>
-		    <td>{{speech.speaker_raw}}</td>
+		    <td>{{speech.speaker_firstname + " " + speech.speaker_lastname}}</td>
 		    <td>{{speech.speaker_state}}</td>
 		  </tr>
 	  </tbody>
 	</table>
 </div>
 
-<pagination total-items="count/filters.limit" page="filters.page" max-size="5"></pagination>
+<pagination total-items="current.pages" page="current.filters.page" boundary-links="true" rotate="false" max-size="5"></pagination>
+
+<!-- <p>page {{current.page}}</p> -->
 
 
-	<!--         <sort-by onsort="onSort" sortdir="filterCriteria.sortDir" sortedby="filterCriteria.sortedBy" sortvalue="{{ header.value }}">{{ header.title }}</sort-by> -->
+
+	<!--<sort-by onsort="onSort" sortdir="filterCriteria.sortDir" sortedby="filterCriteria.sortedBy" sortvalue="{{ header.value }}">{{ header.title }}</sort-by> -->
 
 
 <!-- 

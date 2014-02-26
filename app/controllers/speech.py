@@ -31,41 +31,40 @@ speech_fields = {
 parser = reqparse.RequestParser()
 
 class SpeechController(Resource):
-
-    def get(self, speech_id):
-        speech = Speech.get(Speech.speech_id == speech_id)
-        # return get_dictionary_from_model(speech)
-
+  def get(self, speech_id):
+    speech = Speech.get(Speech.speech_id == speech_id)
 
 class SpeechListController(Resource):
   parser.add_argument('phrase', type = str, required = True, location = 'values')
   parser.add_argument('frame', type = int, required = False, location = 'values')
   parser.add_argument('start_date', type = str, required = False, location = 'values')
   parser.add_argument('end_date', type = str, required = False, location = 'values')
-  parser.add_argument('rows', type = int, required = False, location = 'values')
-  parser.add_argument('start', type=int, required = False, location = 'values')
+  parser.add_argument('page', type = int, required = False, location = 'values')
   parser.add_argument('order', type = str, required = False, location = 'values')
-
   parser.add_argument('states', type = str, required = False, location = 'values')
 
   def get(self):
     args = parser.parse_args()
-    if not args['rows']: args['rows'] = 10
-    if not args['start']: args['start'] = 0
+    if not args['page']: args['page'] = 1
+    else: args['page'] = int(args['page'])
+
+    rows = 10
 
     speeches_dict = Speech.get(
       phrase = args.get('phrase'), 
       frame = args.get('frame'), 
       start_date = args.get('start_date'), 
       end_date = args.get('end_date'),
-      rows = args.get('rows'),
-      start = args.get('start')
+      rows = rows,
+      start = rows * (args['page'] - 1)
     )
 
     return {
       'meta': {
         'count': speeches_dict['count'],
-        'start': speeches_dict['start']
+        'start': speeches_dict['start'],
+        'pages': speeches_dict['count']/rows,
+        'page': args['page']
       },
       'data': speeches_dict['speeches']
     }

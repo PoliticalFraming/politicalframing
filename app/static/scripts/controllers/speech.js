@@ -16,7 +16,6 @@ angular.module('framingApp').controller('SpeechCtrl', function ($scope, SpeechMo
 
 angular.module('framingApp').controller('FrameCtrl', function ($scope, SpeechModel) {
 	$scope.SpeechModel = SpeechModel;
-
 });
 
 angular.module('framingApp').service('SpeechModel', function(SpeechResource) {

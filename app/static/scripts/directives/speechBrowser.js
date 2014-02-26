@@ -4,15 +4,17 @@ angular.module('framingApp').directive('speechBrowser', function() {
   return {
     restrict: 'E',
     transclude: true,
+    scope: {
+      speeches: '=',
+      current: '='
+    },    
     controller: function ($scope, $modal, $log) {
       $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
 
       $scope.currentSpeech = null;
       
       $scope.open = function (index) {
-
         $scope.currentSpeech = $scope.speeches[index];
-
         var modalInstance = $modal.open({
           templateUrl: 'partials/speech-modal.html',
           controller: 'ModalInstanceCtrl',
@@ -22,20 +24,8 @@ angular.module('framingApp').directive('speechBrowser', function() {
             }
           }
         });
-
-        // modalInstance.result.then(function (selectedItem) {
-        //   $scope.selected = selectedItem;
-        // }, function () {
-        //   $log.info('Modal dismissed at: ' + new Date());
-        // });
-
       };
 
-    },
-    scope: {
-      speeches: '=',
-      filters: '=',
-      count: '='
     },
     templateUrl: '/partials/speech-browser.html',
     link: function(scope, element, attrs) {
