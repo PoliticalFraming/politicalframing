@@ -31,6 +31,7 @@ then
 	sudo apt-get install -y libpq-dev
 	sudo apt-get install -y libevent-dev
 	sudo apt-get install -y nginx
+	sudo apt-get install -y curl
 
 	sudo apt-get install -y libblas-dev
 	sudo apt-get isnatll -y libblas3gf
