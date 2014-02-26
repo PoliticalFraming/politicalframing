@@ -3,9 +3,9 @@ from peewee import *
 from collections import deque
 import datetime
 
-from app.models.topic import Topic
+# from app.models.topic import Topic
 from app.models.frame import Frame
-from app.models.speech import get_speeches_in_date_order
+from app.models.speech import get_speeches
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -73,7 +73,7 @@ class Analysis(db.Model):
         frame = Frame.get(Frame.name == frame)
         topic = Topic.get(Topic.phrase == phrase)
 
-        speeches = get_speeches_in_date_order(topic.topic_id, states, start_date, end_date)
+        speeches = get_speeches(topic.topic_id, states, start_date, end_date)
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
 
         analysis_obj = Analysis(

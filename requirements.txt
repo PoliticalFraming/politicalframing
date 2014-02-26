@@ -25,6 +25,7 @@ gevent==1.0
 gevent-websocket==0.9.1
 greenlet==0.4.1
 gunicorn==18.0
+httplib2==0.8
 itsdangerous==0.23
 kombu==3.0.8
 numpy==1.7.0

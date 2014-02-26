@@ -39,7 +39,7 @@ def test_core_algorithm():
  	frame_id=1
 	topic_id=1
 
-	speeches = get_speeches_in_date_order(topic_id)
+	speeches = get_speeches(topic_id)
 
 	# get list of json objects from the database (query by topic - or also filter by some other subset of factors)
 	frame = Frame.get(Frame.frame_id == frame_id)

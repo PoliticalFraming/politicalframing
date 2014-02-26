@@ -37,7 +37,7 @@ parser = reqparse.RequestParser()
 class SpeechController(Resource):
 
     def get(self, speech_id):
-        # speech = Speech.get(Speech.speech_id == speech_id)
+        speech = Speech.get(Speech.speech_id == speech_id)
         # return get_dictionary_from_model(speech)
 
 

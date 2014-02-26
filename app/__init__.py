@@ -1,12 +1,14 @@
 import os
 import urlparse
 import psycopg2
+import httplib2
 import logging
 from flask import Flask, make_response, render_template
 from flask.ext.cors import origin
 from flask.ext.restful import Api
 from flask_peewee.db import Database
 from flask.ext import restful
+from sunburnt import SolrInterface
 from werkzeug.wsgi import SharedDataMiddleware
 # from flask_peewee.rest import RestAPI, RestResource
 # from flask.ext.assets import Environment, Bundle
@@ -64,6 +66,10 @@ else:
     }
     CELERY_BROKER_URL = 'redis://localhost:6379'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+solr_url = "http://politicalframing.com:8983/solr" # "http://localhost:8983/solr/"
+h = httplib2.Http(cache="/var/tmp/solr_cache")
+si = SolrInterface(url = solr_url, http_connection = h)
 
 # Instantiate Flask
 

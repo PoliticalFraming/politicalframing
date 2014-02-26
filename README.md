@@ -5,6 +5,7 @@
 web: gunicorn -w 1 -t 600 app:app
 
 for gunicorn to show errors use DEBUG = True
-
- 
 https://github.com/gipi/dokku-django-example
+
+
+create persistent storage in dokku for solr at /var/tmp/solr_cache
