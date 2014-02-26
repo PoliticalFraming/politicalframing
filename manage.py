@@ -18,13 +18,9 @@ def hello():
 
 @manager.command
 def createdb():
-	Frame.create_table(fail_silently=True)
 	Analysis.create_table(fail_silently=True)
-	Speech.create_table(fail_silently=True)
-	Topic.create_table(fail_silently=True)
-	SpeechTopic.create_table(fail_silently=True)
+	Frame.create_table(fail_silently=True)
 	User.create_table(fail_silently=True)
-	db.database.execute_sql("ALTER TABLE speech_topic ADD CONSTRAINT speech_topic_unique UNIQUE(speech_id,topic_id);")
 	populate_frames_dummy_data()
 
 @manager.command

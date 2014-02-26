@@ -5,7 +5,7 @@ import datetime
 
 # from app.models.topic import Topic
 from app.models.frame import Frame
-from app.models.speech import get_speeches
+from app.models.speech import Speech
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -47,7 +47,7 @@ class Analysis(db.Model):
 
     analysis_id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
     frame = ForeignKeyField(Frame, null=False)
-    topic = ForeignKeyField(Topic, null=False)
+    phrase = CharField(null=False)
 
     celery_id = CharField(null=True)
     to_update = BooleanField(null=True)
@@ -70,10 +70,8 @@ class Analysis(db.Model):
         - returns ID of that instance
         """
 
-        frame = Frame.get(Frame.name == frame)
-        topic = Topic.get(Topic.phrase == phrase)
-
-        speeches = get_speeches(topic.topic_id, states, start_date, end_date)
+        # deal with states
+        speeches = Speech.get(phrase=phrase, frame=frame, start_date=start_date, end_date=end_date)
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
 
         analysis_obj = Analysis(

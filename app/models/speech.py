@@ -1,12 +1,10 @@
-from app import app, db, si
-from peewee import *
+from app import si
+import httplib2
 from dateutil import parser
 from datetime import datetime
 
-from app.models.frame import get_frame
-from sunburnt import SolrInterface
-
-class Speech(dict):
+class Speech(object):
+  
   def __init__(self, *args, **kwargs):
     self.speech_id = kwargs.get('speech_id')
     self.bills = kwargs.get('bills')
@@ -28,17 +26,68 @@ class Speech(dict):
     self.speaking = kwargs.get('speaking')
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
-    self.__dict__ = self
+
   @staticmethod
-  def get(**kwargs):
-    kwargs['speech_id'] = kwargs.get('speech_id') or ''
-    kwargs['start_date'] = parser.parse(kwargs['start_date']).date() if kwargs.get('start_date') else datetime(1994,1,1)
-    kwargs['end_date'] = parser.parse(kwargs['end_date']).date() if kwargs.get('end_date') else datetime.now()
-    si.query(id=kwargs['speech_id'], speaking=kwargs['phrase'], date__range=(kwargs['start_date'], kwargs['end_date']))
-  def highlight_speech(speech, frame):
-    speech['speaking'] = \
+  def get(rows, start, **kwargs):
+    """
+    Input
+      speech_id
+      start_date
+      end_date
+      phrase
+      rows
+      start
+      frame
+
+    Output
+      List of output
+    """
+    query = {}
+
+    if kwargs.get('speech_id'):
+      query['id'] = kwargs['speech_id']
+    elif kwargs.get('phrase'):
+      query['speaking'] = kwargs['phrase']
+
+    kwargs['start_date'] = parser.parse(kwargs['start_date']) if kwargs.get('start_date') else datetime(1994,1,1)
+    kwargs['end_date'] = parser.parse(kwargs['end_date']) if kwargs.get('end_date') else datetime.now()
+    query['date__range'] = (kwargs['start_date'], kwargs['end_date'])
+
+    # 
+    # if the number of docs is less than numFound, then this is the pagination offset
+    response = si.query(**query).paginate(rows=rows, start=start).execute()
+    speeches = response.result.docs
+    current_count = response.result.numFound
+    current_start = response.result.start
+
+    # TODO: improve this
+    if kwargs.get('frame') and kwargs.get('higlight'):
+        for speech in speeches:
+            speech = highlight_speech(speech['speaking'], frame)
+
+    speeches_dict = {
+      'count': current_count,
+      'start': current_start,
+      'speeches': speeches
+    }
+
+    return speeches_dict
+
+  def highlight_speech(self, frame):
+    """
+    Input
+      speech object
+      frame object
+
+    Output
+      speech object with highlighted 'speaking'
+    """
+    frame = frame['word_string'].split(' ')
+
+    self.speaking = \
       map(lambda sentence: 
-        " ".join(map(lambda word: "<strong>" + word + "</strong>" if word in frame.word_string.split(' ') else word, 
+        " ".join(map(lambda word: "<strong>" + word + "</strong>" if word in frame else word, 
           sentence.split())), 
-      eval(speech.get('speaking')))
-    return speech
+      self.speaking)
+
+    return self

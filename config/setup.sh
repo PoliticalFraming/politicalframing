@@ -27,7 +27,7 @@ then
 
   # Create database models
 
-  python createdb.py
+  python manage.py createdb
 
   sudo touch /var/log/framingapp_setup
 
