@@ -16,16 +16,22 @@ frame_fields = {
 	'seed_word': fields.String,
 	'word_count': fields.Integer,
 	'word_string': fields.String
-}
+	}
 
 parser = reqparse.RequestParser()
 
 class FrameController(Resource):
 
 	def get(self, frame_id):
-		print frame_id
 		frame = Frame.get(Frame.frame_id == frame_id)
 		return get_dictionary_from_model(frame)
+
+	def put(self, frame_id, word_string):
+		frame = Frame.get(frame.frame_id == frame_id)
+		frame.word_string = word_string
+		return frame
+
+
 
 class FrameListController(Resource):
 
@@ -42,13 +48,14 @@ class FrameListController(Resource):
 			'meta': {'count':count},
 			'data': frames
 			}
-	
-	# def post(self):
-		# args = parser.parse_args()
-		# user = Topic(username = args['username'], password = hash_pass(args['password']), email = args['email'])
-		# db.session.add(user)
-		# db.session.commit()
-		# return "yay life"
+
+	def post(self, name, description, generation, seed_word, word_count, word_string):
+		return Frame(name=name,
+		 description=description, 
+		 generation=generation, 
+		 seed_word=seed_word, 
+		 word_count=word_count, 
+		 word_string=word_string)
 
 api.add_resource(FrameListController, '/api/frames/', endpoint = 'frames')
 api.add_resource(FrameController, '/api/frames/<int:frame_id>/', endpoint = 'frame')
