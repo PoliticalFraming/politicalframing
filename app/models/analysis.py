@@ -286,12 +286,12 @@ class Analysis(db.Model):
             start_dates = map(lambda x: str(x), start_dates)
             end_dates = map(lambda x: str(x), end_dates)
 
-            self.frame_plot = {
-                'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
-                'ylabel': "D/R Ratio of Log-Likelihoods",
-                'start_dates': start_dates,
-                'end_dates': end_dates,
-                'ratios': ratios
-            }
+        self.frame_plot = {
+            'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
+            'ylabel': "D/R Ratio of Log-Likelihoods",
+            'start_dates': start_dates,
+            'end_dates': end_dates,
+            'ratios': ratios
+        }
 
-            return self.frame_plot
+        return self.frame_plot
