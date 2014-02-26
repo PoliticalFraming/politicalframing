@@ -2,7 +2,6 @@ from app import app, api, db
 from peewee import *
 
 from app.models.frame import Frame
-from app.models.topic import Topic
 from app.models.analysis import Analysis
 
 from flask.ext.restful import Resource, fields, reqparse
@@ -85,4 +84,4 @@ class AnalysisController(Resource):
 
 
 api.add_resource(AnalysisListController, '/api/analyses/', endpoint = 'analyses')
-api.add_resource(AnalysisController, '/api/analysis/<string:speech_id>/', endpoint = 'analysis')
+api.add_resource(AnalysisController, '/api/analysis/<string:analysis_id>/', endpoint = 'analysis')

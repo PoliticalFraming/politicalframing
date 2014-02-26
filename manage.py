@@ -3,7 +3,7 @@ from flask.ext.assets import ManageAssets
 from app import app, db
 
 from peewee import *
-from app.models.frame import Frame, populate_frames_dummy_data
+from app.models.frame import Frame
 from app.models.speech import Speech
 from app.models.user import User
 from app.models.analysis import Analysis
@@ -21,58 +21,38 @@ def createdb():
 	Analysis.create_table(fail_silently=True)
 	Frame.create_table(fail_silently=True)
 	User.create_table(fail_silently=True)
-	populate_frames_dummy_data()
 
 @manager.command
 def deletedb():
-	db.database.execute_sql("DROP TABLE frames, speeches, topics, speech_topic, users;")
+	db.database.execute_sql("DROP TABLE frames, users;")
+
+@manager.command
+def seeddb():
+	from app.models.frame import populate_frames_dummy_data
+	populate_frames_dummy_data()
 
 from app.controllers.analysis import * 
 ## UNIT TESTS
 @manager.command
 def test_core_algorithm(): 
 	"""Tests plot_discrete_average. """
- 	frame_id=1
-	topic_id=1
+	pass
+ 	# frame_id=1
 
-	speeches = get_speeches(topic_id)
+	# speeches = get_speeches()
 
 	# get list of json objects from the database (query by topic - or also filter by some other subset of factors)
-	frame = Frame.get(Frame.frame_id == frame_id)
-	topic = Topic.get(Topic.topic_id == topic_id)
+	# frame = Frame.get(Frame.frame_id == frame_id)
 	
 	#preprocess speeches
-	speeches = preprocess_speeches(speeches)
+	# speeches = preprocess_speeches(speeches)
 	
-	print str(len(speeches)) + " speeches are being analyzed"
-	frame_plot = plot_discrete_average(None, frame, speeches, 100, topic.phrase, testing=True)
+	# print str(len(speeches)) + " speeches are being analyzed"
+	# frame_plot = plot_discrete_average(None, frame, speeches, 100, topic.phrase, testing=True)
 
-	return frame_plot
+	# return frame_plot
+
 
 if __name__ == "__main__":
     manager.run()
 
-
-### SEEEEEEED DATA
-# import os 
-
-# #Delete the database
-# try:
-# 	os.remove('database.db')
-# 	print "Database Deleted"
-# except:
-# 	pass
-
-# #Create new DB
-# execfile('createdb.py')
-# print "new database created"
-
-# #Populate Frames
-# from app.models.frame import populate_frames_dummy_data
-# populate_frames_dummy_data()
-
-# #Populate Speeches
-# from app.database_views import download_speeches_for_topic
-# download_speeches_for_topic('gay')
-# download_speeches_for_topic('tomato')
-# download_speeches_for_topic('potato')
