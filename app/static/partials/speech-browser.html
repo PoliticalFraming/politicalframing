@@ -10,7 +10,7 @@
 	  </thead>
 	  <tbody>
 		  <tr ng-repeat="speech in speeches" ng-click="open($index)">
-		    <td>{{$index}}</td>
+		    <td>{{(current.filters.page-1) * 10 + $index+1}}</td>
 		    <td>{{speech.document_title}}</td>
 		    <td>{{speech.date}}</td>
 		    <td>{{speech.speaker_firstname + " " + speech.speaker_lastname}}</td>
@@ -20,7 +20,7 @@
 	</table>
 </div>
 
-<pagination total-items="current.pages" page="current.filters.page" boundary-links="true" rotate="false" max-size="5"></pagination>
+<pagination total-items="current.count" items-per-page="10" page="current.filters.page" boundary-links="true" rotate="false" max-size="5"></pagination>
 
 <!-- <p>page {{current.page}}</p> -->
 

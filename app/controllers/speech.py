@@ -1,9 +1,12 @@
+from __future__ import division
+
 from app import app, api, db
 from peewee import *
 from app.models.speech import Speech
 from flask.ext.restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser as dateparser
 import json
+import math
 
 speech_fields = {
     'speech_id': fields.String,
@@ -59,11 +62,15 @@ class SpeechListController(Resource):
       start = rows * (args['page'] - 1)
     )
 
+    count = speeches_dict['count']
+    pages = math.ceil(count/rows)
+    start = speeches_dict['start']
+
     return {
       'meta': {
-        'count': speeches_dict['count'],
-        'start': speeches_dict['start'],
-        'pages': speeches_dict['count']/rows,
+        'count': count,
+        'start': start,
+        'pages': pages,
         'page': args['page']
       },
       'data': speeches_dict['speeches']
