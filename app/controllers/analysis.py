@@ -5,6 +5,7 @@ from app.models.frame import Frame
 from app.models.analysis import Analysis
 
 from flask.ext.restful import Resource, fields, reqparse
+from flask_peewee.utils import get_dictionary_from_model
 from datetime import datetime
 from dateutil import parser as dateparser
 
@@ -62,9 +63,10 @@ class AnalysisListController(Resource):
 
 class AnalysisController(Resource):
 
+	# parser = reqparse.RequestParser()
 	# parser.add_argument('analysis_id', type=int, required=True, location='values')
 
-	def get(self):
+	def get(self, analysis_id):
 		"""
 		Return percent complete (meta). 
 		Return either empty json or completed frame and topic plot (text).
@@ -72,16 +74,12 @@ class AnalysisController(Resource):
 		analysis = Analysis.get(Analysis.analysis_id == analysis_id)
 		info = analysis.check_if_complete()
 
-		return{'meta':info,	'data':analysis}
+		return{'meta':info,	'data':get_dictionary_from_model(analysis)}
 
-	def put(self):
+	def put(self, analysis_id):
 		"""Update analysis in persistant storage"""
-		pass
-
-	def delete(self):
-		"""Delete analysis from persistant storage"""
 		pass
 
 
 api.add_resource(AnalysisListController, '/api/analyses/', endpoint = 'analyses')
-api.add_resource(AnalysisController, '/api/analysis/<string:analysis_id>/', endpoint = 'analysis')
+api.add_resource(AnalysisController, '/api/analysis/<int:analysis_id>/', endpoint = 'analysis')

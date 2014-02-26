@@ -1,3 +1,5 @@
+from __future__ import division 
+
 from app import app, db, celery
 from peewee import *
 from collections import deque
@@ -11,16 +13,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.datasets.base import Bunch
 
-
+import math
 
 @celery.task(bind=True)
 def analyze_task(self, analysis_obj, topic, frame, speeches):
-    print str(len(speeches)) + " speeches are being analyzed"
-
-    analysis_obj.plot_topic_usage(speeches, topic, 100)
-    analysis_obj.plot_frame_usage(frame, speeches, 100, 100, topic)
-
-    return analysis_obj
+    app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
+    analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, topic, 100)
+    analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, topic)
+    analysis_obj.save()
 
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
@@ -71,12 +71,20 @@ class Analysis(db.Model):
         """
 
         # deal with states
-        speeches = Speech.get(phrase=phrase, frame=frame, start_date=start_date, end_date=end_date)
+        query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
+
+        numFound = Speech.get(0, 0, **query)['count']
+
+        speeches = []
+        for i in range(0, int(math.ceil(numFound/10000))):
+            speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
+
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
 
+        frame = Frame.get(Frame.name == frame)
         analysis_obj = Analysis(
             frame = frame, 
-            topic = topic,
+            phrase = phrase,
             start_date = start_date, 
             end_date = end_date, 
             states = states, 
@@ -84,15 +92,12 @@ class Analysis(db.Model):
         )
         analysis_obj.save()
 
-        result = analyze_task.delay(analysis_obj, topic, frame, speeches)
+        result = analyze_task.delay(analysis_obj, phrase, frame, speeches)
         analysis_obj.celery_id = result.id
         analysis_obj.save()
-        celery.close()
+        # celery.close()
 
-        app.logger.debug("Computed Analysis %d for topic=%s and frame=%s", 
-            analysis_obj.analysis_id,
-            topic.phrase,
-            frame.name)
+        app.logger.debug("Computed Analysis %d for phrase=%s and frame=%s", analysis_obj.analysis_id, phrase, frame.name)
 
         return analysis_obj.analysis_id
 
@@ -100,7 +105,7 @@ class Analysis(db.Model):
 
     @classmethod
     def party_fn(cls, speech):
-        if speech.speaker_party=="D" or speech.speaker_party=="R":
+        if speech['speaker_party']=="D" or speech['speaker_party']=="R":
             return True
         else:
             return False
@@ -129,10 +134,10 @@ class Analysis(db.Model):
 
     ####################### LOGIC #######################
 
-    def plot_topic_usage(self, ordered_speeches, topic, n):
+    def plot_topic_usage(self, ordered_speeches, phrase, n):
         """
         ordered_speeches - list of speech objects in date order
-        topic - Topic object
+        phrase - string
 
         *** needs to be modified
         """
@@ -150,12 +155,13 @@ class Analysis(db.Model):
             for i in range(n):
                 try:
                     current_speech = speeches.popleft()
-                    date_string = str(current_speech.date)
-                    if current_speech.speaker_party == "D":
+                    date_string = str(current_speech['date'])
+                    if current_speech['speaker_party'] == "D":
                         dem_count +=1
-                    elif current_speech.speaker_party == "R":
+                    elif current_speech['speaker_party'] == "R":
                         rep_count +=1
-                except:
+                except IndexError:
+                    # @DhrumilMehta I think this is for the last bucket which won't have all 100 speeches??
                     pass
 
             if dem_count>0 and rep_count>0:
@@ -173,13 +179,15 @@ class Analysis(db.Model):
         ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
 
         self.topic_plot = {
-            'title': "Speeches about %s" % topic.phrase,
+            'title': "Speeches about %s" % phrase,
             'ylabel': "Number of Speeches",
             'dates': dates, 
             'ratios':ratios,
             'dem_counts':dem_counts,
             'rep_counts':rep_counts
         }
+
+        return self.topic_plot
 
     def build_training_set(self, speeches):
         '''This function is an alternative form of the loads in sklearn which loads 
@@ -189,12 +197,12 @@ class Analysis(db.Model):
         app.logger.debug('Building training set.')
 
         def target_function(speech):
-            if speech.speaker_party == 'D':
+            if speech['speaker_party'] == 'D':
                 return 0
-            elif speech.speaker_party == 'R':
+            elif speech['speaker_party'] == 'R':
                 return 1
             else:
-                print "Speech must be categorized as D or R : " + str(speech.speech_id)
+                print "Speech must be categorized as D or R : " + str(speech['speech_id'])
 
         target = [] #0 and 1 for D or R respectively  
         target_names = ['D','R'] #target_names
@@ -203,8 +211,8 @@ class Analysis(db.Model):
         for speech in speeches:  
             target.append(target_function(speech))
             speech_string = ''
-            for sentence in speech.speaking:
-                speech_string += sentence    
+            for sentence in speech['speaking']:
+                speech_string += sentence
             data.append(speech_string)
         
         DESCR = "Trained D vs R classifier"
@@ -252,8 +260,8 @@ class Analysis(db.Model):
 
         #loop through and plot each point
         while speeches:
-            start_dates.append(current_window[0].date)
-            end_dates.append(current_window[-1].date)
+            start_dates.append(current_window[0]['date'])
+            end_dates.append(current_window[-1]['date'])
 
             training_set = self.build_training_set(current_window)
 
@@ -285,3 +293,5 @@ class Analysis(db.Model):
                 'end_dates': end_dates,
                 'ratios': ratios
             }
+
+            return self.frame_plot
