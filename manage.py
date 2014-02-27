@@ -18,9 +18,9 @@ def hello():
 
 @manager.command
 def createdb():
-	Analysis.create_table(fail_silently=True)
-	Frame.create_table(fail_silently=True)
-	User.create_table(fail_silently=True)
+	Frame.create_table()
+	Analysis.create_table()
+	User.create_table()
 
 @manager.command
 def deletedb():

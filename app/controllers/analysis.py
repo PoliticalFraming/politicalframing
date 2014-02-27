@@ -61,6 +61,7 @@ class AnalysisListController(Resource):
 		## HI
 		## DO THIS KAAY THX
 		# move this code the fuck out of here!!!!!!!!!!!!!!!!!!!!!!!!
+		
 		analysis_obj = Analysis.compute_analysis(
 			phrase = args.get('phrase'), 
 			frame = args.get('frame'),

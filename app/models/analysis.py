@@ -16,10 +16,23 @@ from sklearn.datasets.base import Bunch
 import math
 
 @celery.task(bind=True)
-def analyze_task(self, analysis_obj, topic, frame, speeches):
+def analyze_task(self, analysis_obj, query):
+    # query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
+
+    phrase = query['phrase']
+    frame = Frame.get(Frame.id == query['frame'])
+
+    numFound = Speech.get(0, 0, **query)['count']
+
+    speeches = []
+    for i in range(0, int(math.ceil(numFound/10000))):
+        speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
+
+    speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
+
     app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
-    analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, topic, 100)
-    analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, topic)
+    analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100)
+    analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase)
     analysis_obj.save()
 
 class Classifier:
@@ -70,27 +83,19 @@ class Analysis(db.Model):
         - returns ID of that instance
         """
 
-        # deal with states
-        query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
-
-        numFound = Speech.get(0, 0, **query)['count']
-
-        speeches = []
-        for i in range(0, int(math.ceil(numFound/10000))):
-            speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
-
-        speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
-
-        frame = Frame.get(Frame.id == frame)
         analysis_obj = Analysis(
-            frame = frame, 
+            frame = Frame.get(Frame.id == frame), 
             phrase = phrase,
             start_date = start_date, 
             end_date = end_date, 
             states = states, 
             to_update = to_update
         )
+
         analysis_obj.save()
+
+        # deal with states
+        query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
 
         result = analyze_task.delay(analysis_obj, phrase, frame, speeches)
         analysis_obj.celery_id = result.id
@@ -222,7 +227,7 @@ class Analysis(db.Model):
             data = data,
             DESCR = DESCR)
         
-    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, topic, testing=False):
+    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, testing=False):
         """ 
         frame = frame object
         speeches = list of speech objects in date order
@@ -291,7 +296,7 @@ class Analysis(db.Model):
             end_dates = map(lambda x: str(x), end_dates)
 
         self.frame_plot = {
-            'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
+            'title': "Usage of %s Frame in Speeches about %s" % (frame.name, phrase),
             'ylabel': "D/R Ratio of Log-Likelihoods",
             'start_dates': start_dates,
             'end_dates': end_dates,
