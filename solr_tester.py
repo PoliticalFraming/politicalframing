@@ -82,15 +82,15 @@ def get_speeches(rows, start, dabool, **kwargs):
   return speeches_dict
 
 # Congress 113-103, first column all speeches, second column speeches with speaker_party
-print "Congress 112: %d \t %d" % (get_speeches(0,0, False, congress=113)['count'], get_speeches(0,0, True, congress=113)['count'])
-print "Congress 111: %d \t %d" % (get_speeches(0,0, False, congress=112)['count'], get_speeches(0,0, True, congress=112)['count'])
-print "Congress 110: %d \t %d" % (get_speeches(0,0, False, congress=111)['count'], get_speeches(0,0, True, congress=111)['count'])
-print "Congress 109: %d \t %d" % (get_speeches(0,0, False, congress=110)['count'], get_speeches(0,0, True, congress=110)['count'])
-print "Congress 108: %d \t %d" % (get_speeches(0,0, False, congress=109)['count'], get_speeches(0,0, True, congress=109)['count'])
-print "Congress 107: %d \t %d" % (get_speeches(0,0, False, congress=108)['count'], get_speeches(0,0, True, congress=108)['count'])
-print "Congress 106: %d \t %d" % (get_speeches(0,0, False, congress=107)['count'], get_speeches(0,0, True, congress=107)['count'])
-print "Congress 105: %d \t %d" % (get_speeches(0,0, False, congress=106)['count'], get_speeches(0,0, True, congress=106)['count'])
-print "Congress 104: %d \t %d" % (get_speeches(0,0, False, congress=105)['count'], get_speeches(0,0, True, congress=105)['count'])
-print "Congress 103: %d \t %d" % (get_speeches(0,0, False, congress=104)['count'], get_speeches(0,0, True, congress=104)['count'])
-print "Congress 102: %d \t %d" % (get_speeches(0,0, False, congress=103)['count'], get_speeches(0,0, True, congress=103)['count'])
+print "Congress 113: %d \t %d" % (get_speeches(0,0, False, congress=113)['count'], get_speeches(0,0, True, congress=113)['count'])
+print "Congress 112: %d \t %d" % (get_speeches(0,0, False, congress=112)['count'], get_speeches(0,0, True, congress=112)['count'])
+print "Congress 111: %d \t %d" % (get_speeches(0,0, False, congress=111)['count'], get_speeches(0,0, True, congress=111)['count'])
+print "Congress 110: %d \t %d" % (get_speeches(0,0, False, congress=110)['count'], get_speeches(0,0, True, congress=110)['count'])
+print "Congress 109: %d \t %d" % (get_speeches(0,0, False, congress=109)['count'], get_speeches(0,0, True, congress=109)['count'])
+print "Congress 108: %d \t %d" % (get_speeches(0,0, False, congress=108)['count'], get_speeches(0,0, True, congress=108)['count'])
+print "Congress 107: %d \t %d" % (get_speeches(0,0, False, congress=107)['count'], get_speeches(0,0, True, congress=107)['count'])
+print "Congress 106: %d \t %d" % (get_speeches(0,0, False, congress=106)['count'], get_speeches(0,0, True, congress=106)['count'])
+print "Congress 105: %d \t %d" % (get_speeches(0,0, False, congress=105)['count'], get_speeches(0,0, True, congress=105)['count'])
+print "Congress 104: %d \t %d" % (get_speeches(0,0, False, congress=104)['count'], get_speeches(0,0, True, congress=104)['count'])
+print "Congress 103: %d \t %d" % (get_speeches(0,0, False, congress=103)['count'], get_speeches(0,0, True, congress=103)['count'])
 

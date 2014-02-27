@@ -77,14 +77,15 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
       function pollData(id) {
         $http.get('/api/analyses/' + id + '/').then(function(response) {
           if (response.data.meta.state === 'SUCCESS') {
+            console.log(response.data.meta);
             $scope.analysisUpdated = response.data.data;
             return;
           }
-          else setTimeout( function() { pollData(id) }, 2000);
+          else setTimeout( function() { pollData(id); }, 2000);
         });
       }
 
-      setTimeout( function() { pollData(id) }, 1000);
+      setTimeout( function() { pollData(id); }, 1000);
     });
 
   };
