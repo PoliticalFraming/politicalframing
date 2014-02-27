@@ -32,6 +32,7 @@ then
 	sudo apt-get install -y libevent-dev
 	sudo apt-get install -y nginx
 	sudo apt-get install -y curl
+	sudo apt-get install -y redis-server
 
 	sudo apt-get install -y libxml2-dev 
 	sudo apt-get install -y libxslt-dev

@@ -25,6 +25,9 @@ then
   pip install numpy==1.7.0
   pip install -r /vagrant/requirements.txt
 
+  npm install
+  sudo npm install -g grunt-cli
+
   # Create database models
 
   python manage.py createdb
