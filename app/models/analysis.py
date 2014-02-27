@@ -13,27 +13,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.datasets.base import Bunch
 
+import inspect
 import math
-
-@celery.task(bind=True)
-def analyze_task(self, analysis_obj, query):
-    # query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
-
-    phrase = query['phrase']
-    frame = Frame.get(Frame.id == query['frame'])
-
-    numFound = Speech.get(0, 0, **query)['count']
-
-    speeches = []
-    for i in range(0, int(math.ceil(numFound/10000))):
-        speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
-
-    speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
-
-    app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
-    analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100)
-    analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase)
-    analysis_obj.save()
 
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
@@ -97,14 +78,35 @@ class Analysis(db.Model):
         # deal with states
         query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
 
-        result = analyze_task.delay(analysis_obj, phrase, frame, speeches)
+        result = Analysis.analyze_task.delay(analysis_obj, query)
         analysis_obj.celery_id = result.id
         analysis_obj.save()
         # celery.close()
 
-        app.logger.debug("Computed Analysis %d for phrase=%s and frame=%s", analysis_obj.id, phrase, frame.name)
+        app.logger.debug("Computed Analysis %d for phrase=%s and frame=%d", analysis_obj.id, phrase, frame)
+
+        print analysis_obj
 
         return analysis_obj
+
+    ####################### CELERY TASK #######################
+
+    @staticmethod
+    @celery.task(bind=True)
+    def analyze_task(self, analysis_obj, query):
+        celery_id = self.request.id
+        celery_obj = self
+        phrase = query['phrase']
+        frame = Frame.get(Frame.id == query['frame'])
+        numFound = Speech.get(0, 0, **query)['count']
+        speeches = []
+        for i in range(0, int(math.ceil(numFound/10000))):
+            speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
+        speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
+        app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
+        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase, celery_obj)
+        analysis_obj.save()
 
     ####################### UTILITIES #######################
 
@@ -137,7 +139,7 @@ class Analysis(db.Model):
 
     ####################### LOGIC #######################
 
-    def plot_topic_usage(self, ordered_speeches, phrase, n):
+    def plot_topic_usage(self, ordered_speeches, phrase, n, celery_obj):
         """
         ordered_speeches - list of speech objects in date order
         phrase - string
@@ -154,11 +156,13 @@ class Analysis(db.Model):
         while speeches:
             dem_count = 0
             rep_count = 0
+            dadate = None
             date_string = ""
             for i in range(n):
                 try:
                     current_speech = speeches.popleft()
-                    date_string = str(current_speech['date'])
+                    dadate = current_speech['date']
+                    # date_string = str(current_speech['date'])
                     if current_speech['speaker_party'] == "D":
                         dem_count +=1
                     elif current_speech['speaker_party'] == "R":
@@ -169,7 +173,7 @@ class Analysis(db.Model):
 
             if dem_count>0 and rep_count>0:
                 #skips datapoints that don't have at least one speech in each category to avoid ZeroDivisionError
-                dates.append(date_string)
+                dates.append(dadate)
                 dem_counts.append(dem_count)
                 rep_counts.append(rep_count)
             
@@ -227,7 +231,7 @@ class Analysis(db.Model):
             data = data,
             DESCR = DESCR)
         
-    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, testing=False):
+    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
         """ 
         frame = frame object
         speeches = list of speech objects in date order
@@ -263,12 +267,7 @@ class Analysis(db.Model):
 
         #loop through and plot each point
         while speeches:
-
-            if not testing: #Don't update state if accessing from unit tests (there is no self)
-                self.update_state(state='PROGRESS', 
-                    meta={'current': len(speeches), 
-                    'total': len(ordered_speeches)})
-                
+            celery_obj.update_state(state='PROGRESS', meta={'current': len(speeches), 'total': len(ordered_speeches)})
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
@@ -292,8 +291,8 @@ class Analysis(db.Model):
             ratios = map(lambda x,y: x/y, d_likelihoods, r_likelihoods)
 
             #stringify dates
-            start_dates = map(lambda x: str(x), start_dates)
-            end_dates = map(lambda x: str(x), end_dates)
+            # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
+            # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
 
         self.frame_plot = {
             'title': "Usage of %s Frame in Speeches about %s" % (frame.name, phrase),
