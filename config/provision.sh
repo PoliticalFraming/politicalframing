@@ -33,6 +33,9 @@ then
 	sudo apt-get install -y nginx
 	sudo apt-get install -y curl
 
+	sudo apt-get install -y libxml2-dev 
+	sudo apt-get install -y libxslt-dev
+
 	sudo apt-get install -y libblas-dev
 	sudo apt-get isnatll -y libblas3gf
 	sudo apt-get install -y libblas-doc
