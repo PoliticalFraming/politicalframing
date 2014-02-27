@@ -124,7 +124,7 @@ from app import decorators
 from app.models import frame 
 from app.models import user
 from app.controllers import frame
-from app.controllers import user
+# from app.controllers import user
 from app.controllers import speech
 from app.controllers import analysis
 

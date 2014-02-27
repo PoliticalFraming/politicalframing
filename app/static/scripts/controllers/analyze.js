@@ -68,10 +68,27 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
   /* ==================== GRAPHING SHIT ==================== */
   
+  // $scope.graphShit = function(response) {
+  //   if (response.data.meta.state === 'SUCCESS') {
+  //   }
+  //   else {
+  //     if (response.data.state=="PROGRESS"){
+  //       $scope.percentAnalyzed = response.data.meta;
+  //       console.log("pooooooooooohyooooooooo");
+  //       console.log($scope.percentAnalyzed);
+  //     }
+  //     console.log(response.data);
+  //     setTimeout(pollforAnalyzeData, 5000);
+  //   }
+  // }
+
+  /* ==================== ANALYZING SHIT ==================== */
+
   $scope.analyzeSpeeches = function () {
 
     var analysis = Analysis.new($scope.current.filters);
     analysis.$save().then(function(response) {
+
       var id = analysis.id;
 
       function pollData(id) {
@@ -80,17 +97,99 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
           if (response.data.meta.state === 'SUCCESS') {
             console.log("success");
             $scope.analysisUpdated = response.data.data;
+
+            console.log(response.data.data);
+            var thedata = response.data.data;
+            var limit = 100000;
+            var y = 0;
+            var data = [];
+            var dataSeries1 = { type: 'line' };
+            var dataSeries2 = { type: 'line' };
+            var dataPoints = [];
+            var theOnes = [];
+            for (var i = 0; i < thedata.frame_plot.end_dates.length; i++ ) {
+              var dateTime = new Date(thedata.frame_plot.end_dates[i]);
+              console.log(thedata.frame_plot.end_dates[i]);
+              console.log(dateTime);
+              dataPoints.push({
+                x: dateTime,
+                y: thedata.frame_plot.ratios[i]
+              });
+              if (i==0 || i==thedata.frame_plot.end_dates.length-1){
+                theOnes.push({
+                  x: dateTime,
+                  y: 1
+                });
+              }
+            }
+            dataSeries1.dataPoints = dataPoints;
+            dataSeries2.dataPoints = theOnes;
+            data.push(dataSeries1);
+            data.push(dataSeries2);
+            console.log(data);
+            var chart = new CanvasJS.Chart('chartContainer',
+            {
+              zoomEnabled: true,
+              title:{ text: thedata.frame_plot.title },
+              axisX :{ labelAngle: -30 },
+              axisY :{ includeZero:false, title: thedata.frame_plot.ylabel},
+              data: data
+            });
+            chart.render();
+            $scope.analyzeData = data;
+            var limit = 100000;
+            var y = 0;
+            var data = [];
+            var dataSeries1 = { type: 'line', showInLegend: true, legendText: 'Dem Counts' };
+            var dataSeries2 = { type: 'line', showInLegend: true, legendText: 'Repub Counts'  };
+            var dataSeries3 = { type: 'line', showInLegend: true, legendText: 'Total Counts'  };
+            var dataPoints1 = [];
+            var dataPoints2 = [];
+            var dataPoints3 = [];
+            for (var i = 0; i < thedata.topic_plot.end_dates.length; i++ ) {
+              var dateTime = new Date(thedata.topic_plot.end_dates[i]);
+              dataPoints1.push({ x: dateTime, y: thedata.topic_plot.dem_counts[i] });
+              dataPoints2.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
+              dataPoints3.push({ x: dateTime, y: thedata.topic_plot.total_counts[i] });
+            }
+            dataSeries1.dataPoints = dataPoints1;
+            dataSeries2.dataPoints = dataPoints2;
+            dataSeries3.dataPoints = dataPoints3;
+            data.push(dataSeries1);
+            data.push(dataSeries2);
+            data.push(dataSeries3);
+            var chart = new CanvasJS.Chart("chartContainer2",
+            {
+              zoomEnabled: true,
+              title:{ text: thedata.topic_plot.title },
+              axisX :{ labelAngle: -30 },
+              axisY :{ includeZero:false, title: thedata.topic_plot.ylabel},
+              data: data
+            });
+            chart.render();
+            $scope.analyzeData = data;
+
             return;
           }
-          else if (response.data.meta.state === 'FAILURE'){
+          else if (response.data.meta.state === 'FAILURE') {
             console.log("failed");
-            return;            
+            return;
           }
-          else setTimeout( function() { pollData(id) }, 2000);
+          else {
+
+            if (response.data.meta.state === "PROGRESS") {
+              $scope.percentAnalyzed = response.data.meta;
+              console.log("pooooooooooohyooooooooo");
+              console.log($scope.percentAnalyzed);
+            }
+
+            setTimeout( function() { pollData(id) }, 2000);
+          }
         });
       }
 
       setTimeout( function() { pollData(id); }, 1000);
+
     });
 
   };
@@ -99,85 +198,5 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 });
 
 
-  // if (response.data.state === 'SUCCESS') {
-  //   console.log(response.data);
-  //   var thedata = response.data;
-  //   var limit = 100000;    
-  //   var y = 0;
-  //   var data = [];
-  //   var dataSeries1 = { type: 'line' };
-  //   var dataSeries2 = { type: 'line' };
-  //   var dataPoints = [];
-  //   var theOnes = [];
-  //   for (var i = 0; i < thedata.frame_plot.dates.length; i++ ) {
-  //     var dateTime = new Date(thedata.frame_plot.dates[i]);
-  //     console.log(thedata.frame_plot.dates[i]);
-  //     console.log(dateTime);
-  //     dataPoints.push({
-  //       x: dateTime,
-  //       y: thedata.frame_plot.ratios[i]
-  //     });
-  //     if (i==0 || i==thedata.frame_plot.dates.length-1){
-  //       theOnes.push({
-  //         x: dateTime,
-  //         y: 1
-  //       });
-  //     }
-  //   }
-  //   dataSeries1.dataPoints = dataPoints;
-  //   dataSeries2.dataPoints = theOnes;
-  //   data.push(dataSeries1);
-  //   data.push(dataSeries2);
-  //   console.log(data);
-  //   var chart = new CanvasJS.Chart('chartContainer',
-  //   {
-  //     zoomEnabled: true,
-  //     title:{ text: thedata.frame_plot.title },
-  //     axisX :{ labelAngle: -30 },
-  //     axisY :{ includeZero:false, title: thedata.frame_plot.ylabel},
-  //     data: data
-  //   });
-  //   chart.render();
-  //   $scope.analyzeData = data;
-  //   var limit = 100000;    
-  //   var y = 0;
-  //   var data = [];
-  //   var dataSeries1 = { type: 'line', showInLegend: true, legendText: 'Dem Counts' };
-  //   var dataSeries2 = { type: 'line', showInLegend: true, legendText: 'Repub Counts'  };
-  //   var dataSeries3 = { type: 'line', showInLegend: true, legendText: 'Total Counts'  };
-  //   var dataPoints1 = [];
-  //   var dataPoints2 = [];
-  //   var dataPoints3 = [];
-  //   for (var i = 0; i < thedata.topic_plot.start_dates.length; i++ ) {
-  //     var dateTime = new Date(thedata.topic_plot.start_dates[i]);
-  //     dataPoints1.push({ x: dateTime, y: thedata.topic_plot.dem_counts[i] });
-  //     dataPoints2.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
-  //     dataPoints3.push({ x: dateTime, y: thedata.topic_plot.total_counts[i] });
-  //   }
-  //   dataSeries1.dataPoints = dataPoints1;
-  //   dataSeries2.dataPoints = dataPoints2;
-  //   dataSeries3.dataPoints = dataPoints3;
-  //   data.push(dataSeries1);
-  //   data.push(dataSeries2);
-  //   data.push(dataSeries3);
-  //   var chart = new CanvasJS.Chart("chartContainer2",
-  //   {
-  //     zoomEnabled: true,
-  //     title:{ text: thedata.topic_plot.title },
-  //     axisX :{ labelAngle: -30 },
-  //     axisY :{ includeZero:false, title: thedata.topic_plot.ylabel},
-  //     data: data
-  //   });
-  //   chart.render();
-  //   $scope.analyzeData = data;
-  // }
-  // else {
-  //   if (response.data.state=="PROGRESS"){
-  //     $scope.percentAnalyzed = response.data.meta;
-  //     console.log("pooooooooooohyooooooooo");
-  //     console.log($scope.percentAnalyzed);
-  //   }
-  //   console.log(response.data);
-  //   setTimeout(pollforAnalyzeData, 5000);
-  // }
+
 
