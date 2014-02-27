@@ -82,7 +82,7 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             $scope.analysisUpdated = response.data.data;
             return;
           }
-          else if {
+          else if (response.data.meta.state === 'FAILURE'){
             console.log("failed");
             return;            
           }
