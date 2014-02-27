@@ -258,6 +258,12 @@ class Analysis(db.Model):
 
         #loop through and plot each point
         while speeches:
+
+            if not testing: #Don't update state if accessing from unit tests (there is no self)
+                self.update_state(state='PROGRESS', 
+                    meta={'current': len(speeches), 
+                    'total': len(ordered_speeches)})
+                
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
