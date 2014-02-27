@@ -9,7 +9,7 @@ from flask_peewee.utils import get_dictionary_from_model
 from dateutil import parser as dateparser
 
 frame_fields = {
-	'frame_id': fields.String,
+	'id': fields.Integer,
 	'name': fields.String,
 	'description': fields.String,
 	'generation': fields.Integer,
@@ -22,16 +22,14 @@ parser = reqparse.RequestParser()
 
 class FrameController(Resource):
 
-	def get(self, frame_id):
-		frame = Frame.get(Frame.frame_id == frame_id)
+	def get(self, id):
+		frame = Frame.get(Frame.id == id)
 		return get_dictionary_from_model(frame)
 
-	def put(self, frame_id, word_string):
-		frame = Frame.get(frame.frame_id == frame_id)
+	def put(self, id, word_string):
+		frame = Frame.get(frame.id == id)
 		frame.word_string = word_string
 		return frame
-
-
 
 class FrameListController(Resource):
 
@@ -40,7 +38,7 @@ class FrameListController(Resource):
 	def get(self):
 		args = parser.parse_args()
 		if not args['page']: args['page'] = 1
-		query = Frame.select().order_by(Frame.frame_id)
+		query = Frame.select().order_by(Frame.id)
 		count=query.count()
 		frames = map(lambda x: get_dictionary_from_model(x), query.paginate(args['page'],20))
 		
@@ -58,4 +56,4 @@ class FrameListController(Resource):
 		 word_string=word_string)
 
 api.add_resource(FrameListController, '/api/frames/', endpoint = 'frames')
-api.add_resource(FrameController, '/api/frames/<int:frame_id>/', endpoint = 'frame')
+api.add_resource(FrameController, '/api/frames/<int:id>/', endpoint = 'frame')

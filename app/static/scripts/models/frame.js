@@ -3,7 +3,7 @@
 angular.module('framingApp').factory('Frame', ['ActiveResource', function(ActiveResource) {
 
   function Frame(data) {
-    this.integer('frame_id');
+    this.integer('id');
     this.string('name');
     this.string('description');
     this.integer('generation');
@@ -14,6 +14,13 @@ angular.module('framingApp').factory('Frame', ['ActiveResource', function(Active
 
   Frame.inherits(ActiveResource.Base);
   Frame.api.set('/api');
+  Frame.api.indexURL  = '/api/frames/';
+  Frame.api.createURL = '/api/frames/';
+  Frame.api.showURL   = '/api/frames/:id/';
+  Frame.api.updateURL = '/api/frames/:id/';
+  Frame.api.deleteURL = '/api/frames/:id/';
+
+  // Frame.primaryKey = 'frame_id';
 
   return Frame;
 }]);

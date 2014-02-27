@@ -31,12 +31,12 @@ parser = reqparse.RequestParser()
 
 class AnalysisListController(Resource):
 
-	parser.add_argument('frame', type = str, required = True, location = 'values')
-	parser.add_argument('phrase', type = str, required = True, location = 'values')
-	parser.add_argument('start_date', type = str, required = False, location = 'values')
-	parser.add_argument('end_date', type = str, required = False, location = 'values')
-	parser.add_argument('states', type = list, required = False, location = 'values')
-	parser.add_argument('analysis_id', type = int, required = False, location = 'values')
+	parser.add_argument('id', type = int, required = False, location = 'json')
+	parser.add_argument('frame', type = int, required = True, location = 'json')
+	parser.add_argument('phrase', type = str, required = True, location = 'json')
+	parser.add_argument('start_date', type = str, required = False, location = 'json')
+	parser.add_argument('end_date', type = str, required = False, location = 'json')
+	parser.add_argument('states', type = list, required = False, location = 'json')
 
 	def get(self):
 		"""Search persistant storage for analysis matching argument paramenters."""
@@ -50,7 +50,7 @@ class AnalysisListController(Resource):
 			args['start_date'] = dateparser.parse(args['start_date']).date()
 			args['end_date'] = dateparser.parse(args['start_date']).date()
 
-		analysis_id = Analysis.compute_analysis(
+		analysis_obj = Analysis.compute_analysis(
 			phrase = args.get('phrase'), 
 			frame = args.get('frame'),
 			start_date = args.get('start_date'), 
@@ -59,27 +59,27 @@ class AnalysisListController(Resource):
 			to_update=False
 		)
 
-		return analysis_id
+		return get_dictionary_from_model(analysis_obj)
 
 class AnalysisController(Resource):
 
 	# parser = reqparse.RequestParser()
-	# parser.add_argument('analysis_id', type=int, required=True, location='values')
+	# parser.add_argument('id', type=int, required=True, location='values')
 
-	def get(self, analysis_id):
+	def get(self, id):
 		"""
 		Return percent complete (meta). 
 		Return either empty json or completed frame and topic plot (text).
 		"""
-		analysis = Analysis.get(Analysis.analysis_id == analysis_id)
+		analysis = Analysis.get(Analysis.id == id)
 		info = analysis.check_if_complete()
 
 		return{'meta':info,	'data':get_dictionary_from_model(analysis)}
 
-	def put(self, analysis_id):
+	def put(self, id):
 		"""Update analysis in persistant storage"""
 		pass
 
 
 api.add_resource(AnalysisListController, '/api/analyses/', endpoint = 'analyses')
-api.add_resource(AnalysisController, '/api/analysis/<int:analysis_id>/', endpoint = 'analysis')
+api.add_resource(AnalysisController, '/api/analyses/<int:id>/', endpoint = 'analysis')

@@ -18,7 +18,7 @@ var app = angular.module('framingApp', [
       })
       .when('/analyze', {
         templateUrl: 'views/analyze.html',
-        controller: 'MainCtrl'
+        controller: 'AnalyzeCtrl'
       })
       .when('/browse', {
         templateUrl: 'views/browse.html',

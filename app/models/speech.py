@@ -5,6 +5,8 @@ from datetime import datetime
 
 from sunburnt import RawString
 
+from app.models.frame import Frame
+
 class Speech(object):
   
   def __init__(self, *args, **kwargs):
@@ -65,9 +67,10 @@ class Speech(object):
     current_start = response.result.start
 
     # TODO: improve this
-    if kwargs.get('frame') and kwargs.get('higlight'):
-        for speech in speeches:
-            speech = highlight_speech(speech['speaking'], frame)
+    if kwargs.get('frame_id') and kwargs.get('higlight'):
+      frame = Frame.get(Frame.id == kwargs['frame_id'])
+      for speech in speeches:
+          speech = highlight_speech(speech['speaking'], frame)
 
     speeches_dict = {
       'count': current_count,

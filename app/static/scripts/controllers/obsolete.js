@@ -52,7 +52,7 @@
   // $scope.gridOptions = {
   //   data: 'speeches',
   //   columnDefs: [
-  //     {field: 'speech_id', displayName: 'ID', width: '10%'},
+  //     {field: 'id', displayName: 'ID', width: '10%'},
   //     {field: 'title', displayName: 'Title', width: '61%'},
   //     {field: 'speaker_state', displayName: 'State', width: '7%'},
   //     {field: 'speaker_party', displayName: 'Party', width: '7%'},

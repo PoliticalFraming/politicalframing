@@ -7,18 +7,30 @@
 
             <div class="row">
                 <div class="col-sm-12">
-                    <h4>Select a Topic</h4>
-                    <input id="topics" ui-select2="topicsSelectOptions" ng-model="selectedTopic" data-placeholder="Select a Topic"></select>
-                    <br>
-                    <br>
+                    <h4>Filter by phrase</h4>
+                    <input type="text" class="phrase-input" ng-model="current.filters.phrase" />
+                    <input type="button" class="btn btn-xs btn-primary" ng-click="loadSpeeches()" value="Browse"/>
                 </div>
-            </div>
-                        
+
+              <div class="col-sm-12">
+                <h4>Select Frame to Highlight</h4>
+                  <select chosen id="frames" 
+                    ng-model="current.filters.frame"
+                    ng-options="frame.id as frame.name for frame in frames" 
+                    data-placeholder="Select a Frame"
+                    no-results-text="'Could not find any frames'"
+                    width="'200px'">
+                    <option value=""></option>
+                  </select>
+              </div>
+
+            </div>      
+
         </tab>
 
         <tab heading="{{tabs[1].heading}}" active="tabs[1].active" disabled="tabs[1].disabled" select="updatePercentTab(1)">
 
-            <div class="browseSpeeches" ng-show="selectedTopic">
+            <div class="browseSpeeches" ng-show="speeches">
                 <div class="row">
                     <div class="col-sm-7">
 
@@ -28,8 +40,8 @@
                         <p>{{status_bar}}</p>
                      
                     </div>
-                    <div class="col-sm-5 current-speech" ng-show="currentSpeech">
-                        <p>ID: {{currentSpeech.speech_id}}</p>
+<!--                     <div class="col-sm-5 current-speech" ng-show="currentSpeech">
+                        <p>ID: {{currentSpeech.id}}</p>
                         <p>Bills: {{currentSpeech.bills}}</p>
                         <p>BioGuide: {{currentSpeech.biouguide}}</p>
                         <p>CapitolWords URL: {{currentSpeech.capitolwords_url}}</p>
@@ -50,16 +62,16 @@
                         <p>Volume: {{currentSpeech.volume}}</p>
                         Speaking: 
                         <p ng-bind-html="currentSpeech.speaking | unsafe"></p>
-                    </div>
+                    </div> -->
                 </div>
                             
-                <div class="row" ng-show="selectedTopic">
+                <div class="row" ng-show="speeches">
                     <div class="col-sm-12">
 
                         <h4>Filter By State</h4>
-                        <select class="filter" multiple id="states" ui-select2 ng-model="selectedStates" data-placeholder="Filter By State">
+<!--                         <select class="filter" multiple id="states" ui-select2 ng-model="selectedStates" data-placeholder="Filter By State">
                             <option ng-repeat="state in USStateList" value="{{state.abbreviation}}">{{state.name}}</option>
-                        </select>
+                        </select> -->
 
                         <br>
                         <p>
@@ -106,7 +118,6 @@
 
             </div>
 
-            <br>
             <p><button class="btn btn-primary" ng-click="analyzeSpeeches(currentFilter)">Analyze</button></p>        
             <br>
             <p><button class="btn btn-primary" ng-click="analyzeSpeeches(currentFilter, true)">Fine Analyze</button></p>                    
@@ -115,6 +126,19 @@
 
         </tab>
 
+<br>
+<br>
 
-<button class="btn btn-default" ng-click="prevTab()">Previous</button>
-<button class="btn btn-default" ng-click="nextTab()">Next</button>
+<button class="btn btn-primary btn-xl" ng-click="analyzeSpeeches()">ANALYZE SHIT</button>
+
+{{ analyses }}
+
+<br>
+<br>
+
+<pre>{{current.filters | json }}</pre>
+<pre>{{speeches | json }}</pre>
+<pre>{{analysisUpdated | json}}</pre>
+
+<button class="btn btn-default" disabled ng-click="prevTab()">Previous</button>
+<button class="btn btn-default" disabled ng-click="nextTab()">Next</button>

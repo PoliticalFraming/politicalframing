@@ -19,6 +19,20 @@
               </div>
             </div>
 
+            <div class="row">
+              <div class="col-sm-12">
+                <h4>Select Frame to Highlight</h4>
+                  <select chosen id="frames" 
+                    ng-model="current.filters.frame"
+                    ng-options="frame.frame as frame.name for frame in frames" 
+                    data-placeholder="Select a Frame"
+                    no-results-text="'Could not find any frames'"
+                    width="'200px'">
+                    <option value=""></option>
+                  </select>
+              </div>
+            </div>
+
             <!-- Filter State -->
             <div class="row" ng-show="speeches">
               <div class="col-sm-12">
@@ -44,7 +58,7 @@
             </div>
 
             <!-- List of Filters -->
-            <div class="row" ng-show="speeches">
+            <div class="row">
               <div class="col-sm-12">
                 <h4>Current Filter</h4>
                 <pre>{{current | json}}</pre>        

@@ -45,7 +45,7 @@ class Classifier:
 
 class Analysis(db.Model):
 
-    analysis_id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
+    id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
     frame = ForeignKeyField(Frame, null=False)
     phrase = CharField(null=False)
 
@@ -81,7 +81,7 @@ class Analysis(db.Model):
 
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
 
-        frame = Frame.get(Frame.name == frame)
+        frame = Frame.get(Frame.id == frame)
         analysis_obj = Analysis(
             frame = frame, 
             phrase = phrase,
@@ -97,9 +97,9 @@ class Analysis(db.Model):
         analysis_obj.save()
         # celery.close()
 
-        app.logger.debug("Computed Analysis %d for phrase=%s and frame=%s", analysis_obj.analysis_id, phrase, frame.name)
+        app.logger.debug("Computed Analysis %d for phrase=%s and frame=%s", analysis_obj.id, phrase, frame.name)
 
-        return analysis_obj.analysis_id
+        return analysis_obj
 
     ####################### UTILITIES #######################
 
@@ -122,14 +122,12 @@ class Analysis(db.Model):
         return valid_speeches
 
     def check_if_complete(self):
-
         if not self.celery_id: 
-            return {'state':"No Celery Task", 'porcent_complete':"n/a"}
-
+            return {'state':"No Celery Task", 'percent_complete':"n/a"}
         async_res = celery.AsyncResult(self.celery_id)
-
-        if async_res.ready() == True:
+        if async_res: #.ready() == True:
             return {'state':async_res.state, 'percent_complete':async_res.info}
+        return "why am i here?"
         
 
     ####################### LOGIC #######################

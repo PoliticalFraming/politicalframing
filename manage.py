@@ -37,12 +37,12 @@ from app.controllers.analysis import *
 def test_core_algorithm(): 
 	"""Tests plot_discrete_average. """
 	pass
- 	# frame_id=1
+ 	# id=1
 
 	# speeches = get_speeches()
 
 	# get list of json objects from the database (query by topic - or also filter by some other subset of factors)
-	# frame = Frame.get(Frame.frame_id == frame_id)
+	# frame = Frame.get(Frame.id == id)
 	
 	#preprocess speeches
 	# speeches = preprocess_speeches(speeches)

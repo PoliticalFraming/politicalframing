@@ -9,7 +9,7 @@ import json
 import math
 
 speech_fields = {
-    'speech_id': fields.String,
+    'id': fields.String,
     'bills': fields.String,
     'biouguide': fields.String,
     'capitolwords_url': fields.String,
@@ -34,8 +34,8 @@ speech_fields = {
 parser = reqparse.RequestParser()
 
 class SpeechController(Resource):
-  def get(self, speech_id):
-    speech = Speech.get(Speech.speech_id == speech_id)
+  def get(self, id):
+    speech = Speech.get(Speech.id == id)
 
 class SpeechListController(Resource):
   parser.add_argument('phrase', type = str, required = True, location = 'values')
@@ -77,4 +77,4 @@ class SpeechListController(Resource):
     }
 
 api.add_resource(SpeechListController, '/api/speeches/', endpoint = 'speeches')
-api.add_resource(SpeechController, '/api/speeches/<string:speech_id>/', endpoint = 'speech')
+api.add_resource(SpeechController, '/api/speeches/<string:id>/', endpoint = 'speech')

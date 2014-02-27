@@ -3,7 +3,7 @@
 angular.module('framingApp').factory('Speech', ['ActiveResource', function(ActiveResource) {
 
 	function Speech(data) {
-		this.string('speech_id');
+		this.string('id');
 		this.string('bills');
 		this.string('biouguide');
 		this.string('capitolwords_url');
@@ -27,9 +27,15 @@ angular.module('framingApp').factory('Speech', ['ActiveResource', function(Activ
 		// this.hasMany('topics');
 	}
 
-	Speech.primaryKey = 'speech_id';
 	Speech.inherits(ActiveResource.Base);
 	Speech.api.set('/api');
+	Speech.api.indexURL  = '/api/speeches/';
+	Speech.api.createURL = '/api/speeches/';
+	Speech.api.showURL   = '/api/speeches/:id/';
+	Speech.api.updateURL = '/api/speeches/:id/';
+	Speech.api.deleteURL = '/api/speeches/:id/';
+
+	// Speech.primaryKey = 'speech_id';
 
 	return Speech;
 }]);

@@ -3,7 +3,7 @@ import sys
 from peewee import *
 
 class Frame(db.Model):
-    frame_id = PrimaryKeyField(null=True, db_column='id')
+    id = PrimaryKeyField(null=True, db_column='id')
     name = CharField(null=True)
     description = TextField(null=True)
     generation = IntegerField(null=True)
@@ -15,8 +15,8 @@ class Frame(db.Model):
         db_table = 'frames'
 
 
-def get_frame(frame_id=None):
-    return Frame.get(Frame.frame_id == frame_id)
+def get_frame(id=None):
+    return Frame.get(Frame.id == id)
 
 
 @app.route('/frames/download/dummy_frames')
