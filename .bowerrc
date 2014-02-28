@@ -1,6 +1,5 @@
 {
   "directory" : "app/static/components",
-  "save": true,
   "storage": {
      "packages": ".bower-cache",
      "registry": ".bower-registry"

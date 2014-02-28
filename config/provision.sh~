@@ -17,6 +17,9 @@ then
 	sudo apt-get install -y libbz2-dev
 	sudo apt-get install -y libsqlite3-dev
 	sudo apt-get install -y git
+	sudo apt-get install -y libatlas-dev
+	sudo apt-get install -y libatlas-base-dev
+	sudo apt-get install -y gfortran
 	sudo apt-get install -y libpng12-dev
 	sudo apt-get install -y libjpeg-dev
 	sudo apt-get install -y libfreetype6-dev
@@ -34,9 +37,6 @@ then
 	sudo apt-get install -y libxml2-dev 
 	sudo apt-get install -y libxslt-dev
 
-	sudo apt-get install -y libatlas-dev
-	sudo apt-get install -y libatlas-base-dev
-	sudo apt-get install -y gfortran
 	sudo apt-get install -y libblas-dev
 	sudo apt-get isnatll -y libblas3gf
 	sudo apt-get install -y libblas-doc

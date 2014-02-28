@@ -44,7 +44,6 @@ class Classifier:
         return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
 class Analysis(db.Model):
-
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
     frame = ForeignKeyField(Frame, null=False)
     phrase = CharField(null=False)
@@ -232,7 +231,13 @@ class Analysis(db.Model):
         returns json with dates that correlate to log_likelihoods to plot
         """
 
-        app.logger.debug('entering plot discrete average')
+        print('entering plot discrete average')
+        print('Frame: ' + str(frame.name))
+        print"blahablahb"
+        print('len(ordered_speeches): ' + str(len(ordered_speeches)))
+        print('window_size: ' + str(window_size))
+        print('offset: ' +  str(offset))
+        print('topic: ' + topic)
 
         speeches = deque(ordered_speeches)
 
@@ -246,10 +251,13 @@ class Analysis(db.Model):
             raise
 
         #create_classifier
+        app.logger.debug("Create Classifier")
         naive_bayes = Classifier()
+        app.logger.debug("Learn Vocabulary")
         naive_bayes.learn_vocabulary(frame.word_string)
 
         #declare return variables
+        app.logger.debug("Create empty return variables")
         start_dates = []
         end_dates = []
         r_likelihoods = []
@@ -259,25 +267,28 @@ class Analysis(db.Model):
         #loop through and plot each point
         while speeches:
 
-            if not testing: #Don't update state if accessing from unit tests (there is no self)
-                self.update_state(state='PROGRESS', 
+            self.update_state(state='PROGRESS', 
                     meta={'current': len(speeches), 
                     'total': len(ordered_speeches)})
                 
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
+            app.logger.debug("Building Trainig Set")
             training_set = self.build_training_set(current_window)
 
             #train classifier on speeches in current window
+            app.logger.debug("Training Classifier")
             naive_bayes.train_classifier(training_set.data, training_set.target)
 
             #populate return data
+            app.logger.debug("Request Log Probability of Frame %s " , frame.name)
             log_probabilities = naive_bayes.classify_document(frame.word_string)
             d_likelihoods.append(log_probabilities[0])
             r_likelihoods.append(log_probabilities[1])
 
             #move current window over by 'offset'
+            app.logger.debug("Move window over by %d". offset)
             for _ in range(offset):
                 if speeches:
                     current_window.append(speeches.popleft())
@@ -290,6 +301,7 @@ class Analysis(db.Model):
             start_dates = map(lambda x: str(x), start_dates)
             end_dates = map(lambda x: str(x), end_dates)
 
+        app.logger.debug("Populate Return Values")
         self.frame_plot = {
             'title': "Usage of %s Frame in Speeches about %s" % (frame.name, topic),
             'ylabel': "D/R Ratio of Log-Likelihoods",
