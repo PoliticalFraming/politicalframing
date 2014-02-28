@@ -102,21 +102,7 @@
 
         <tab heading="{{tabs[3].heading}}" active="tabs[3].active" disabled="tabs[3].disabled" select="updatePercentTab(3)">
 
-            <div class="row" ng-show="analyzing">
-                <div class="col-sm-12" id="chartContainer2" style="height: 300px; width: 100%;"> 
-                    Loading analysis - This may take up to 5 minutes.
-                    <img src= 'http://sierrafire.cr.usgs.gov/images/loading.gif' style="height: 50%;"></img>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{(percentAnalyzed.current / percentAnalyzed.total) *100 }}%;"></div>
-                    </div>  
-                </div>
-
-                <div class="col-sm-12" id="chartContainer" style="height: 300px; width: 100%;"></div>
-
-                <h1>Selected Topic: {{selectedTopic.text}}</h1>
-                <h1>Selected Frame: {{selectedFrame.text}}</h1>
-
-            </div>
+            <p> chart was here before </p>
 
             <p><button class="btn btn-primary" ng-click="analyzeSpeeches(currentFilter)">Analyze</button></p>        
             <br>
@@ -131,14 +117,17 @@
 
 <button class="btn btn-primary btn-xl" ng-click="analyzeSpeeches()">ANALYZE SHIT</button>
 
-{{ analyses }}
-
 <br>
 <br>
 
 <pre>{{current.filters | json }}</pre>
 <pre>{{speeches | json }}</pre>
-<pre>{{analysisUpdated | json}}</pre>
+<pre>{{analyses | json}}</pre>
+
+<div id="chartContainer_frame" style="height: 300px; width: 100%;"></div>
+<div id="chartContainer_topic" style="height: 300px; width: 100%;"> </div>
+
+<speech-browser speeches="currentSpeeches" current="current"></speech-browser>
 
 <button class="btn btn-default" disabled ng-click="prevTab()">Previous</button>
 <button class="btn btn-default" disabled ng-click="nextTab()">Next</button>

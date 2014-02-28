@@ -18,7 +18,7 @@ frame_fields = {
 	'word_string': fields.String
 }
 
-frame_marshall = { 
+frame_marshall = {
 	'meta': fields.Raw,
 	'data': fields.Nested(frame_fields)
 }
@@ -30,13 +30,13 @@ class FrameController(Resource):
 	@marshal_with(frame_marshall)
 	def get(self, id):
 		frame = Frame.get(Frame.id == id)
-		return { 'meta': null, 'data': get_dictionary_from_model(frame) }
+		return { 'meta': None, 'data': get_dictionary_from_model(frame) }
 
 	@marshal_with(frame_marshall)
 	def put(self, id, word_string):
 		frame = Frame.get(frame.id == id)
 		frame.word_string = word_string
-		return { 'meta': null, 'data': get_dictionary_from_model(frame) }
+		return { 'meta': None, 'data': get_dictionary_from_model(frame) }
 
 class FrameListController(Resource):
 

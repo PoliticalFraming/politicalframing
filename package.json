@@ -6,7 +6,6 @@
   },  
   "dependencies": {
     "bower": "~1.2.8",
-    "grunt-cli": "0.1.13",
     "grunt": "~0.4.1"  
   },
   "devDependencies": {
@@ -50,8 +49,5 @@
   },
   "engines": {
     "node": "=0.10.25"
-  },
-  "scripts": {
-    "postinstall": "./node_modules/bower/bin/bower --allow-root install && ./node_modules/grunt-cli/bin/grunt heroku"
   }
 }

@@ -10,12 +10,12 @@ import math
 
 speech_fields = {
     'id': fields.String,
-    'bills': fields.String,
+    'bills': fields.List(fields.String),
     'biouguide': fields.String,
     'capitolwords_url': fields.String,
     'chamber': fields.String,
     'congress': fields.Integer,
-    'date': fields.DateTime,
+    'date': fields.Raw, #DateTime
     'number': fields.Integer,
     'order': fields.Integer,
     'origin_url': fields.String,
@@ -26,9 +26,14 @@ speech_fields = {
     'speaker_party': fields.String,
     'speaker_raw': fields.String,
     'speaker_state': fields.String,
-    'speaking': fields.String,
-    'title': fields.String,
+    'speaking': fields.List(fields.String),
+    'document_title': fields.String,
     'volume': fields.Integer
+}
+
+speech_marshall = {
+  'meta': fields.Raw,
+  'data': fields.Nested(speech_fields)
 }
 
 parser = reqparse.RequestParser()
@@ -45,7 +50,9 @@ class SpeechListController(Resource):
   parser.add_argument('page', type = int, required = False, location = 'values')
   parser.add_argument('order', type = str, required = False, location = 'values')
   parser.add_argument('states', type = str, required = False, location = 'values')
+  parser.add_argument('highlight', type = bool, required = False, location = 'values')
 
+  @marshal_with(speech_marshall)
   def get(self):
     args = parser.parse_args()
     if not args['page']: args['page'] = 1
@@ -58,6 +65,8 @@ class SpeechListController(Resource):
       frame = args.get('frame'), 
       start_date = args.get('start_date'), 
       end_date = args.get('end_date'),
+      order = args.get('order'),
+      highlight = args.get('highlight'),
       rows = rows,
       start = rows * (args['page'] - 1)
     )

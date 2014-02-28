@@ -40,7 +40,6 @@
     "chosen": "https://github.com/harvesthq/chosen/releases/download/1.0.0/chosen_v1.0.0.zip",
     "addyosmani-jquery-ui-bootstrap": "*",
     "underscore": "~1.6.0",
-    "canvasjs": "http://canvasjs.com/\\?wpdmdl=1",
     "angular-animate": "~1.2.13"
   },
   "devDependencies": {

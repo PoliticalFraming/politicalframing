@@ -1,5 +1,4 @@
-'use strict';
-
+// 'use strict';
 // // http://stackoverflow.com/questions/11172269/select-all-and-remove-all-with-chosen-js/11172403#11172403
 
 angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, Frame, Speech, State, Analysis) {
@@ -86,88 +85,70 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
   $scope.analyzeSpeeches = function () {
 
-    var analysis = Analysis.new($scope.current.filters);
-    analysis.$save().then(function(response) {
+    // var analysis = Analysis.new($scope.current.filters);
+    // analysis.$save();
 
-      var id = analysis.id;
+    $http.post('api/analyses/', $scope.current.filters).then(function(response) {
+      console.log(response);
+      var id = response.data.data.id;
 
       function pollData(id) {
+        console.log('/api/analyses/' + id + '/');
         $http.get('/api/analyses/' + id + '/').then(function(response) {
+          console.log(response);
           console.log(response.data.meta);
           if (response.data.meta.state === 'SUCCESS') {
-            console.log("success");
-            $scope.analysisUpdated = response.data.data;
 
-            console.log(response.data.data);
-            var thedata = response.data.data;
-            var limit = 100000;
-            var y = 0;
-            var data = [];
-            var dataSeries1 = { type: 'line' };
-            var dataSeries2 = { type: 'line' };
-            var dataPoints = [];
-            var theOnes = [];
-            for (var i = 0; i < thedata.frame_plot.end_dates.length; i++ ) {
-              var dateTime = new Date(thedata.frame_plot.end_dates[i]);
-              console.log(thedata.frame_plot.end_dates[i]);
-              console.log(dateTime);
-              dataPoints.push({
-                x: dateTime,
-                y: thedata.frame_plot.ratios[i]
-              });
-              if (i==0 || i==thedata.frame_plot.end_dates.length-1){
-                theOnes.push({
-                  x: dateTime,
-                  y: 1
-                });
-              }
-            }
-            dataSeries1.dataPoints = dataPoints;
-            dataSeries2.dataPoints = theOnes;
-            data.push(dataSeries1);
-            data.push(dataSeries2);
-            console.log(data);
-            var chart = new CanvasJS.Chart('chartContainer',
+            console.log("success");
+            $scope.analyses = response.data.data;
+            var frame_plot = response.data.data.frame_plot;
+            var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+
+            var chart = new CanvasJS.Chart("chartContainer_frame",
             {
-              zoomEnabled: true,
-              title:{ text: thedata.frame_plot.title },
-              axisX :{ labelAngle: -30 },
-              axisY :{ includeZero:false, title: thedata.frame_plot.ylabel},
-              data: data
+                zoomEnabled: true,
+                title: { text: frame_plot.title
+                },
+                axisX:{      
+                    valueFormatString: "DD-MMM-YYYY",
+                    labelAngle: -50,
+                    title: frame_plot.ylabel,
+                    includeZero: false
+                },
+                axisY: {
+                  // valueFormatString: "#,###"
+              },
+              data: [
+              {
+                click: function(e) {
+                  // alert(e.dataPoint.start_date + ", " + e.dataPoint.end_date);
+                  $http.get('/api/speeches/' + '?phrase=' + $scope.current.filters.phrase + '&frame=' + $scope.current.filters.frame + '&start_date=' + e.dataPoint.start_date + '&end_date=' + e.dataPoint.end_date).then(function(response) {
+                    console.log(response);
+                    $scope.currentSpeeches = response.data.data;
+                    // speeches = []
+                    // titles = []
+                    // for (datum in response.data.data) {
+                    //   titles.push(response.data.data[datum]['document_title'])
+                    //   // speeches.push(response.data.data[datum]['speaking'].toString());
+                    // }
+                    // alert(titles.join('\n'));
+                    // alert(speeches.toString());
+
+
+                    
+                  })
+                },                
+                type: "line",
+                color: "rgba(0,75,141,0.7)",
+                dataPoints: dataPoints
+            }
+            
+            ]
             });
             chart.render();
-            $scope.analyzeData = data;
-            var limit = 100000;
-            var y = 0;
-            var data = [];
-            var dataSeries1 = { type: 'line', showInLegend: true, legendText: 'Dem Counts' };
-            var dataSeries2 = { type: 'line', showInLegend: true, legendText: 'Repub Counts'  };
-            var dataSeries3 = { type: 'line', showInLegend: true, legendText: 'Total Counts'  };
-            var dataPoints1 = [];
-            var dataPoints2 = [];
-            var dataPoints3 = [];
-            for (var i = 0; i < thedata.topic_plot.end_dates.length; i++ ) {
-              var dateTime = new Date(thedata.topic_plot.end_dates[i]);
-              dataPoints1.push({ x: dateTime, y: thedata.topic_plot.dem_counts[i] });
-              dataPoints2.push({ x: dateTime, y: thedata.topic_plot.rep_counts[i] });
-              dataPoints3.push({ x: dateTime, y: thedata.topic_plot.total_counts[i] });
-            }
-            dataSeries1.dataPoints = dataPoints1;
-            dataSeries2.dataPoints = dataPoints2;
-            dataSeries3.dataPoints = dataPoints3;
-            data.push(dataSeries1);
-            data.push(dataSeries2);
-            data.push(dataSeries3);
-            var chart = new CanvasJS.Chart("chartContainer2",
-            {
-              zoomEnabled: true,
-              title:{ text: thedata.topic_plot.title },
-              axisX :{ labelAngle: -30 },
-              axisY :{ includeZero:false, title: thedata.topic_plot.ylabel},
-              data: data
-            });
-            chart.render();
-            $scope.analyzeData = data;
+
+            console.log(dataPoints);
+            // console.log(chart1);
 
             return;
           }
@@ -176,13 +157,11 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             return;
           }
           else {
-
             if (response.data.meta.state === "PROGRESS") {
               $scope.percentAnalyzed = response.data.meta;
               console.log("pooooooooooohyooooooooo");
               console.log($scope.percentAnalyzed);
             }
-
             setTimeout( function() { pollData(id) }, 2000);
           }
         });
@@ -196,7 +175,4 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
 
 });
-
-
-
 
