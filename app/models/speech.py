@@ -42,6 +42,7 @@ class Speech(object):
       rows
       start
       frame
+      order
 
     Output
       List of output
@@ -61,16 +62,29 @@ class Speech(object):
 
     # 
     # if the number of docs is less than numFound, then this is the pagination offset
-    response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
+    if kwargs.get('order'):
+
+      if kwargs.get('order') != "frame":
+        response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).sort_by(kwargs.get('order')).execute()
+      else:
+        print "ordering by frame"
+        response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
+        frame = Frame.get(Frame.id == kwargs['frame'])
+        response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
+        blah = Speech.order_by_frame_prevalance(response.result.docs, frame)
+        print blah
+    else:
+      response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
+    
     speeches = response.result.docs
     current_count = response.result.numFound
     current_start = response.result.start
 
     # TODO: improve this
-    if kwargs.get('frame_id') and kwargs.get('higlight'):
-      frame = Frame.get(Frame.id == kwargs['frame_id'])
+    if kwargs.get('frame') and kwargs.get('highlight'):
+      frame = Frame.get(Frame.id == kwargs['frame'])
       for speech in speeches:
-          speech = highlight_speech(speech['speaking'], frame)
+          speech = Speech.highlight_speech(speech, frame)
 
     speeches_dict = {
       'count': current_count,
@@ -80,21 +94,54 @@ class Speech(object):
 
     return speeches_dict
 
-  def highlight_speech(self, frame):
+  @staticmethod
+  def highlight_speech(speech, frame):
     """
     Input
-      speech object
-      frame object
+      speech dict
+      frame dict
 
     Output
       speech object with highlighted 'speaking'
     """
-    frame = frame['word_string'].split(' ')
+    frame = frame.word_string.split(' ')
 
-    self.speaking = \
+    speech['speaking'] = \
       map(lambda sentence: 
         " ".join(map(lambda word: "<strong>" + word + "</strong>" if word in frame else word, 
           sentence.split())), 
-      self.speaking)
+      speech['speaking'])
 
-    return self
+    return speech
+
+  @staticmethod
+  def order_by_frame_prevalance(speeches, frame):
+      """ Orders speehes by frame prevelance. """
+
+
+      speech_prevalances = [] #array of tuples containing speeches and ther prevalance values
+      for speech in speeches:
+          speech_words = " ".join(speech['speaking']).lower().split()
+          framewords_count = 0
+          for word in frame.word_string.split():
+              if word in speech_words:
+                framewords_count += 1
+          print framewords_count
+          # adjust count for speech length in words
+          frame_prevalance = framewords_count / len(speech_words)
+
+          speech_prevalances.append((speech, frame_prevalance))
+
+      return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1]))
+
+      # ################################################################
+      # # Better Implementaiton Stub - if simple counts don't work well
+      # ################################################################
+      #for speech in speeches:
+      #     frame_words = {} #dict containing word:count_in_speech
+      #     for word in frame.word_string.split():
+      #         if word in speech.speaking:
+      #             frame_words[word] = frame_words.get(word,0) + 1
+      #     # do better ordering using frame_words dictionary 
+      #     # (maybe something like tf/idf based counts) 
+      # ################################################################

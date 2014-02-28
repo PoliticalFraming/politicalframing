@@ -76,7 +76,7 @@ class Analysis(db.Model):
         analysis_obj.save()
 
         # deal with states
-        query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date }
+        query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date, 'order': 'date' }
 
         result = Analysis.analyze_task.delay(analysis_obj, query)
         analysis_obj.celery_id = result.id

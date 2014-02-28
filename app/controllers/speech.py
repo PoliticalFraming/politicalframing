@@ -27,7 +27,7 @@ speech_fields = {
     'speaker_raw': fields.String,
     'speaker_state': fields.String,
     'speaking': fields.List(fields.String),
-    'title': fields.String,
+    'document_title': fields.String,
     'volume': fields.Integer
 }
 
@@ -50,6 +50,7 @@ class SpeechListController(Resource):
   parser.add_argument('page', type = int, required = False, location = 'values')
   parser.add_argument('order', type = str, required = False, location = 'values')
   parser.add_argument('states', type = str, required = False, location = 'values')
+  parser.add_argument('highlight', type = bool, required = False, location = 'values')
 
   @marshal_with(speech_marshall)
   def get(self):
@@ -64,6 +65,8 @@ class SpeechListController(Resource):
       frame = args.get('frame'), 
       start_date = args.get('start_date'), 
       end_date = args.get('end_date'),
+      order = args.get('order'),
+      highlight = args.get('highlight'),
       rows = rows,
       start = rows * (args['page'] - 1)
     )

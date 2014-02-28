@@ -19,7 +19,7 @@ topic_plot_fields = {
 }
 
 frame_plot_fields = {
-	'ratios': fields.List(fields.Float),
+	'ratios': fields.List(fields.Raw), #fields.Float
 	'start_dates': fields.List(fields.Raw),
 	'end_dates': fields.List(fields.Raw),
 	'ylabel': fields.String,

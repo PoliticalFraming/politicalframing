@@ -11,16 +11,17 @@ angular.module('framingApp').directive('speechBrowser', function() {
     controller: function ($scope, $modal, $log) {
       $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
 
-      $scope.currentSpeech = null;
+      // $scope.currentSpeech = null;
       
       $scope.open = function (index) {
-        $scope.currentSpeech = $scope.speeches[index];
+        // $scope.currentSpeech = $scope.speeches[index];
         var modalInstance = $modal.open({
           templateUrl: 'partials/speech-modal.html',
           controller: 'ModalInstanceCtrl',
           resolve: {
             currentSpeech: function () {
-              return $scope.currentSpeech;
+              console.log($scope.speeches[index]);
+              return $scope.speeches[index];
             }
           }
         });
