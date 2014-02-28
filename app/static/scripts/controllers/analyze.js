@@ -121,22 +121,19 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
               data: [
               {
                 click: function(e) {
-                  // alert(e.dataPoint.start_date + ", " + e.dataPoint.end_date);
-                  $http.get('/api/speeches/' + '?phrase=' + $scope.current.filters.phrase + '&frame=' + $scope.current.filters.frame + '&start_date=' + e.dataPoint.start_date + '&end_date=' + e.dataPoint.end_date).then(function(response) {
-                    console.log(response);
-                    $scope.currentSpeeches = response.data.data;
-                    // speeches = []
-                    // titles = []
-                    // for (datum in response.data.data) {
-                    //   titles.push(response.data.data[datum]['document_title'])
-                    //   // speeches.push(response.data.data[datum]['speaking'].toString());
-                    // }
-                    // alert(titles.join('\n'));
-                    // alert(speeches.toString());
 
+                  var dataPointfilters = {
+                    phrase: $scope.current.filters.phrase,
+                    frame: $scope.current.filters.frame,
+                    start_date: e.dataPoint.start_date,
+                    end_date: e.dataPoint.end_date
+                  }
 
-                    
-                  })
+                  Speech.where(dataPointfilters).then(function (response) {
+                    console.log(response); // response.meta.count; response.meta.pages;
+                    $scope.currentSpeeches = response.data; 
+                  });
+
                 },                
                 type: "line",
                 color: "rgba(0,75,141,0.7)",
