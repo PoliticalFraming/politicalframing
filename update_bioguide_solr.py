@@ -10,9 +10,8 @@ from datetime import datetime
 
 from pprint import pprint as pp
 
-import sqlite3
-conn = sqlite3.connect(':memory:')
-
+# import sqlite3
+# conn = sqlite3.connect(':memory:')
 
 DB_PARAMS = ["localhost","capitolwords","capitolwords","capitolwords"]
 BIOGUIDE_LOOKUP_PATH = '/Users/atul/Capitol-Words/api/bioguide_lookup.csv'
@@ -25,11 +24,11 @@ def main():
 	# chamber = 'Senate'
 	# print commit_solr()
 
-	numFound = si.query(speaking='immigration', chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(speaking='terrorism', chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/10000))):
-		current_speeches = si.query(speaking='immigration', chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
+		current_speeches = si.query(speaking='terrorism', chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
 			if ((speech['speaker_raw'] != 'recorder') 
@@ -50,11 +49,11 @@ def main():
 			print commit_solr()
 
 	# chamber = 'House'
-	numFound = si.query(speaking='immigration', chamber='House').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(speaking='terrorism', chamber='House').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(speaking='immigration', chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
+		current_speeches = si.query(speaking='terrorism', chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):	
 			if ((speech['speaker_raw'] != 'recorder') 
@@ -75,11 +74,11 @@ def main():
 			print commit_solr()
 
 	# chamber = 'Extensions'
-	numFound = si.query(speaking='immigration', chamber='Extensions').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(speaking='terrorism', chamber='Extensions').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(speaking='immigration', chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
+		current_speeches = si.query(speaking='terrorism', chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):	
 			if ((speech['speaker_raw'] != 'recorder') 

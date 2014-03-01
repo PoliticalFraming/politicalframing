@@ -114,7 +114,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
   $scope.graphTopicPlot = function(response) {
     var topic_plot = response.data.data.topic_plot;
-    var dataPoints = _.zip(topic_plot.end_dates, topic_plot.ratios, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+    var dataPointsDem = _.zip(topic_plot.end_dates, topic_plot.dem_counts, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+    var dataPointsRep = _.zip(topic_plot.end_dates, topic_plot.rep_counts, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
 
     var chart = new CanvasJS.Chart("chartContainer_topic",
     {
@@ -138,7 +139,9 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             phrase: $scope.current.filters.phrase,
             frame: $scope.current.filters.frame,
             start_date: e.dataPoint.start_date,
-            end_date: e.dataPoint.end_date
+            end_date: e.dataPoint.end_date,
+            speaker_party: 'D',
+            order: date
           }
 
           Speech.where(dataPointfilters).then(function (response) {
@@ -149,8 +152,30 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
         },                
         type: "line",
         color: "rgba(0,75,141,0.7)",
-        dataPoints: dataPoints
-    }
+        dataPoints: dataPointsDem
+    },
+      {
+        click: function(e) {
+
+          var dataPointfilters = {
+            phrase: $scope.current.filters.phrase,
+            frame: $scope.current.filters.frame,
+            start_date: e.dataPoint.start_date,
+            end_date: e.dataPoint.end_date,
+            speaker_party: 'R',
+            order: date
+          }
+
+          Speech.where(dataPointfilters).then(function (response) {
+            console.log(response); // response.meta.count; response.meta.pages;
+            $scope.currentSpeeches = response.data; 
+          });
+
+        },                
+        type: "line",
+        color: "rgba(0,75,141,0.7)",
+        dataPoints: dataPointsRep
+    }    
     
     ]
     });
@@ -179,7 +204,6 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             $scope.analyses = response.data.data;
             $scope.graphFramePlot(response);
             $scope.graphTopicPlot(response);
-            console.log(dataPoints);
             // console.log(chart1);
 
             return;

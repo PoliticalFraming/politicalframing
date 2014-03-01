@@ -22,7 +22,7 @@ import math
 class CapitolWords(object):
 
   API_KEY = '8e87cf0e8a92499e9d14b67165f7018f'
-  RESULTS_PER_PAGE = 30
+  RESULTS_PER_PAGE = 1000
 
   @staticmethod
   def download_speeches(phrase):

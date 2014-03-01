@@ -13,6 +13,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.datasets.base import Bunch
 
+from dateutil import parser as dateparser
+
 import inspect
 import math
 
@@ -99,9 +101,14 @@ class Analysis(db.Model):
         frame = Frame.get(Frame.id == query['frame'])
         numFound = Speech.get(0, 0, **query)['count']
         speeches = []
-        for i in range(0, int(math.ceil(numFound/10000))):
-            print i
+        pages = int(math.ceil(numFound/10000))
+
+        celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
+
+        for i in range(0, pages):
             speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
+            celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
+
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
@@ -149,26 +156,40 @@ class Analysis(db.Model):
         app.logger.debug("plot_topic_usage")
 
         speeches = deque(ordered_speeches)
-        dates = []
         dem_counts = []
         rep_counts = []
         start_dates = []
         end_dates = []
 
-        first_speech_time = speeches[0].date
-        last_speech_time = speeches[-1].date
+        first_speech_time = speeches[0]['date']
+        last_speech_time = speeches[-1]['date']
+
+        print "first_speech_time " + str(first_speech_time)
+        print "last_speech_time " + str(last_speech_time)
+
         timedelta_total = last_speech_time - first_speech_time
-        window_timedelta = timedelta_total / n
+        window_timedelta = timedelta_total // n
 
         window_start = first_speech_time
         window_end = first_speech_time + window_timedelta
 
+        print "window_start " + str(window_start)
+        print "window_end " + str(window_end)
+
         while speeches:
             #clear current window
             current_window  = []
+            dem_count = 0
+            rep_count = 0
+
+            print  "speeches[0]['date'] " + str(speeches[0]['date'])
+            print "speeches[-1]['date'] " + str(speeches[-1]['date'])
+
+            print window_start
+            print window_end
 
             #get speeches in current window
-            while(speehes[0].date > window_start and speeches[0].date < window_end):
+            while(speeches and (speeches[0]['date'] >= window_start) and (speeches[0]['date'] <= window_end)):
                 current_window.append(speeches.popleft())
 
             #process speeches in current window
@@ -184,7 +205,6 @@ class Analysis(db.Model):
 
             if dem_count>0 and rep_count>0:
                 #skips datapoints that don't have at least one speech in each category to avoid ZeroDivisionError
-                dates.append(dadate)
                 dem_counts.append(dem_count)
                 rep_counts.append(rep_count)
 
@@ -209,8 +229,8 @@ class Analysis(db.Model):
         self.topic_plot = {
             'title': "Speeches about %s" % phrase,
             'ylabel': "Number of Speeches",
-            'start_dates': dates, 
-            'end_dates': dates,
+            'start_dates': start_dates, 
+            'end_dates': end_dates,
             'ratios':ratios,
             'dem_counts':dem_counts,
             'rep_counts':rep_counts
@@ -290,7 +310,7 @@ class Analysis(db.Model):
 
         #loop through and plot each point
         while speeches:
-            celery_obj.update_state(state='PROGRESS', meta={'current': len(speeches), 'total': len(ordered_speeches)})
+            celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(speeches), 'total': len(ordered_speeches)})
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 

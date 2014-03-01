@@ -13,7 +13,8 @@ import json
 topic_plot_fields = {
 	'dem_counts': fields.List(fields.Integer),
 	'rep_counts': fields.List(fields.Integer),
-	'dates': fields.List(fields.Raw),
+	'start_dates': fields.List(fields.Raw),
+	'end_dates':  fields.List(fields.Raw),
 	'ylabel': fields.String,
 	'title': fields.String
 }
