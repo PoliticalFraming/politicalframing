@@ -100,6 +100,7 @@ class Analysis(db.Model):
         numFound = Speech.get(0, 0, **query)['count']
         speeches = []
         for i in range(0, int(math.ceil(numFound/10000))):
+            print i
             speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
@@ -240,14 +241,6 @@ class Analysis(db.Model):
         returns json with dates that correlate to log_likelihoods to plot
         """
 
-        print('entering plot discrete average')
-        print('Frame: ' + str(frame.name))
-        print"blahablahb"
-        print('len(ordered_speeches): ' + str(len(ordered_speeches)))
-        print('window_size: ' + str(window_size))
-        print('offset: ' +  str(offset))
-        print('topic: ' + topic)
-
         speeches = deque(ordered_speeches)
 
         #setup current window
@@ -293,7 +286,7 @@ class Analysis(db.Model):
             r_likelihoods.append(log_probabilities[1])
 
             #move current window over by 'offset'
-            app.logger.debug("Move window over by %d". offset)
+            app.logger.debug("Move window over by %d", offset)
             for _ in range(offset):
                 if speeches:
                     current_window.append(speeches.popleft())

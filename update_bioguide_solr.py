@@ -17,15 +17,6 @@ conn = sqlite3.connect(':memory:')
 DB_PARAMS = ["localhost","capitolwords","capitolwords","capitolwords"]
 BIOGUIDE_LOOKUP_PATH = '/Users/atul/Capitol-Words/api/bioguide_lookup.csv'
 
-def mysql2sqlite():
-	import MySQLdb
-	conn = sqlite3.connect(':memory:')
-
-
-# 	cursor = MySQLdb.Connection(*DB_PARAMS, use_unicode=True).cursor()
-
-# 	conn
-
 def main():
 	solr_url = "http://politicalframing.com:8983/solr"
 	h = httplib2.Http(cache="/var/tmp/solr_cache")
@@ -33,11 +24,12 @@ def main():
 
 	# chamber = 'Senate'
 	# print commit_solr()
-	numFound = si.query(speaking='healthcare', chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
-	print numFound
+
+	numFound = si.query(speaking='immigration', chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	print "-----------------------"
+	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/10000))):
-		current_speeches = si.query(speaking='healthcare', chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
-		# print current_speeches
+		current_speeches = si.query(speaking='immigration', chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
 			if ((speech['speaker_raw'] != 'recorder') 
@@ -48,27 +40,21 @@ def main():
 				partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Senate')
 
 				if partial_document:
+					print speech['speaker_raw'] + " queued to be ingested"
 					json_documents.append(partial_document)
-				else:
-					print j
 
 		if len(json_documents) > 1:
 			json_doc_list_string, body = update_solr2(json_documents)
 			print len(json_documents)
 			print body
 			print commit_solr()
-			# import sys
-			# sys.exit()
-
-	# print commit_solr()
 
 	# chamber = 'House'
-	# print commit_solr()
-	numFound = si.query(speaking='healthcare', chamber='House').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
-	print numFound
+	numFound = si.query(speaking='immigration', chamber='House').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	print "-----------------------"
+	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(speaking='healthcare', chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
-		# print current_speeches		
+		current_speeches = si.query(speaking='immigration', chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):	
 			if ((speech['speaker_raw'] != 'recorder') 
@@ -79,30 +65,23 @@ def main():
 				partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='House')
 
 				if partial_document:
+					print speech['speaker_raw'] + " queued to be ingested"
 					json_documents.append(partial_document)
-				else:
-					print j
 
 		if len(json_documents) > 1:
 			json_doc_list_string, body = update_solr2(json_documents)
 			print len(json_documents)
 			print body
 			print commit_solr()
-			# import sys
-			# sys.exit()
-	# print commit_solr()
 
 	# chamber = 'Extensions'
-	# print commit_solr()
-	numFound = si.query(speaking='healthcare', chamber='Extensions').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
-	print numFound
-
+	numFound = si.query(speaking='immigration', chamber='Extensions').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	print "-----------------------"
+	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(speaking='healthcare', chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
-		# print current_speeches
+		current_speeches = si.query(speaking='immigration', chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):	
-			# print speech['speaker_raw']
 			if ((speech['speaker_raw'] != 'recorder') 
 				and (speech['speaker_raw'] != 'the presiding officer') 
 				and (speech['speaker_raw'] != 'the vice president') 
@@ -111,18 +90,14 @@ def main():
 				partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Extensions')
 
 				if partial_document:
+					print speech['speaker_raw'] + " queued to be ingested"
 					json_documents.append(partial_document)
-				else:
-					print j
 
 		if len(json_documents) > 1:
 			json_doc_list_string, body = update_solr2(json_documents)
 			print len(json_documents)
 			print body
 			print commit_solr()
-			# import sys
-			# sys.exit()
-	# print commit_solr()
 
 def abbr(longname):
     ''' return the abbreviation for a state'''
@@ -221,8 +196,7 @@ def get_speaker_metadata(id, date, congress, speaker, chamber):
 	if not data or len(data) > 1:
 		data = fallback_bioguide_lookup(speaker, congress, position)
 		if not data:
-			print "-------------------------------------"
-			msg = 'No data or too many responses for %s, %s, %s, %s\n' % (lastname, year, position, state)
+			msg = 'No data or too many responses for %s, %s, %s, %s' % (lastname, year, position, state)
 			print msg
 			return None
 		

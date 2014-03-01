@@ -13,7 +13,7 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
     filters: {
       page: 1,
       states: [],
-      frame: 1,
+      frame: null,
       phrase: '',
       start_date: null,
       end_date: null,
@@ -67,19 +67,95 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
   /* ==================== GRAPHING SHIT ==================== */
   
-  // $scope.graphShit = function(response) {
-  //   if (response.data.meta.state === 'SUCCESS') {
-  //   }
-  //   else {
-  //     if (response.data.state=="PROGRESS"){
-  //       $scope.percentAnalyzed = response.data.meta;
-  //       console.log("pooooooooooohyooooooooo");
-  //       console.log($scope.percentAnalyzed);
-  //     }
-  //     console.log(response.data);
-  //     setTimeout(pollforAnalyzeData, 5000);
-  //   }
-  // }
+  $scope.graphFramePlot = function(response) {
+    var frame_plot = response.data.data.frame_plot;
+    var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+
+    var chart = new CanvasJS.Chart("chartContainer_frame",
+    {
+        zoomEnabled: true,
+        title: { text: frame_plot.title
+        },
+        axisX:{      
+            valueFormatString: "DD-MMM-YYYY",
+            labelAngle: -50,
+            title: frame_plot.ylabel,
+            includeZero: false
+        },
+        axisY: {
+          // valueFormatString: "#,###"
+      },
+      data: [
+      {
+        click: function(e) {
+
+          var dataPointfilters = {
+            phrase: $scope.current.filters.phrase,
+            frame: $scope.current.filters.frame,
+            start_date: e.dataPoint.start_date,
+            end_date: e.dataPoint.end_date
+          }
+
+          Speech.where(dataPointfilters).then(function (response) {
+            console.log(response); // response.meta.count; response.meta.pages;
+            $scope.currentSpeeches = response.data; 
+          });
+
+        },                
+        type: "line",
+        color: "rgba(0,75,141,0.7)",
+        dataPoints: dataPoints
+    }
+    
+    ]
+    });
+    chart.render();
+  }
+
+  $scope.graphFramePlot = function(response) {
+    var frame_plot = response.data.data.frame_plot;
+    var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+
+    var chart = new CanvasJS.Chart("chartContainer_topic",
+    {
+        zoomEnabled: true,
+        title: { text: frame_plot.title
+        },
+        axisX:{      
+            valueFormatString: "DD-MMM-YYYY",
+            labelAngle: -50,
+            title: frame_plot.ylabel,
+            includeZero: false
+        },
+        axisY: {
+          // valueFormatString: "#,###"
+      },
+      data: [
+      {
+        click: function(e) {
+
+          var dataPointfilters = {
+            phrase: $scope.current.filters.phrase,
+            frame: $scope.current.filters.frame,
+            start_date: e.dataPoint.start_date,
+            end_date: e.dataPoint.end_date
+          }
+
+          Speech.where(dataPointfilters).then(function (response) {
+            console.log(response); // response.meta.count; response.meta.pages;
+            $scope.currentSpeeches = response.data; 
+          });
+
+        },                
+        type: "line",
+        color: "rgba(0,75,141,0.7)",
+        dataPoints: dataPoints
+    }
+    
+    ]
+    });
+    chart.render();
+  }
 
   /* ==================== ANALYZING SHIT ==================== */
 
@@ -101,49 +177,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
             console.log("success");
             $scope.analyses = response.data.data;
-            var frame_plot = response.data.data.frame_plot;
-            var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
-
-            var chart = new CanvasJS.Chart("chartContainer_frame",
-            {
-                zoomEnabled: true,
-                title: { text: frame_plot.title
-                },
-                axisX:{      
-                    valueFormatString: "DD-MMM-YYYY",
-                    labelAngle: -50,
-                    title: frame_plot.ylabel,
-                    includeZero: false
-                },
-                axisY: {
-                  // valueFormatString: "#,###"
-              },
-              data: [
-              {
-                click: function(e) {
-
-                  var dataPointfilters = {
-                    phrase: $scope.current.filters.phrase,
-                    frame: $scope.current.filters.frame,
-                    start_date: e.dataPoint.start_date,
-                    end_date: e.dataPoint.end_date
-                  }
-
-                  Speech.where(dataPointfilters).then(function (response) {
-                    console.log(response); // response.meta.count; response.meta.pages;
-                    $scope.currentSpeeches = response.data; 
-                  });
-
-                },                
-                type: "line",
-                color: "rgba(0,75,141,0.7)",
-                dataPoints: dataPoints
-            }
-            
-            ]
-            });
-            chart.render();
-
+            $scope.graphFramePlot(response);
+            $scope.graphTopicPlot(response);
             console.log(dataPoints);
             // console.log(chart1);
 
