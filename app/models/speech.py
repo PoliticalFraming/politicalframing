@@ -1,3 +1,5 @@
+from __future__ import division
+
 from app import si
 import httplib2
 from dateutil import parser
@@ -72,7 +74,10 @@ class Speech(object):
         frame = Frame.get(Frame.id == kwargs['frame'])
         response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
         blah = Speech.order_by_frame_prevalance(response.result.docs, frame)
-        print blah
+        
+        # # print blah
+        # for bl in blah:
+        #   print bl['document_title']
     else:
       response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
     
@@ -116,8 +121,6 @@ class Speech(object):
 
   @staticmethod
   def order_by_frame_prevalance(speeches, frame):
-      """ Orders speehes by frame prevelance. """
-
 
       speech_prevalances = [] #array of tuples containing speeches and ther prevalance values
       for speech in speeches:
@@ -126,11 +129,13 @@ class Speech(object):
           for word in frame.word_string.split():
               if word in speech_words:
                 framewords_count += 1
-          print framewords_count
-          # adjust count for speech length in words
+
           frame_prevalance = framewords_count / len(speech_words)
 
           speech_prevalances.append((speech, frame_prevalance))
+
+      for blah in speech_prevalances:
+        print blah[0]['document_title'], blah[1]
 
       return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1]))
 
