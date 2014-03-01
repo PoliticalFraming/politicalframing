@@ -152,17 +152,28 @@ class Analysis(db.Model):
         dates = []
         dem_counts = []
         rep_counts = []
+        start_dates = []
+        end_dates = []
+
+        first_speech_time = speeches[0].date
+        last_speech_time = speeches[-1].date
+        timedelta_total = last_speech_time - first_speech_time
+        window_timedelta = timedelta_total / n
+
+        window_start = first_speech_time
+        window_end = first_speech_time + window_timedelta
 
         while speeches:
-            dem_count = 0
-            rep_count = 0
-            dadate = None
-            date_string = ""
-            for i in range(n):
+            #clear current window
+            current_window  = []
+
+            #get speeches in current window
+            while(speehes[0].date > window_start and speeches[0].date < window_end):
+                current_window.append(speeches.popleft())
+
+            #process speeches in current window
+            for current_speech in current_window:
                 try:
-                    current_speech = speeches.popleft()
-                    dadate = current_speech['date']
-                    # date_string = str(current_speech['date'])
                     if current_speech['speaker_party'] == "D":
                         dem_count +=1
                     elif current_speech['speaker_party'] == "R":
@@ -176,7 +187,17 @@ class Analysis(db.Model):
                 dates.append(dadate)
                 dem_counts.append(dem_count)
                 rep_counts.append(rep_count)
-            
+
+            #move current window time
+            start_dates.append(window_start)
+            end_dates.append(window_end)
+
+            window_start = window_start + window_timedelta
+            window_end = window_start + window_timedelta
+
+            if window_end > last_speech_time:
+                window_end = last_speech_time   
+
         def get_ratio(x,y):
             try:
                 return float(x)/float(y)
@@ -188,7 +209,8 @@ class Analysis(db.Model):
         self.topic_plot = {
             'title': "Speeches about %s" % phrase,
             'ylabel': "Number of Speeches",
-            'dates': dates, 
+            'start_dates': dates, 
+            'end_dates': dates,
             'ratios':ratios,
             'dem_counts':dem_counts,
             'rep_counts':rep_counts
