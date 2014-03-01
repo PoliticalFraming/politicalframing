@@ -323,11 +323,6 @@ class Analysis(db.Model):
             app.logger.error('window_size smaller than number of speeches! waaaaay to small')
             raise
 
-        #create_classifier
-        app.logger.debug("Create Classifier")
-        naive_bayes = Classifier()
-        app.logger.debug("Learn Vocabulary")
-        naive_bayes.learn_vocabulary(frame.word_string)
 
         #declare return variables
         app.logger.debug("Create empty return variables")
@@ -343,6 +338,15 @@ class Analysis(db.Model):
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
+            #create_classifier
+            app.logger.debug("Create Classifier")
+            naive_bayes = Classifier()
+
+            #Learn Vocabulary
+            app.logger.debug("Learn Vocabulary")
+            naive_bayes.learn_vocabulary(frame.word_string)
+
+            #Build Training Set
             app.logger.debug("Building Training Set")
             training_set = self.build_training_set(current_window)
 
@@ -352,14 +356,8 @@ class Analysis(db.Model):
 
             #populate return data
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
-            
-            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
-            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
-            print frame.word_string
-            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
-            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
-
             log_probabilities = naive_bayes.classify_document(frame.word_string)
+            
             d_likelihoods.append(log_probabilities[0])
             r_likelihoods.append(log_probabilities[1])
 
