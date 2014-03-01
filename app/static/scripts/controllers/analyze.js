@@ -112,19 +112,19 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
     chart.render();
   }
 
-  $scope.graphFramePlot = function(response) {
-    var frame_plot = response.data.data.frame_plot;
-    var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+  $scope.graphTopicPlot = function(response) {
+    var topic_plot = response.data.data.topic_plot;
+    var dataPoints = _.zip(topic_plot.end_dates, topic_plot.ratios, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
 
     var chart = new CanvasJS.Chart("chartContainer_topic",
     {
         zoomEnabled: true,
-        title: { text: frame_plot.title
+        title: { text: topic_plot.title
         },
         axisX:{      
             valueFormatString: "DD-MMM-YYYY",
             labelAngle: -50,
-            title: frame_plot.ylabel,
+            title: topic_plot.ylabel,
             includeZero: false
         },
         axisY: {
