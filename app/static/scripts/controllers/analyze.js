@@ -152,7 +152,9 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
         },                
         type: "line",
-        color: "rgba(0,75,141,0.7)",
+        showInLegend: true, 
+        legendText: "Dem Counts",        
+        color: "blue",
         dataPoints: dataPointsDem
     },
       {
@@ -175,7 +177,9 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
         },                
         type: "line",
-        color: "rgba(0,75,141,0.7)",
+        showInLegend: true, 
+        legendText: "Rep Counts",
+        color: "red",
         dataPoints: dataPointsRep
     }    
     
