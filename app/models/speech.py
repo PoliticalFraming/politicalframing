@@ -62,6 +62,11 @@ class Speech(object):
 
     # 
     # if the number of docs is less than numFound, then this is the pagination offset
+
+    if kwargs.get('speaker_party'):
+      query['speaker_party'] = kwargs['speaker_party']
+
+
     if kwargs.get('order'):
 
       if kwargs.get('order') != "frame":
