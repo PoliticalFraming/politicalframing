@@ -141,7 +141,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             start_date: e.dataPoint.start_date,
             end_date: e.dataPoint.end_date,
             speaker_party: 'D',
-            order: date
+            order: 'frame',
+            highlight: 'true'
           }
 
           Speech.where(dataPointfilters).then(function (response) {
@@ -163,7 +164,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             start_date: e.dataPoint.start_date,
             end_date: e.dataPoint.end_date,
             speaker_party: 'R',
-            order: date
+            order: 'frame',
+            higlight: 'true'
           }
 
           Speech.where(dataPointfilters).then(function (response) {

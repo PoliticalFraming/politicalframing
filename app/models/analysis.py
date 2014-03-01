@@ -30,14 +30,29 @@ class Classifier:
     def learn_vocabulary(self, document):
         # self.vocabulary = vocabulary
         self.vectorizer.fit([document])
+        print "learning vocabulary"
+        print self.vectorizer.vocabulary_
 
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.transform(data)
+        print "training classifier"
         self.classifier.fit(sparse_data, target)
+        print self.vectorizer.vocabulary_
+        # print self.vectorizer.vocabulary_
 
     def classify_document(self, document):
-        tfidf_frames_vector = self.vectorizer.transform(document)
-        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
+        print "Classifying document"
+        tfidf_frames_vector = self.vectorizer.transform([document])
+        print self.vectorizer.vocabulary_
+        # print "BLAHHHHHH"
+        # print tfidf_frames_vector.vocabulary_
+
+        thing = self.classifier.predict_log_proba(tfidf_frames_vector)[0]
+        # print self.classifier.feature_log_prob_
+        # print class_count_
+        # print feature_count_
+
+        return thing
 
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
@@ -113,7 +128,36 @@ class Analysis(db.Model):
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
         analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase, celery_obj)
+
+        indexes_to_delete = []
+        for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
+            if current_end_date.year > 2013:
+                indexes_to_delete.append(i)
+        
+        analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.topic_plot['end_dates'])))
+
+        analysis_obj.topic_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.topic_plot['start_dates'])))
+
+        analysis_obj.topic_plot['dem_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.topic_plot['dem_counts'])))
+
+        analysis_obj.topic_plot['rep_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.topic_plot['rep_counts'])))
+
+        analysis_obj.frame_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.frame_plot['end_dates'])))
+
+        analysis_obj.frame_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.frame_plot['start_dates'])))
+
+        analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+            enumerate(analysis_obj.frame_plot['ratios'])))
+
         analysis_obj.save()
+
+        return self
 
     ####################### UTILITIES #######################
 
@@ -194,19 +238,13 @@ class Analysis(db.Model):
 
             #process speeches in current window
             for current_speech in current_window:
-                try:
-                    if current_speech['speaker_party'] == "D":
-                        dem_count +=1
-                    elif current_speech['speaker_party'] == "R":
-                        rep_count +=1
-                except IndexError:
-                    # @DhrumilMehta I think this is for the last bucket which won't have all 100 speeches??
-                    pass
+                if current_speech['speaker_party'] == "D":
+                    dem_count +=1
+                elif current_speech['speaker_party'] == "R":
+                    rep_count +=1
 
-            if dem_count>0 and rep_count>0:
-                #skips datapoints that don't have at least one speech in each category to avoid ZeroDivisionError
-                dem_counts.append(dem_count)
-                rep_counts.append(rep_count)
+            dem_counts.append(dem_count)
+            rep_counts.append(rep_count)
 
             #move current window time
             start_dates.append(window_start)
@@ -218,20 +256,11 @@ class Analysis(db.Model):
             if window_end > last_speech_time:
                 window_end = last_speech_time   
 
-        def get_ratio(x,y):
-            try:
-                return float(x)/float(y)
-            except:
-                raise #if it gets here, something is really wrong (ZeroDivisionError)
-
-        ratios = map(lambda x,y: get_ratio(x,y), dem_counts, rep_counts)
-
         self.topic_plot = {
             'title': "Speeches about %s" % phrase,
             'ylabel': "Number of Speeches",
             'start_dates': start_dates, 
             'end_dates': end_dates,
-            'ratios':ratios,
             'dem_counts':dem_counts,
             'rep_counts':rep_counts
         }
@@ -314,7 +343,7 @@ class Analysis(db.Model):
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
-            app.logger.debug("Building Trainig Set")
+            app.logger.debug("Building Training Set")
             training_set = self.build_training_set(current_window)
 
             #train classifier on speeches in current window
@@ -323,6 +352,13 @@ class Analysis(db.Model):
 
             #populate return data
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
+            
+            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
+            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
+            print frame.word_string
+            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
+            print "AIFJSKLDFJSLKDFJSLDKFJSLDJFSLDJ"
+
             log_probabilities = naive_bayes.classify_document(frame.word_string)
             d_likelihoods.append(log_probabilities[0])
             r_likelihoods.append(log_probabilities[1])
