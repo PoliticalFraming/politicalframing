@@ -116,12 +116,12 @@ class Analysis(db.Model):
         frame = Frame.get(Frame.id == query['frame'])
         numFound = Speech.get(0, 0, **query)['count']
         speeches = []
-        pages = int(math.ceil(numFound/10000))
+        pages = int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
         for i in range(0, pages):
-            speeches = speeches + Speech.get(start=10000*i, rows=10000, **query)['speeches']
+            speeches = speeches + Speech.get(start=1000*i, rows=1000, **query)['speeches']
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)

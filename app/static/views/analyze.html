@@ -1,9 +1,9 @@
 <div id="rootwizard">
     <tabset type="navType">
-        <div class="progress">
+<!--         <div class="progress">
           <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{percentTabs}}%;"></div>
-        </div>        
-        <tab heading="{{tabs[0].heading}}" active="tabs[0].active" disabled="tabs[0].disabled" select="updatePercentTab(0)">
+        </div>         -->
+        <!-- <tab heading="{{tabs[0].heading}}" active="tabs[0].active" disabled="tabs[0].disabled" select="updatePercentTab(0)"> -->
 
             <div class="row">
                 <div class="col-sm-12">
@@ -28,9 +28,9 @@
 
         </tab>
 
-        <tab heading="{{tabs[1].heading}}" active="tabs[1].active" disabled="tabs[1].disabled" select="updatePercentTab(1)">
+        <!-- <tab heading="{{tabs[1].heading}}" active="tabs[1].active" disabled="tabs[1].disabled" select="updatePercentTab(1)"> -->
 
-            <div class="browseSpeeches" ng-show="speeches">
+<!--             <div class="browseSpeeches" ng-show="speeches">
                 <div class="row">
                     <div class="col-sm-7">
 
@@ -40,7 +40,7 @@
                         <p>{{status_bar}}</p>
                      
                     </div>
-<!--                     <div class="col-sm-5 current-speech" ng-show="currentSpeech">
+                    <div class="col-sm-5 current-speech" ng-show="currentSpeech">
                         <p>ID: {{currentSpeech.id}}</p>
                         <p>Bills: {{currentSpeech.bills}}</p>
                         <p>BioGuide: {{currentSpeech.biouguide}}</p>
@@ -62,16 +62,16 @@
                         <p>Volume: {{currentSpeech.volume}}</p>
                         Speaking: 
                         <p ng-bind-html="currentSpeech.speaking | unsafe"></p>
-                    </div> -->
+                    </div>
                 </div>
                             
                 <div class="row" ng-show="speeches">
                     <div class="col-sm-12">
 
                         <h4>Filter By State</h4>
-<!--                         <select class="filter" multiple id="states" ui-select2 ng-model="selectedStates" data-placeholder="Filter By State">
+                       <select class="filter" multiple id="states" ui-select2 ng-model="selectedStates" data-placeholder="Filter By State">
                             <option ng-repeat="state in USStateList" value="{{state.abbreviation}}">{{state.name}}</option>
-                        </select> -->
+                        </select>
 
                         <br>
                         <p>
@@ -87,9 +87,9 @@
                     </div>
                 </div>
             </div>
-        </tab>
+        </tab> -->
 
-        <tab heading="{{tabs[2].heading}}" active="tabs[2].active" disabled="tabs[2].disabled" select="updatePercentTab(2)">            
+<!--         <tab heading="{{tabs[2].heading}}" active="tabs[2].active" disabled="tabs[2].disabled" select="updatePercentTab(2)">            
             <div class="row">
                 <div class="col-sm-12">
                     <h4>Select a Frame</h4>
@@ -98,9 +98,9 @@
                 </div>
             </div>
 
-        </tab>                
+        </tab>     -->            
 
-        <tab heading="{{tabs[3].heading}}" active="tabs[3].active" disabled="tabs[3].disabled" select="updatePercentTab(3)">
+<!--         <tab heading="{{tabs[3].heading}}" active="tabs[3].active" disabled="tabs[3].disabled" select="updatePercentTab(3)">
 
             <p> chart was here before </p>
 
@@ -110,12 +110,12 @@
                 </tabset>
             </div>            
 
-        </tab>
+        </tab> -->
 
 <br>
 <br>
 
-<button class="btn btn-primary btn-xl" ng-click="analyzeSpeeches()">ANALYZE SHIT</button>
+<button class="btn btn-primary btn-xl" ng-click="analyzeSpeeches()">Analyze</button>
 
 <br>
 <br>

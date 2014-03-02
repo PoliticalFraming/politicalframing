@@ -17,6 +17,7 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
       phrase: '',
       start_date: null,
       end_date: null,
+      highlight: 'true'
     }
   };
   $scope.loadSpeeches = function () {
@@ -71,6 +72,11 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
     var frame_plot = response.data.data.frame_plot;
     var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
 
+    console.log(frame_plot.end_dates);
+
+    minDate = _.min(_.map(frame_plot.end_dates, function(x) { return new Date(x); }));
+    maxDate = _.max(_.map(frame_plot.end_dates, function(x) { return new Date(x); }));
+
     var chart = new CanvasJS.Chart("chartContainer_frame",
     {
         zoomEnabled: true,
@@ -101,11 +107,19 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             $scope.currentSpeeches = response.data; 
           });
 
-        },                
+        },
         type: "line",
         color: "rgba(0,75,141,0.7)",
         dataPoints: dataPoints
-    }
+      },
+      {
+        type: "line",
+        color: "red",
+        dataPoints: [
+          {x: minDate, y: 1},
+          {x: maxDate, y: 1}
+        ]
+      }
     
     ]
     });
