@@ -69,8 +69,11 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
   /* ==================== GRAPHING SHIT ==================== */
   
   $scope.graphFramePlot = function(response) {
+
+    $scope.Math = window.Math;
+
     var frame_plot = response.data.data.frame_plot;
-    var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+    var dataPoints = _.zip(frame_plot.end_dates, frame_plot.ratios, frame_plot.start_dates, frame_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: $scope.Math.log(a[1]), start_date: a[2], end_date: a[3] } });
 
     console.log(frame_plot.end_dates);
 
@@ -99,7 +102,9 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
             phrase: $scope.current.filters.phrase,
             frame: $scope.current.filters.frame,
             start_date: e.dataPoint.start_date,
-            end_date: e.dataPoint.end_date
+            end_date: e.dataPoint.end_date,
+            order: 'frame',
+            highlight: 'true'            
           }
 
           Speech.where(dataPointfilters).then(function (response) {
@@ -116,8 +121,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
         type: "line",
         color: "red",
         dataPoints: [
-          {x: minDate, y: 1},
-          {x: maxDate, y: 1}
+          {x: minDate, y: 0},
+          {x: maxDate, y: 0}
         ]
       }
     
@@ -171,7 +176,7 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
         color: "blue",
         dataPoints: dataPointsDem
     },
-      {
+      { 
         click: function(e) {
 
           var dataPointfilters = {
