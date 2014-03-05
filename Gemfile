@@ -1,4 +1,6 @@
 source "https://rubygems.org"
 
-gem "compass"
-gem "sass-globbing"
+ruby '1.9.3'
+
+gem 'compass'
+gem 'sass-globbing'
