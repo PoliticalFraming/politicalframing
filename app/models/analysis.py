@@ -32,14 +32,16 @@ class Classifier:
 
     def learn_vocabulary(self, document):
         # self.vocabulary = vocabulary
-        app.logger.debug(self.vectorizer.vocabulary_)
         app.logger.debug("hello hello")
-        try:        
+        try:
+            app.logger.debug("i'm in here")
             self.vectorizer.fit([document])
+            app.logger.debug("i'm outta here!!")
         except ValueError as e:
             app.logger.debug("oh noo. race condition??")
             app.logger.debug(e)
-            app.logger.debug(frame.word_string)            
+            app.logger.debug(document)
+
         print "learning vocabulary"
         # print self.vectorizer.vocabulary_
 
