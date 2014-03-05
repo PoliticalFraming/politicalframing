@@ -1,9 +1,6 @@
 {
   "name": "static",
   "version": "0.0.0",
-  "config": {
-      "unsafe-perm":true
-  },  
   "dependencies": {
     "bower": "~1.2.8",
     "grunt": "~0.4.1"  
@@ -49,5 +46,8 @@
   },
   "engines": {
     "node": "=0.10.25"
+  },
+  "scripts": {
+    "postinstall": "./node_modules/bower/bin/bower --allow-root install && ./node_modules/grunt-cli/bin/grunt heroku"
   }
 }
