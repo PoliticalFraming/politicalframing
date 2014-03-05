@@ -32,7 +32,12 @@ class Classifier:
 
     def learn_vocabulary(self, document):
         # self.vocabulary = vocabulary
-        self.vectorizer.fit([document])
+        try:        
+            self.vectorizer.fit([document])
+        except ValueError as e:
+            app.logger.debug("oh noo. race condition??")
+            app.logger.debug(e)
+            app.logger.debug(frame.word_string)            
         print "learning vocabulary"
         # print self.vectorizer.vocabulary_
 
@@ -344,12 +349,7 @@ class Analysis(db.Model):
 
             #Learn Vocabulary
             app.logger.debug("Learn Vocabulary")
-            try:
-                naive_bayes.learn_vocabulary(frame.word_string)
-            except ValueError as e:
-                app.logger.debug("oh noo. race condition??")
-                app.logger.debug(e)
-                app.logger.debug(frame.word_string)
+            naive_bayes.learn_vocabulary(frame.word_string)
 
             #Build Training Set
             app.logger.debug("Building Training Set")
