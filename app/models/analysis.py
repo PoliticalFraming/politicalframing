@@ -347,9 +347,9 @@ class Analysis(db.Model):
             try:
                 naive_bayes.learn_vocabulary(frame.word_string)
             except ValueError as e:
-                print "oh noo. race condition??"
-                print e
-                print frame.word_string
+                app.logger.debug("oh noo. race condition??")
+                app.logger.debug(e)
+                app.logger.debug(frame.word_string)
 
             #Build Training Set
             app.logger.debug("Building Training Set")
