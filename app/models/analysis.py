@@ -15,6 +15,9 @@ from sklearn.datasets.base import Bunch
 
 from dateutil import parser as dateparser
 
+# from celery.utils.log import get_task_logger
+# logger = get_task_logger(__name__)
+
 import inspect
 import math
 

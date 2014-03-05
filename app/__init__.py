@@ -64,6 +64,7 @@ else:
         'port': 5432 ,
         'threadlocals': True
     }
+    #  http://docs.celeryproject.org/en/latest/configuration.html#logging
     CELERY_BROKER_URL = 'redis://localhost:6379'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
     CELERY_REDIRECT_STDOUTS = True
