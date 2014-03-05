@@ -222,7 +222,7 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
         console.log('/api/analyses/' + id + '/');
         $http.get('/api/analyses/' + id + '/').then(function(response) {
           console.log(response);
-          console.log(response.data.meta);
+          console.log(response.data.meta.state);
           if (response.data.meta.state === 'SUCCESS') {
 
             console.log("success");
@@ -239,9 +239,10 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
           }
           else {
             if (response.data.meta.state === "PROGRESS") {
-              $scope.percentAnalyzed = response.data.meta;
-              console.log("pooooooooooohyooooooooo");
-              console.log($scope.percentAnalyzed);
+              $scope.percentAnalyzed = response.data.meta.percent_complete;
+              console.log(response.data.meta.percent_complete.stage);
+              console.log(response.data.meta.percent_complete.current + " out of " + response.data.meta.percent_complete.total);
+              console.log(response.data.meta.percent_complete.current / response.data.meta.percent_complete.total * 100 + "%");
             }
             setTimeout( function() { pollData(id) }, 2000);
           }

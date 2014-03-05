@@ -4,6 +4,7 @@
 
 web: gunicorn -w 1 -t 600 app:app
 
+celery worker --app app:celery
 celery worker --app app:celery --concurrency=4
 celery worker --app app:celery --autoreload
 env CELERYD_FSNOTIFY=kqueue celery worker -l info --app app:celery --autoreload
