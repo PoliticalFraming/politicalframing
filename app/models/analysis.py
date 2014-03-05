@@ -27,7 +27,7 @@ class Classifier:
     in scikit-learn rather than creating a new MultinomialNB object each time."""
 
     def __init__(self):
-        self.vectorizer = TfidfVectorizer()
+        self.vectorizer = TfidfVectorizer(min_df=1)
         self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
     def learn_vocabulary(self, document):
