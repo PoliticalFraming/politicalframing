@@ -32,6 +32,8 @@ class Classifier:
 
     def learn_vocabulary(self, document):
         # self.vocabulary = vocabulary
+        app.logger.debug(self.vectorizer.vocabulary_)
+        app.logger.debug("hello hello")
         try:        
             self.vectorizer.fit([document])
         except ValueError as e:
