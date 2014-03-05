@@ -31,26 +31,23 @@ class Classifier:
         # self.vocabulary = vocabulary
         self.vectorizer.fit([document])
         print "learning vocabulary"
-        print self.vectorizer.vocabulary_
+        # print self.vectorizer.vocabulary_
 
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.transform(data)
         print "training classifier"
         self.classifier.fit(sparse_data, target)
-        print self.vectorizer.vocabulary_
-        print self.vectorizer.vocabulary_
+        # print self.vectorizer.vocabulary_
 
     def classify_document(self, document):
         print "Classifying document"
         tfidf_frames_vector = self.vectorizer.transform([document])
-        print self.vectorizer.vocabulary_
-        print "BLAHHHHHH"
-        print tfidf_frames_vector.vocabulary_
+        # print self.vectorizer.vocabulary_
 
         thing = self.classifier.predict_log_proba(tfidf_frames_vector)[0]
-        print self.classifier.feature_log_prob_
-        print class_count_
-        print feature_count_
+        # print self.classifier.feature_log_prob_
+        # print class_count_
+        # print feature_count_
 
         return thing
 
