@@ -344,7 +344,12 @@ class Analysis(db.Model):
 
             #Learn Vocabulary
             app.logger.debug("Learn Vocabulary")
-            naive_bayes.learn_vocabulary(frame.word_string)
+            try:
+                naive_bayes.learn_vocabulary(frame.word_string)
+            except ValueError as e:
+                print "oh noo. race condition??"
+                print e
+                print frame.word_string
 
             #Build Training Set
             app.logger.debug("Building Training Set")
