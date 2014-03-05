@@ -20,9 +20,9 @@ class Api(restful.Api):
     def unauthorized(self, response):
         return response
 
-# @task_prerun.connect
-# def on_task_init(*args, **kwargs):
-#     db.database.close()
+@task_prerun.connect
+def on_task_init(*args, **kwargs):
+    db.database.close()
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL'])
