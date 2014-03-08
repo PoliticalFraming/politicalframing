@@ -78,7 +78,7 @@ si = SolrInterface(url = solr_url, http_connection = h)
 # Instantiate Flask
 
 SECRET_KEY='poop'
-CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 app = Flask(__name__)
 app.config.from_object(__name__)
