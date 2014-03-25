@@ -70,6 +70,8 @@ else:
     CELERY_REDIRECT_STDOUTS = True
     CELERY_REDIRECT_STDOUTS_LEVEL = 'DEBUG'
     CELERY_TRACK_STARTED = True
+    # CELERY_TASK_SERIALIZER = 'pickle' # change this to json
+    # Can be pickle (default), json, yaml, msgpack
 
 solr_url = "http://politicalframing.com:8983/solr" # "http://localhost:8983/solr/"
 h = httplib2.Http(cache="/var/tmp/solr_cache")
