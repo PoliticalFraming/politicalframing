@@ -7,7 +7,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
     scope: {
       speeches: '=',
       current: '='
-    },    
+    },
     controller: function ($scope, $modal, $log) {
       $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
 

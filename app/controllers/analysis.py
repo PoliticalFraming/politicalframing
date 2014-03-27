@@ -42,14 +42,11 @@ analysis_marshall = {
 	'data': fields.Nested(analysis_fields)
 }
 
-parser = reqparse.RequestParser()
-
 class AnalysisListController(Resource):
 
 	def get(self):
-
+		parser = reqparse.RequestParser()
 		parser.add_argument('page', type = int, required = False, location = 'values')
-
 
 		"""Search persistant storage for analysis matching argument paramenters."""
 		args = parser.parse_args()
@@ -63,7 +60,7 @@ class AnalysisListController(Resource):
 
 	@marshal_with(analysis_marshall)
 	def post(self):
-
+		parser = reqparse.RequestParser()
 		parser.add_argument('id', type = int, required = False, location = 'json')
 		parser.add_argument('frame', type = int, required = True, location = 'json')
 		parser.add_argument('phrase', type = str, required = True, location = 'json')
