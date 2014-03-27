@@ -77,8 +77,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
 
     console.log(frame_plot.end_dates);
 
-    minDate = _.min(_.map(frame_plot.end_dates, function(x) { return new Date(x); }));
-    maxDate = _.max(_.map(frame_plot.end_dates, function(x) { return new Date(x); }));
+    var minDate = _.min(_.map(frame_plot.end_dates, function(x) { return new Date(x); }));
+    var maxDate = _.max(_.map(frame_plot.end_dates, function(x) { return new Date(x); }));
 
     var chart = new CanvasJS.Chart("chartContainer_frame",
     {

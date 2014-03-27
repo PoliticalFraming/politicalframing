@@ -80,7 +80,7 @@ class Analysis(db.Model):
         db_table = 'analyses'
 
     @classmethod
-    def compute_analysis(cls, phrase, frame, start_date=None, end_date=None, states=None, to_update=None):
+    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None, states=None, to_update=None):
         """
         Class Method:
         - Queries DB for speeches with parameters specified in args.
@@ -89,15 +89,27 @@ class Analysis(db.Model):
         - returns ID of that instance
         """
 
-        analysis_obj = Analysis(
-            frame = Frame.get(Frame.id == frame), 
-            phrase = phrase,
-            start_date = start_date, 
-            end_date = end_date, 
-            states = states, 
-            to_update = to_update
-        )
+        # Update existing Analysis Object with a new start_date and end_date
+        if id != None:
+            analysis_obj = Analysis.get(Analysis.id == id)
+            analysis_obj.start_date = start_date
+            analysis_obj.end_date = end_date
+            # analysis_obj.frame = Frame.get(Frame.id == frame)
+            # analysis_obj.phrase = phrase
+            # analysis_obj.states = states
+            # analysis_obj.to_update = to_update
 
+        # Create new Analysis Object
+        else:
+            analysis_obj = Analysis(
+                frame = Frame.get(Frame.id == frame), 
+                phrase = phrase,
+                start_date = start_date, 
+                end_date = end_date, 
+                states = states, 
+                to_update = to_update
+            )
+        
         analysis_obj.save()
 
         # deal with states

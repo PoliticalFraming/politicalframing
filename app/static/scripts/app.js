@@ -15,6 +15,7 @@ var app = angular.module('framingApp', [
     $routeProvider
       .when('/', {
         templateUrl: 'views/home.html',
+        controller: 'HomeCtrl'
       })
       .when('/analyze', {
         templateUrl: 'views/analyze.html',
@@ -24,6 +25,10 @@ var app = angular.module('framingApp', [
         templateUrl: 'views/browse.html',
         controller: 'MainCtrl'
       })
+      .when('/analysis/:id', {
+        templateUrl: 'views/analysis.html',
+        controller: 'AnalysisViewerCtrl'
+      })      
       .otherwise({
         redirectTo: '/'
       });

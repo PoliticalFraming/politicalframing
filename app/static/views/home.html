@@ -243,6 +243,26 @@
 
 </div>
 
+<table class="table table-striped table-responsive table-hover table-condensed speech-browser-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Phrase</th>
+      <th>Frame</th>
+    </tr>
+  </thead>
+  <tbody>
+	<tr ng-repeat="analysis in analyses" ng-click="showAnalysis(analysis)">
+		<td>{{analysis.id}}</td>
+		<td>{{analysis.start_date}}</td>
+		<td>{{analysis.end_date}}</td>
+		<td>{{analysis.phrase}}</td>
+		<td>{{analysis.frame}}</td>
+	</tr>
+  </tbody>
+</table>
 
 
 <div class="row">

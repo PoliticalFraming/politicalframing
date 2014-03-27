@@ -5,6 +5,9 @@ angular.module('framingApp').factory('Analysis', ['ActiveResource', function(Act
   function Analysis(data) {
     this.integer('id');
     this.integer('frame');
+    // this.hasOne('frame', { provider: 'Frame', foreign_key: 'id'} );
+    this.string('start_date');
+    this.string('end_date');
     this.string('phrase');
     this.string('frame_plot');
     this.string('topic_plot');
