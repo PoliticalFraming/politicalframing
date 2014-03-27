@@ -3,17 +3,5 @@
 <br/>
 <br/>	
 
-<pre>
-{
-  "id" : {{currentAnalysis.id | json }}
-  "phrase" : {{currentAnalysis.phrase | json }}
-  "frame" : {{currentAnalysis.frame | json }}
-  "start_date" : {{currentAnalysis.start_date | json }}
-  "end_date" : {{currentAnalysis.end_date | json }}
-}
-</pre>
+<single-analysis id="id"></single-analysis>
 
-<div id="chartContainer_frame" style="height: 300px; width: 100%;"></div>
-<div id="chartContainer_topic" style="height: 300px; width: 100%;"> </div>
-
-<speech-browser speeches="currentSpeeches" current="current"></speech-browser>

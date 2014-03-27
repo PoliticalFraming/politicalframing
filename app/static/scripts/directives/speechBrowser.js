@@ -8,10 +8,24 @@ angular.module('framingApp').directive('speechBrowser', function() {
       speeches: '=',
       current: '='
     },
-    controller: function ($scope, $modal, $log) {
+    controller: function ($scope, $modal, $log, Speech) {
       $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
 
-      // $scope.currentSpeech = null;
+      $scope.loadSpeeches = function () {
+        if ($scope.current.filters.phrase === null) { return; }
+        Speech.where($scope.current.filters).then(function (response) {
+          $scope.speeches = response.data;
+          $scope.current.count = response.meta.count;
+          $scope.current.pages = response.meta.pages;
+          console.log($scope.current);
+        });
+      };
+
+      $scope.$watch('current.filters.page', function (newVal, oldVal) {
+        if (oldVal === newVal) { return; }
+          console.log($scope.current.page);
+          $scope.loadSpeeches();
+      }, true);      
       
       $scope.open = function (index) {
         // $scope.currentSpeech = $scope.speeches[index];

@@ -19,6 +19,8 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $window, S
       end_date: null,
     }
   };
+
+  // COPY OF FUNCTION IN DIRECTIVE =(
   $scope.loadSpeeches = function () {
     if ($scope.current.filters.phrase === null) { return; }
     Speech.where($scope.current.filters).then(function (response) {
@@ -27,13 +29,8 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $window, S
       $scope.current.pages = response.meta.pages;
       console.log($scope.current);
     });
-  };
-  $scope.$watch('current.filters.page', function (newVal, oldVal) {
-    if (oldVal === newVal) { return; }
-      console.log($scope.current.page);
-      $scope.loadSpeeches();
-  }, true);
+  }; 
+
   $scope.dateOptions = { changeYear: true, changeMonth: true, yearRange: '1900:-0' };
   $scope.navType = 'pills';
-
 });
