@@ -12,7 +12,9 @@ angular.module('framingApp').directive('singleAnalysis', function() {
       $scope.current = {
         count: null,
         filters: {
-          page: null
+          page: null,
+          phrase: null,
+          frame: null
         }
       };
 
@@ -23,6 +25,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
 
           Analysis.find($scope.id).then(function(data) {
             $scope.currentAnalysis = data;
+            $scope.current.filters.phrase = $scope.currentAnalysis.phrase;
+            $scope.current.filters.frame = $scope.currentAnalysis.frame;
             // console.log($scope.currentAnalysis);
             // console.log($scope.currentAnalysis.frame);
             var response = {
