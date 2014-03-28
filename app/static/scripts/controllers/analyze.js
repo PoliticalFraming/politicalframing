@@ -24,30 +24,18 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
   $scope.navType = 'pills';
 
   /* ==================== ANALYZING SHIT ==================== */
-
   $scope.analyzeSpeeches = function () {
-
-    // var analysis = Analysis.new($scope.current.filters);
-    // analysis.$save();
-
     $http.post('api/analyses/', $scope.current.filters).then(function(response) {
       console.log(response);
       var id = response.data.data.id;
-
       function pollData(id) {
         console.log('/api/analyses/' + id + '/');
         $http.get('/api/analyses/' + id + '/').then(function(response) {
           console.log(response);
           console.log(response.data.meta.state);
           if (response.data.meta.state === 'SUCCESS') {
-
             console.log("success");
             $scope.id = id;
-            // $scope.currentAnalysis = response.data.data;
-            // $scope.graphFramePlot(response);
-            // $scope.graphTopicPlot(response);
-            // console.log(chart1);
-
             return;
           }
           else if (response.data.meta.state === 'FAILURE') {
@@ -65,11 +53,8 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
           }
         });
       }
-
       setTimeout( function() { pollData(id); }, 1000);
-
     });
-
   };
 
 

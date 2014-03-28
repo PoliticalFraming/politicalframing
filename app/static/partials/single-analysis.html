@@ -1,4 +1,13 @@
-<pre>
+<div class="col-sm-6">
+	<div id="chartContainer_frame" style="height: 300px; width: 100%;"></div>
+	<br/>
+	<div id="chartContainer_topic" style="height: 300px; width: 100%;"> </div>
+	<br/>
+	<button class="btn btn-primary" ng-click="recomputeAnalysis(currentAnalysis)">Re-run Analysis</button>
+</div>
+<div class="col-sm-6" ng-show="currentAnalysis">
+	<speech-browser speeches="speeches" current="current" loadSpeeches="loadSpeeches" ng-show="speeches"></speech-browser>
+	<pre>
 {
   "id" : {{currentAnalysis.id | json }}
   "phrase" : {{currentAnalysis.phrase | json }}
@@ -6,11 +15,5 @@
   "start_date" : {{currentAnalysis.start_date | json }}
   "end_date" : {{currentAnalysis.end_date | json }}
 }
-</pre>
-
-<div id="chartContainer_frame" style="height: 300px; width: 100%;"></div>
-<div id="chartContainer_topic" style="height: 300px; width: 100%;"> </div>
-
-<div class="bloop">{{current}}</div>
-
-<speech-browser speeches="speeches" current="current" loadSpeeches="loadSpeeches"></speech-browser>
+	</pre>	
+</div>

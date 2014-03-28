@@ -9,6 +9,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     },    
     controller: function ($scope, $modal, $log, Speech, Analysis) {
 
+
       $scope.current = {
         count: null,
         filters: {
@@ -18,7 +19,43 @@ angular.module('framingApp').directive('singleAnalysis', function() {
         }
       };
 
-      console.log($scope.id);
+      $scope.recomputeAnalysis = function(analysis) {
+        id = analysis.id;
+        analyzeSpeeches
+      }
+
+      $scope.analyzeSpeeches = function () {
+        $http.post('api/analyses/', $scope.current.filters).then(function(response) {
+          console.log(response);
+          var id = response.data.data.id;
+          function pollData(id) {
+            console.log('/api/analyses/' + id + '/');
+            $http.get('/api/analyses/' + id + '/').then(function(response) {
+              console.log(response);
+              console.log(response.data.meta.state);
+              if (response.data.meta.state === 'SUCCESS') {
+                console.log("success");
+                $scope.id = id;
+                return;
+              }
+              else if (response.data.meta.state === 'FAILURE') {
+                console.log("failed");
+                return;
+              }
+              else {
+                if (response.data.meta.state === "PROGRESS") {
+                  $scope.percentAnalyzed = response.data.meta.percent_complete;
+                  console.log(response.data.meta.percent_complete.stage);
+                  console.log(response.data.meta.percent_complete.current + " out of " + response.data.meta.percent_complete.total);
+                  console.log(response.data.meta.percent_complete.current / response.data.meta.percent_complete.total * 100 + "%");
+                }
+                setTimeout( function() { pollData(id) }, 2000);
+              }
+            });
+          }
+          setTimeout( function() { pollData(id); }, 1000);
+        });
+      };      
 
       $scope.$watch('id', function(newValue, oldValue) {
         if ( newValue !== undefined ) {
