@@ -5,24 +5,40 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     restrict: 'E',
     transclude: true,
     scope: {
-      id: '='
+      current: '='
     },    
-    controller: function ($scope, $modal, $log, Speech, Analysis) {
+    controller: function ($scope, $modal, $log, $http, Speech, Analysis) {
 
+      // $scope.recomputeAnalysis = function(analysis) {
+      //   id = analysis.id;
+      //   analyzeSpeeches
+      // }
 
-      $scope.current = {
-        count: null,
-        filters: {
-          page: null,
-          phrase: null,
-          frame: null
-        }
-      };
+      console.log("poop");
 
-      $scope.recomputeAnalysis = function(analysis) {
-        id = analysis.id;
-        analyzeSpeeches
-      }
+      $scope.$on('graphRequested', function(event, args) {
+
+        console.log("blah");
+
+        Analysis.find($scope.current.filters.id).then(function(data) {
+          $scope.currentAnalysis = data;
+          $scope.current.filters.phrase = $scope.currentAnalysis.phrase;
+          $scope.current.filters.frame = $scope.currentAnalysis.frame;
+
+          var response = {
+            data: {
+              data: data
+            }
+          };
+          // console.log(data);
+          $scope.graphFramePlot(response);
+          $scope.graphTopicPlot(response);
+        });
+      });
+
+      $scope.$on('analysisRequested', function(event, args) {
+        $scope.analyzeSpeeches();
+      });
 
       $scope.analyzeSpeeches = function () {
         $http.post('api/analyses/', $scope.current.filters).then(function(response) {
@@ -35,7 +51,10 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               console.log(response.data.meta.state);
               if (response.data.meta.state === 'SUCCESS') {
                 console.log("success");
-                $scope.id = id;
+                // $scope.id = id;
+                $scope.currentAnalysis = response.data.data;
+                $scope.graphFramePlot(response);
+                $scope.graphTopicPlot(response);
                 return;
               }
               else if (response.data.meta.state === 'FAILURE') {
@@ -44,10 +63,10 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               }
               else {
                 if (response.data.meta.state === "PROGRESS") {
-                  $scope.percentAnalyzed = response.data.meta.percent_complete;
-                  console.log(response.data.meta.percent_complete.stage);
-                  console.log(response.data.meta.percent_complete.current + " out of " + response.data.meta.percent_complete.total);
-                  console.log(response.data.meta.percent_complete.current / response.data.meta.percent_complete.total * 100 + "%");
+                  $scope.current.progress_current = response.data.meta.percent_complete.current;
+                  $scope.current.progress_total = response.data.meta.percent_complete.total;
+                  $scope.current.progress_percent = response.data.meta.percent_complete.current / response.data.meta.percent_complete.total * 100;
+                  $scope.current.stage = response.data.meta.percent_complete.stage;
                 }
                 setTimeout( function() { pollData(id) }, 2000);
               }
@@ -56,28 +75,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           setTimeout( function() { pollData(id); }, 1000);
         });
       };      
-
-      $scope.$watch('id', function(newValue, oldValue) {
-        if ( newValue !== undefined ) {
-
-          Analysis.find($scope.id).then(function(data) {
-            $scope.currentAnalysis = data;
-            $scope.current.filters.phrase = $scope.currentAnalysis.phrase;
-            $scope.current.filters.frame = $scope.currentAnalysis.frame;
-            // console.log($scope.currentAnalysis);
-            // console.log($scope.currentAnalysis.frame);
-            var response = {
-              data: {
-                data: data
-              }
-            };
-            // console.log(data);
-            $scope.graphFramePlot(response);
-            $scope.graphTopicPlot(response);
-          });   
-
-        }
-      });
+   
 
       $scope.graphFramePlot = function(response) {
 
@@ -110,8 +108,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             click: function(e) {
 
               var dataPointfilters = {
-                phrase: $scope.currentAnalysis.phrase,
-                frame: $scope.currentAnalysis.frame,
+                phrase: $scope.current.filters.phrase,
+                frame: $scope.current.filters.frame,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 order: 'frame',
@@ -120,7 +118,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
 
               Speech.where(dataPointfilters).then(function (response) {
                 console.log(response); // response.meta.count; response.meta.pages;
-                $scope.currentSpeeches = response.data;
+                $scope.speeches = response.data;
                 $scope.current.filters.page = 1;
                 $scope.current.count = response.meta.count;
               });
@@ -168,8 +166,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             click: function(e) {
 
               var dataPointfilters = {
-                phrase: $scope.currentAnalysis.phrase,
-                frame: $scope.currentAnalysis.frame,
+                phrase: $scope.current.filters.phrase,
+                frame: $scope.current.filters.frame,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 speaker_party: 'D',
@@ -195,8 +193,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             click: function(e) {
 
               var dataPointfilters = {
-                phrase: $scope.currentAnalysis.phrase,
-                frame: $scope.currentAnalysis.frame,
+                phrase: $scope.current.filters.phrase,
+                frame: $scope.current.filters.frame,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 speaker_party: 'R',

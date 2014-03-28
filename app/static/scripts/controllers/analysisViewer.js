@@ -4,6 +4,27 @@
 
 angular.module('framingApp').controller('AnalysisViewerCtrl', function ($scope, $window, $routeParams) {
 
-  $scope.id = $routeParams.id;
+  $scope.current = {
+    count: null,
+    filters: {
+      page: null,
+      phrase: null,
+      frame: null,
+      id: $routeParams.id
+    }
+  };
+
+  setTimeout(function() {
+    $scope.$broadcast('graphRequested');
+    console.log("event emitted??");
+  }, 15);
+  
+
+  // $scope.graphRequested = function() {
+  //   $scope.$broadcast('graphRequested');
+  // }
+
+  // $scope.graphRequested();
+
 
 });

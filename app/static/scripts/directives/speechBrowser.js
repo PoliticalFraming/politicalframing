@@ -11,6 +11,10 @@ angular.module('framingApp').directive('speechBrowser', function() {
     controller: function ($scope, $modal, $log, Speech) {
       $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
 
+      $scope.$on('phraseSearched', function(event, args) {
+        $scope.loadSpeeches();
+      });
+
       $scope.loadSpeeches = function () {
         if ($scope.current.filters.phrase === null) { return; }
         Speech.where($scope.current.filters).then(function (response) {

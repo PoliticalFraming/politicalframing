@@ -9,7 +9,7 @@ angular.module('framingApp').controller('HomeCtrl', function ($scope, $window, $
 
   $scope.showAnalysis = function(analysis) {
   	console.log(analysis);
-		$location.path('/analysis/' + analysis.id);
+	$location.path('/analysis/' + analysis.id);
   }
 
 });
