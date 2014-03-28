@@ -15,11 +15,15 @@ angular.module('framingApp').directive('singleAnalysis', function() {
         // HIDE CURRENT GRAPHS AND SHIT
       }
 
-      console.log("poop");
+      console.log("single Analysis directive loaded");
 
-      $scope.$on('graphRequested', function(event, args) {
+      // TODO:
+      // This should ideally use a scope instead of a watch.
+      // However, the directive is loaded after the event is broadcast.
+      // Thus we need some way to check whether a directive is loaded or not.
 
-        console.log("blah");
+      // $scope.$on('graphRequested', function(event, args) {
+      $scope.$watch("current.filters.id", function(newValue, oldValue) {
 
         Analysis.find($scope.current.filters.id).then(function(data) {
           $scope.currentAnalysis = data;
@@ -35,7 +39,10 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           $scope.graphFramePlot(response);
           $scope.graphTopicPlot(response);
         });
+
       });
+
+      // });
 
       $scope.$on('analysisRequested', function(event, args) {
         $scope.analyzeSpeeches();

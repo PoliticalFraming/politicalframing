@@ -14,11 +14,22 @@ angular.module('framingApp').controller('AnalysisViewerCtrl', function ($scope, 
     }
   };
 
-  setTimeout(function() {
-    $scope.$broadcast('graphRequested');
-    console.log("event emitted??");
-  }, 15);
-  
+  // console.log("before broadcast");
+
+  // $scope.$broadcast('graphRequested');
+
+  // console.log("after broadcast");
+
+  // $scope.$apply(function () {
+    
+  // });
+
+  // $scope.$apply();
+
+  // setTimeout(function() {
+  //   $scope.$broadcast('graphRequested');
+  //   console.log("event emitted??");
+  // }, 15);
 
   // $scope.graphRequested = function() {
   //   $scope.$broadcast('graphRequested');
