@@ -176,6 +176,10 @@ class Analysis(db.Model):
         analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
             enumerate(analysis_obj.frame_plot['ratios'])))
 
+        # when recomputing an analysis, this prevents the old celery_id from overwriting the new celery_id
+        # this can be done less hackily later
+        analysis_obj.celery_id = celery_id
+
         analysis_obj.save()
 
         return self

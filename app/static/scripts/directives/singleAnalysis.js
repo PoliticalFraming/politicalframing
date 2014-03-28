@@ -9,10 +9,11 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     },    
     controller: function ($scope, $modal, $log, $http, Speech, Analysis) {
 
-      // $scope.recomputeAnalysis = function(analysis) {
-      //   id = analysis.id;
-      //   analyzeSpeeches
-      // }
+      $scope.recomputeAnalysis = function() {
+        if ($scope.current.filters.id == undefined) return;
+        $scope.analyzeSpeeches();
+        // HIDE CURRENT GRAPHS AND SHIT
+      }
 
       console.log("poop");
 
