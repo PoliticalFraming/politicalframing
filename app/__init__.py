@@ -15,6 +15,10 @@ from werkzeug.wsgi import SharedDataMiddleware
 
 from celery import Celery
 from celery.signals import task_prerun
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../lib')
+
 
 class Api(restful.Api):
     def unauthorized(self, response):

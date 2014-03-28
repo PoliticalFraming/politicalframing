@@ -25,12 +25,15 @@ then
   pip install numpy==1.7.0
   pip install -r /vagrant/requirements.txt
 
-  npm install
   sudo npm install -g grunt-cli
+  npm install
 
   # Create database models
 
   python manage.py createdb
+
+  # Install NLTK Corpora
+  python -m nltk.downloader wordnet
 
   sudo touch /var/log/framingapp_setup
 

@@ -1,7 +1,6 @@
 *.sublime-workspace
 bin
 include
-lib
 .DS_Store
 *.pyc
 *.log
