@@ -64,8 +64,14 @@ else:
         'port': 5432 ,
         'threadlocals': True
     }
+    #  http://docs.celeryproject.org/en/latest/configuration.html#logging
     CELERY_BROKER_URL = 'redis://localhost:6379'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_REDIRECT_STDOUTS = True
+    CELERY_REDIRECT_STDOUTS_LEVEL = 'DEBUG'
+    CELERY_TRACK_STARTED = True
+    # CELERY_TASK_SERIALIZER = 'pickle' # change this to json
+    # Can be pickle (default), json, yaml, msgpack
 
 solr_url = "http://politicalframing.com:8983/solr" # "http://localhost:8983/solr/"
 h = httplib2.Http(cache="/var/tmp/solr_cache")
@@ -152,6 +158,7 @@ def catch_all(path):
 
 from logging import Formatter, FileHandler
 from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import SysLogHandler
 
 if os.environ.get('HEROKU') is None:
     from logging.handlers import RotatingFileHandler
@@ -165,23 +172,27 @@ if os.environ.get('HEROKU') is None:
     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
     file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
 
+    ##########################################
     if not app.debug:
         app.logger.setLevel(logging.INFO)
         file_handler.setLevel(logging.INFO)
     else:
         app.logger.setLevel(logging.DEBUG)
         file_handler.setLevel(logging.DEBUG)
+    ##########################################
 
     app.logger.addHandler(file_handler)
 else:
     stream_handler = logging.StreamHandler()
 
+    ##########################################
     if not app.debug:
         app.logger.setLevel(logging.INFO)
         stream_handler.setLevel(logging.INFO)
     else:
         app.logger.setLevel(logging.DEBUG)
         stream_handler.setLevel(logging.DEBUG)
+    ##########################################
 
     app.logger.addHandler(stream_handler)
 

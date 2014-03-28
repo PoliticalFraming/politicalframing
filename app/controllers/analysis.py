@@ -13,7 +13,8 @@ import json
 topic_plot_fields = {
 	'dem_counts': fields.List(fields.Integer),
 	'rep_counts': fields.List(fields.Integer),
-	'dates': fields.List(fields.Raw),
+	'start_dates': fields.List(fields.Raw),
+	'end_dates':  fields.List(fields.Raw),
 	'ylabel': fields.String,
 	'title': fields.String
 }
@@ -30,6 +31,8 @@ analysis_fields = {
 	'id': fields.Integer,
 	'frame': fields.Integer,
 	'phrase': fields.String,
+	'start_date': fields.Raw, #DateTime
+	'end_date': fields.Raw, #DateTime
 	'topic_plot': fields.Nested(topic_plot_fields),
 	'frame_plot': fields.Nested(frame_plot_fields)
 }
@@ -39,23 +42,32 @@ analysis_marshall = {
 	'data': fields.Nested(analysis_fields)
 }
 
-parser = reqparse.RequestParser()
-
 class AnalysisListController(Resource):
 
-	parser.add_argument('id', type = int, required = False, location = 'json')
-	parser.add_argument('frame', type = int, required = True, location = 'json')
-	parser.add_argument('phrase', type = str, required = True, location = 'json')
-	parser.add_argument('start_date', type = str, required = False, location = 'json')
-	parser.add_argument('end_date', type = str, required = False, location = 'json')
-	parser.add_argument('states', type = list, required = False, location = 'json')
-
 	def get(self):
+		parser = reqparse.RequestParser()
+		parser.add_argument('page', type = int, required = False, location = 'values')
+
 		"""Search persistant storage for analysis matching argument paramenters."""
-		pass
+		args = parser.parse_args()
+		if not args['page']: args['page'] = 1
+		query = Analysis.select().order_by(Analysis.id)
+		count=query.count()
+		analyses = map(lambda x: get_dictionary_from_model(x), query) #query.paginate(args['page'],20)
+		
+		return { 'meta': {'count':count}, 'data': analyses }
+
 
 	@marshal_with(analysis_marshall)
 	def post(self):
+		parser = reqparse.RequestParser()
+		parser.add_argument('id', type = int, required = False, location = 'json')
+		parser.add_argument('frame', type = int, required = True, location = 'json')
+		parser.add_argument('phrase', type = str, required = True, location = 'json')
+		parser.add_argument('start_date', type = str, required = False, location = 'json')
+		parser.add_argument('end_date', type = str, required = False, location = 'json')
+		parser.add_argument('states', type = list, required = False, location = 'json')
+
 		"""Compute analysis. Place in persistant storage."""
 		args = parser.parse_args()
 
@@ -64,6 +76,7 @@ class AnalysisListController(Resource):
 			args['end_date'] = dateparser.parse(args['start_date']).date()
 		
 		analysis_obj = Analysis.compute_analysis(
+			id = args.get('id'),
 			phrase = args.get('phrase'), 
 			frame = args.get('frame'),
 			start_date = args.get('start_date'), 

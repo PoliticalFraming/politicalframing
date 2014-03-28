@@ -48,7 +48,7 @@ class FrameListController(Resource):
 		if not args['page']: args['page'] = 1
 		query = Frame.select().order_by(Frame.id)
 		count=query.count()
-		frames = map(lambda x: get_dictionary_from_model(x), query.paginate(args['page'],20))
+		frames = map(lambda x: get_dictionary_from_model(x), query) #query.paginate(args['page'],20)
 		
 		return { 'meta': {'count':count}, 'data': frames }
 

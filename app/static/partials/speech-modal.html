@@ -1,17 +1,33 @@
+<style>
+
+.daspeech {
+  line-height: 1.5em;
+  font-size: 1.5em;
+}
+
+</style>
+
 <div class="modal-header">
     <h3>{{currentSpeech.document_title}}</h3>
 </div>
 <div class="modal-body">
-  <!-- <p ng-bind-html="currentSpeech.speaking | unsafe"></p> -->  
-  <pre>{{currentSpeech.toJSON({ prettyPrint: true }) }}</pre>
 
-</div>
-<div class="modal-footer">
-    <button class="btn btn-primary" ng-click="ok()">OK</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-</div>
+  <div class="row">
+    <div class="col-sm-4">
+      {{ currentSpeech.speaker_firstname + " " + currentSpeech.speaker_middlename + " " + currentSpeech.speaker_lastname }}
+    </div>
+    <div class="col-sm-4">
+      {{ currentSpeech.date }}
+    </div>
+    <div class="col-sm-4">
+      {{ currentSpeech.speaker_state }}
+    </div>
+    <div class="col-sm-4">
+      {{ currentSpeech.speaker_party }}
+    </div>
+  </div>
 
-<!--   
+<!--
   <span ng-show="currentSpeech.id">ID: {{currentSpeech.id}}</span>
   <span ng-show="currentSpeech.bills">Bills: {{currentSpeech.bills}}</span>
   <span ng-show="currentSpeech.biouguide">BioGuide: {{currentSpeech.biouguide}}</span>
@@ -30,5 +46,22 @@
   <span ng-show="currentSpeech.speaker_raw">Speaker Raw: {{currentSpeech.speaker_raw}}</span>
   <span ng-show="currentSpeech.speaker_state">Speaker State: {{currentSpeech.speaker_state}}</span>
   <span ng-show="currentSpeech.title">Title: {{currentSpeech.title}}</span>
-  <span ng-show="currentSpeech.volume">Volume: {{currentSpeech.volume}}</span> 
--->
+  <span ng-show="currentSpeech.volume">Volume: {{currentSpeech.volume}}</span>   
+-->  
+
+  <div class="daspeech" ng-repeat="sentence in currentSpeech.speaking">
+    <span ng-bind-html="sentence | unsafe"></span>
+  </div>
+
+
+
+  <pre>{{currentSpeech.toJSON({ prettyPrint: true }) }}</pre>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="ok()">OK</button>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>
+
+
+
+

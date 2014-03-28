@@ -10,6 +10,8 @@ from app.models.analysis import Analysis
 
 manager = Manager(app)
 manager.add_command("runserver", Server(host="0.0.0.0", port=5000))
+manager.add_command("production", Server(host="0.0.0.0", port=5000, use_debugger=True, use_reloader=False, threaded=True))
+
 # manager.add_command("assets", ManageAssets(assets))
 
 @manager.command

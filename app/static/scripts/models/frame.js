@@ -10,6 +10,7 @@ angular.module('framingApp').factory('Frame', ['ActiveResource', function(Active
     this.string('seed_word');
     this.integer('word_count');
     this.string('word_string');
+    // this.hasMany('analyses', { provider: 'Analysis', foreign_key: 'id'} );
   }
 
   Frame.inherits(ActiveResource.Base);

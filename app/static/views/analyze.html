@@ -1,131 +1,35 @@
-<div id="rootwizard">
-    <tabset type="navType">
-        <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{percentTabs}}%;"></div>
-        </div>        
-        <tab heading="{{tabs[0].heading}}" active="tabs[0].active" disabled="tabs[0].disabled" select="updatePercentTab(0)">
+<!--
+<div class="progress">
+<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{percentTabs}}%;"></div>
+</div>         -->
+<!-- <tab heading="{{tabs[0].heading}}" active="tabs[0].active" disabled="tabs[0].disabled" select="updatePercentTab(0)">
+-->
 
-            <div class="row">
-                <div class="col-sm-12">
-                    <h4>Filter by phrase</h4>
-                    <input type="text" class="phrase-input" ng-model="current.filters.phrase" />
-<!--                     <input type="button" class="btn btn-xs btn-primary" ng-click="loadSpeeches()" value="Browse"/> -->
-                </div>
+<div class="row">
+  <div class="col-sm-3">
+      <h4>Filter by phrase</h4>
+      <input type="text" class="phrase-input" ng-model="current.filters.phrase" />
 
-              <div class="col-sm-12">
-                <h4>Select Frame to Highlight</h4>
-                  <select chosen id="frames" 
-                    ng-model="current.filters.frame"
-                    ng-options="frame.id as frame.name for frame in frames" 
-                    data-placeholder="Select a Frame"
-                    no-results-text="'Could not find any frames'"
-                    width="'200px'">
-                    <option value=""></option>
-                  </select>
-              </div>
+      <h4>Select Frame to Highlight</h4>
+      <select chosen id="frames" 
+        ng-model="current.filters.frame"
+        ng-options="frame.id as frame.name for frame in frames" 
+        data-placeholder="Select a Frame"
+        no-results-text="'Could not find any frames'"
+        width="'200px'">
+        <option value=""></option>
+      </select>
 
-            </div>      
+  </div>
 
-        </tab>
-
-        <tab heading="{{tabs[1].heading}}" active="tabs[1].active" disabled="tabs[1].disabled" select="updatePercentTab(1)">
-
-            <div class="browseSpeeches" ng-show="speeches">
-                <div class="row">
-                    <div class="col-sm-7">
-
-                        <br>
-                        <br>
-                        <div class="gridStyle" ng-grid="gridOptions"></div>
-                        <p>{{status_bar}}</p>
-                     
-                    </div>
-<!--                     <div class="col-sm-5 current-speech" ng-show="currentSpeech">
-                        <p>ID: {{currentSpeech.id}}</p>
-                        <p>Bills: {{currentSpeech.bills}}</p>
-                        <p>BioGuide: {{currentSpeech.biouguide}}</p>
-                        <p>CapitolWords URL: {{currentSpeech.capitolwords_url}}</p>
-                        <p>Chamber: {{currentSpeech.chamber}}</p>
-                        <p>Congress: {{currentSpeech.congress}}</p>
-                        <p>Date: {{currentSpeech.date}}</p>
-                        <p>Number: {{currentSpeech.number}}</p>
-                        <p>Order: {{currentSpeech.order}}</p>
-                        <p>Orign URL: {{currentSpeech.origin_url}}</p>
-                        <p>Pages: {{currentSpeech.pages}}</p>
-                        <p>Session: {{currentSpeech.session}}</p>
-                        <p>Speaker First: {{currentSpeech.speaker_first}}</p>
-                        <p>Speaker Last: {{currentSpeech.speaker_last}}</p>
-                        <p>Speaker Party: {{currentSpeech.speaker_party}}</p>
-                        <p>Speaker Raw: {{currentSpeech.speaker_raw}}</p>
-                        <p>Speaker State: {{currentSpeech.speaker_state}}</p>
-                        <p>Title: {{currentSpeech.title}}</p>
-                        <p>Volume: {{currentSpeech.volume}}</p>
-                        Speaking: 
-                        <p ng-bind-html="currentSpeech.speaking | unsafe"></p>
-                    </div> -->
-                </div>
-                            
-                <div class="row" ng-show="speeches">
-                    <div class="col-sm-12">
-
-                        <h4>Filter By State</h4>
-<!--                         <select class="filter" multiple id="states" ui-select2 ng-model="selectedStates" data-placeholder="Filter By State">
-                            <option ng-repeat="state in USStateList" value="{{state.abbreviation}}">{{state.name}}</option>
-                        </select> -->
-
-                        <br>
-                        <p>
-                            <button class="btn btn-default" ng-click="selectAllStates()">Select All States</button>
-                        </p>
-                        
-                        <h4>Filter By Date</h4>
-                        <input type="text" ui-date="dateOptions" ng-model="startDateFilter" placeholder="Start"> to <input type="text" ui-date="dateOptions" ng-model="endDateFilter" placeholder="End">
-
-                        <h4>Current Filter</h4>
-                        {{currentFilter}}
-
-                    </div>
-                </div>
-            </div>
-        </tab>
-
-        <tab heading="{{tabs[2].heading}}" active="tabs[2].active" disabled="tabs[2].disabled" select="updatePercentTab(2)">            
-            <div class="row">
-                <div class="col-sm-12">
-                    <h4>Select a Frame</h4>
-                    <input id="frames" ui-select2="frameSelectOptions" ng-model="selectedFrame" data-placeholder="Select a Frame"></select>
-                    <br>
-                </div>
-            </div>
-
-        </tab>                
-
-        <tab heading="{{tabs[3].heading}}" active="tabs[3].active" disabled="tabs[3].disabled" select="updatePercentTab(3)">
-
-            <p> chart was here before </p>
-
-            <p><button class="btn btn-primary" ng-click="analyzeSpeeches(currentFilter)">Analyze</button></p>        
-            <br>
-            <p><button class="btn btn-primary" ng-click="analyzeSpeeches(currentFilter, true)">Fine Analyze</button></p>                    
-                </tabset>
-            </div>            
-
-        </tab>
+</div>
 
 <br>
 <br>
 
-<button class="btn btn-primary btn-xl" ng-click="analyzeSpeeches()">ANALYZE SHIT</button>
+<button class="btn btn-primary btn-xl" ng-click="analysisRequested()">Analyze</button>
 
 <br>
 <br>
 
-<pre>{{current.filters | json }}</pre>
-
-<div id="chartContainer_frame" style="height: 300px; width: 100%;"></div>
-<div id="chartContainer_topic" style="height: 300px; width: 100%;"> </div>
-
-<speech-browser speeches="currentSpeeches" current="current"></speech-browser>
-
-<button class="btn btn-default" disabled ng-click="prevTab()">Previous</button>
-<button class="btn btn-default" disabled ng-click="nextTab()">Next</button>
+<single-analysis current="current"></single-analysis>

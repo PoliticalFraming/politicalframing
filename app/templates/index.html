@@ -119,7 +119,7 @@
       <!-- Main nav -->
       <ul class="nav navbar-collapse collapse navbar-collapse-primary">
 
-        <li class="">
+        <li ng-class="{active:isActive('/')}">
           <span class="glow"></span>
           <a href="#/">
             <i class="fa fa-home fa-2x"></i>
@@ -127,7 +127,7 @@
           </a>
         </li>
 
-        <li class="active">
+        <li ng-class="{active:isActive('/browse')}">
           <span class="glow"></span>
           <a href="/browse">
             <i class="fa fa-edit fa-2x"></i>
@@ -135,7 +135,7 @@
           </a>
         </li>
 
-        <li class="">
+        <li ng-class="{active:isActive('/analyze')}">
           <span class="glow"></span>
           <a href="/analyze">
             <i class="fa fa-bar-chart-o fa-2x"></i>
@@ -256,16 +256,18 @@
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
     <script type="text/javascript" src="scripts/app.js"></script>
     <script type="text/javascript" src="scripts/filters.js"></script>
+    <script type="text/javascript" src="scripts/controllers/home.js"></script>
     <script type="text/javascript" src="scripts/controllers/main.js"></script>
     <script type="text/javascript" src="scripts/controllers/analyze.js"></script>
     <script type="text/javascript" src="scripts/controllers/modal.js"></script>
+    <script type="text/javascript" src="scripts/controllers/analysisViewer.js"></script>
     <script type="text/javascript" src="scripts/services/states.js"></script>
     <!-- <script type="text/javascript" src="scripts/services/httpInterceptor.js"></script>         -->
     <script type="text/javascript" src="scripts/models/analysis.js"></script>
     <script type="text/javascript" src="scripts/models/speech.js"></script>
     <script type="text/javascript" src="scripts/models/frame.js"></script>
-    <script type="text/javascript" src="scripts/directives/when-scrolled.js"></script>
     <script type="text/javascript" src="scripts/directives/speechBrowser.js"></script>
+    <script type="text/javascript" src="scripts/directives/singleAnalysis.js"></script>
     <!-- endbuild -->    
 
     <!-- <link rel="stylesheet" type="text/css" href="styles/chat.css"> -->

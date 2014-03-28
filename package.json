@@ -1,16 +1,12 @@
 {
   "name": "static",
   "version": "0.0.0",
-  "config": {
-      "unsafe-perm":true
-  },  
   "dependencies": {
     "bower": "~1.2.8",
-    "grunt": "~0.4.1"  
-  },
-  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-cli": "~0.1.13",
     "grunt-autoprefixer": "~0.4.0",
-    "grunt-bower-install": "git://github.com/AlJohri/grunt-bower-install#master",
+    "grunt-bower-install": "1.0.2",
     "grunt-concurrent": "~0.4.1",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-coffee": "~0.7.0",
@@ -45,9 +41,12 @@
     "karma-requirejs": "~0.2.1",
     "karma-phantomjs-launcher": "~0.1.1",
     "karma": "~0.10.9",
-    "karma-ng-html2js-preprocessor": "~0.1.0"
+    "karma-ng-html2js-preprocessor": "~0.1.0"    
   },
   "engines": {
     "node": "=0.10.25"
+  },
+  "scripts": {
+    "postinstall": "./node_modules/bower/bin/bower --allow-root install && ./node_modules/grunt-cli/bin/grunt heroku"
   }
 }
