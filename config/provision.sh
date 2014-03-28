@@ -47,6 +47,8 @@ then
 	sudo add-apt-repository -y ppa:chris-lea/node.js
 	sudo apt-get update
 	sudo apt-get install -y nodejs
+	
+	sudo apt-get install build-essential python-dev libmysqlclient-dev
 
 	sudo touch /var/log/ubuntu_setup
 fi
