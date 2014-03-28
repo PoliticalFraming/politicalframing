@@ -28,7 +28,7 @@ var app = angular.module('framingApp', [
       .when('/analysis/:id', {
         templateUrl: 'views/analysis.html',
         controller: 'AnalysisViewerCtrl'
-      })      
+      })
       .otherwise({
         redirectTo: '/'
       });

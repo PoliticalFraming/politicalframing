@@ -6,7 +6,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     transclude: true,
     scope: {
       current: '='
-    },    
+    },
     controller: function ($scope, $modal, $log, $http, Speech, Analysis) {
 
       $scope.recomputeAnalysis = function() {
