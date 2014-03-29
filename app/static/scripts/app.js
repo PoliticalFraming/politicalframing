@@ -22,8 +22,8 @@ var app = angular.module('framingApp', [
         controller: 'AnalyzeCtrl'
       })
       .when('/browse', {
-        templateUrl: 'views/browse.html',
-        controller: 'MainCtrl'
+        templateUrl: 'views/browse/browse.html',
+        controller: 'BrowseCtrl'
       })
       .when('/analysis/:id', {
         templateUrl: 'views/analysis.html',

@@ -19,6 +19,8 @@ import wordnettools
 # import frameextender
 import pickle
 
+def getSynset(synset):
+    return wordnet.synset(synset)
 
 def getSynsets(word):
     """Returns synsets for a particular word."""
@@ -36,7 +38,7 @@ def getWords(synset):
         + wordnettools.getdomainterms(synset)):
          words.add(wordnettools.getnamepretty(subsynset))
 
-    return words
+    return map(lambda x: x, words) # return list
 
 def getSynsetMetadata(synset):
     """Returns metadata related to a synset."""

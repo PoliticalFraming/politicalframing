@@ -4,8 +4,13 @@
 	<div id="chartContainer_topic" style="height: 300px; width: 100%;"> </div>
 	<br/>
 	<button class="btn btn-primary" ng-click="recomputeAnalysis()">Re-run Analysis</button>
+	<br/>
 </div>
 <div class="col-sm-6">
 	<speech-browser speeches="speeches" current="current" loadSpeeches="loadSpeeches" ng-show="speeches"></speech-browser>
 	<pre>{{current | json}}</pre>
+	<div class="progress">
+		<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{current.progress_percent}}%;">
+		</div>
+	</div>
 </div>

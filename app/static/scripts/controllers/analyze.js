@@ -19,7 +19,6 @@ angular.module('framingApp').controller('AnalyzeCtrl', function ($scope, $http, 
     }
   };
   $scope.dateOptions = { changeYear: true, changeMonth: true, yearRange: '1900:-0' };
-  $scope.navType = 'pills';
 
   $scope.analysisRequested = function() {
     $scope.$broadcast('analysisRequested', {});

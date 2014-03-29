@@ -231,7 +231,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
       }
 
     },
-    templateUrl: '/partials/single-analysis.html',
+    templateUrl: '/views/single-analysis.html',
     link: function(scope, element, attrs) {
       
       // console.log($table);

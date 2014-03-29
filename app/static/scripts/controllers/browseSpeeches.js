@@ -1,8 +1,7 @@
 'use strict';
 
-angular.module('framingApp').controller('MainCtrl', function ($scope, $window, Speech, Frame, State) {
+angular.module('framingApp').controller('BrowseSpeechesCtrl', function ($scope, $window, Speech, Frame, State) {
 
-  Frame.all().then(function(response) { $scope.frames = response.data; });
   $scope.USStateList = State.getStates();
   $scope.speeches = [];
   $scope.current = {
@@ -26,5 +25,3 @@ angular.module('framingApp').controller('MainCtrl', function ($scope, $window, S
   }
 
 });
-
-// http://stackoverflow.com/questions/11172269/select-all-and-remove-all-with-chosen-js/11172403#11172403

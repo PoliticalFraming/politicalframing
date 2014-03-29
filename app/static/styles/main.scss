@@ -58,6 +58,10 @@
 
 // ::-webkit-scrollbar { width: 0 !important }
 
+html,body{
+	height:100%;
+}
+
 // @import "jquery-ui-sass/stylesheets/themes/jquery.ui.base";
 // @import "jquery-ui-sass/stylesheets/jquery.ui.theme";
 // @import "jquery-ui-sass/stylesheets/jquery.ui.base";
@@ -83,10 +87,10 @@ ul {
 }
 
 .speech-browser-table {
-	overflow-y: scroll;
+	// overflow-y: scroll;
 	overflow-x:hidden;
 	display: block;
-	height: 420px;
+	// height: 420px;
 }
 
 .pagination {
@@ -113,7 +117,13 @@ ul {
 }
 
 .phrase-input {
-	height: $input-height-base;	
+	// height: $input-height-base;	
+	height: $line-height-base;
+	font-size: $font-size-base;
+}
+
+pre {
+	line-height: 1.428571429 !important;
 }
 
 .speech-browser-table > tr {

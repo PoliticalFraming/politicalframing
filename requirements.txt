@@ -8,6 +8,7 @@ Flask-Restless==0.12.0
 Flask-SQLAlchemy==1.0
 Flask-Script==0.5.3
 Flask-Sockets==0.1
+Flask-Socketio==0.3.1
 Jinja2==2.7.1
 MarkupSafe==0.18
 PyYAML==3.11
@@ -26,6 +27,7 @@ flask-peewee==0.6.5
 flower==0.6.0
 gevent==1.0
 gevent-websocket==0.9.1
+gevent-socketio==0.3.6
 greenlet==0.4.1
 gunicorn==18.0
 httplib2==0.8

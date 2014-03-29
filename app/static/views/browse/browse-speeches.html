@@ -1,0 +1,83 @@
+<div class="row">
+
+  <!-- Left Column - Filters -->
+  <div class="col-sm-6" style="height: 445px">
+
+    <!-- Filter Phrase -->
+    <div class="row">
+      <div class="col-sm-12">
+        <h4>Filter by phrase</h4>
+        <div class="form-horizontal">
+          <input type="text" class="phrase-input" ng-model="current.filters.phrase" />
+          <input type="button" class="btn btn-primary" ng-click="phraseSearched()" value="Browse"/>
+        </div>        
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <h4>Select Frame to Highlight</h4>
+          <select chosen id="frames" 
+            ng-model="current.filters.frame"
+            ng-options="frame.id as frame.name for frame in frames" 
+            data-placeholder="Select a Frame"
+            no-results-text="'Could not find any frames'"
+            width="'200px'">
+            <option value=""></option>
+          </select>
+      </div>
+    </div>
+
+    <!-- Filter State -->
+    <div class="row" ng-show="speeches">
+      <div class="col-sm-12">
+        <h4>Filter By State</h4>
+        <select chosen 
+          id="states" 
+          multiple
+          ng-model="current.filters.states"
+          ng-options="state.abbreviation as state.name for state in USStateList"
+          data-placeholder="Select States"
+          no-results-text="'Could not find any States'"
+          width="'100%'">
+        </select>
+      </div>
+    </div>
+
+    <!-- Filter State -->
+    <div class="row" ng-show="speeches">
+      <div class="col-sm-12">
+        <h4>Filter By Date</h4>
+        <input class="datepicker" type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.start_date" placeholder="Start"> to <input class="datepicker" type="text" ui-date="dateOptions" ui-date-format="yy-mm-dd" ng-model="current.filters.end_date" placeholder="End">
+      </div>
+    </div>
+
+    <!-- List of Filters -->
+    <div class="row">
+      <div class="col-sm-12">
+        <h4>Current Filter</h4>
+        <pre>{{current | json}}</pre>        
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column - Current Speech Browser -->
+  <div class="col-sm-6" style="height: 445px">
+    <div class="row" ng-hide="speeches" style="height: 100%;">
+      <div class="col-sm-12" style="height: 100%;">
+        <div class="well" style="height: 100%; text-align: center; line-height: 445px;">
+          <span style="font-size: 45px; color: #C7C7C7; display: inline-block; vertical-align: middle; line-height: normal; ">
+            Choose filters and click browse. Your speeches will appear here.
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="row" ng-show="speeches">
+      <div class="col-sm-12">
+        <speech-browser speeches="speeches" current="current" loadSpeeches="loadSpeeches"></speech-browser>
+      </div>
+    </div>
+  </div>
+
+</div>

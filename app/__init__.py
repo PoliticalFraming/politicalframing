@@ -137,6 +137,7 @@ from app.controllers import frame
 # from app.controllers import user
 from app.controllers import speech
 from app.controllers import analysis
+from app.controllers import wordnetsocket
 
 # # Set up Cross Origin Requests
 # @app.after_request 

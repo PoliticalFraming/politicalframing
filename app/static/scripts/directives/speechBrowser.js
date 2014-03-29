@@ -34,7 +34,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
       $scope.open = function (index) {
         // $scope.currentSpeech = $scope.speeches[index];
         var modalInstance = $modal.open({
-          templateUrl: 'partials/speech-modal.html',
+          templateUrl: 'views/speech-modal.html',
           controller: 'ModalInstanceCtrl',
           resolve: {
             currentSpeech: function () {
@@ -46,7 +46,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
       };
 
     },
-    templateUrl: '/partials/speech-browser.html',
+    templateUrl: '/views/speech-browser.html',
     link: function(scope, element, attrs) {
       
       // console.log($table);
