@@ -29,7 +29,7 @@ def getSynsets(word):
 def getWords(synset):
     """Returns all framing words associated with the synset."""
 
-    words = Set() # words to include in frame
+    words = set() # words to include in frame
 
     for subsynset in (wordnettools.gethypernymsrecursive(synset) 
         + wordnettools.getlemmas(synset)
@@ -38,7 +38,7 @@ def getWords(synset):
         + wordnettools.getdomainterms(synset)):
          words.add(wordnettools.getnamepretty(subsynset))
 
-    return map(lambda x: x, words) # return list
+    return list(words) # return list
 
 def getSynsetMetadata(synset):
     """Returns metadata related to a synset."""

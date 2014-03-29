@@ -180,11 +180,11 @@ def gethyponymsrecursive(synset):
 
 def getrelatedforms(synset):
     """Return a list of synsets containing derivationally related forms to synset"""
-    relatedforms = []
+    relatedforms = set([])
     for lemma in synset.lemmas:
         for item in lemma.derivationally_related_forms():
-            relatedforms.append(item.synset)
-    return relatedforms
+            relatedforms.add(item.synset)
+    return list(relatedforms)
 
 def getallthings(synset):
     """Return a list of synsets containing all hypernyms, lemmas, related forms, hyponyms, and domain terms of synset"""
