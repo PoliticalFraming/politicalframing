@@ -127,7 +127,7 @@ class Speech(object):
 
   @staticmethod
   def order_by_frame_prevalance(speeches, frame):
-
+      print ("ORDER BY FRAME PREVALANCE")
       speech_prevalances = [] #array of tuples containing speeches and ther prevalance values
       for speech in speeches:
           speech_words = " ".join(speech['speaking']).lower().split()
