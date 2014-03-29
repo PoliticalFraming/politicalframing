@@ -42,8 +42,8 @@ class Speech(object):
       start_date
       end_date
       phrase
-      rows
-      start
+      rows - the number of records to get from solr
+      start - where to start getting records in solr (offset)
       frame
       order
 
@@ -75,8 +75,15 @@ class Speech(object):
       if kwargs.get('order') != "frame":
         response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).sort_by(kwargs.get('order')).execute()
       else:
+        # IGNORING ROWS and IGNORE START AND DOWNLOADING ALL SPEECHES WHEN ORDERING BY FRAME
+        # HOLY SHIT THIS IS TERRIBLE
+        # LIKE SERIOUSLY TERRIBLE
+        # PLEASE CHANGE THIS.
+        # ~ RIP good coding practices ~
         print "ordering by frame"
-        response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
+        numFound = si.query(**query).paginate(rows=0, start=0).exclude(speaker_party=None).execute().result.numFound
+        print numFound
+        response = si.query(**query).paginate(rows=numFound, start=0).exclude(speaker_party=None).execute()
         frame = Frame.get(Frame.id == kwargs['frame'])
         response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
         blah = Speech.order_by_frame_prevalance(response.result.docs, frame)
