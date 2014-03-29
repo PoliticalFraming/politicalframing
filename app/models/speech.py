@@ -8,6 +8,7 @@ from datetime import datetime
 from sunburnt import RawString
 
 from app.models.frame import Frame
+import re
 
 class Speech(object):
   
@@ -118,8 +119,8 @@ class Speech(object):
 
     speech['speaking'] = \
       map(lambda sentence: 
-        " ".join(map(lambda word: "<strong>" + word + "</strong>" if word in frame else word, 
-          sentence.split())), 
+        "".join(map(lambda word: "<span class='highlight'>" + word + "</span>" if word in frame else word, 
+          re.split(r'(\W+)',sentence))), 
       speech['speaking'])
 
     return speech

@@ -12,6 +12,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
       $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
 
       $scope.$on('phraseSearched', function(event, args) {
+        $scope.current.filters.page = 1;
         $scope.loadSpeeches();
       });
 
