@@ -16,8 +16,36 @@ from nltk.corpus import wordnet
 from sets import Set
 
 import wordnettools
-import frameextender
+# import frameextender
 import pickle
+
+
+def getSynsets(word):
+    """Returns synsets for a particular word."""
+    return wordnet.synsets(word) 
+
+def getWords(synset):
+    """Returns all framing words associated with the synset."""
+
+    words = Set() # words to include in frame
+
+    for subsynset in (wordnettools.gethypernymsrecursive(synset) 
+        + wordnettools.getlemmas(synset)
+        + wordnettools.getrelatedforms(synset)
+        + wordnettools.gethyponymsrecursive(synset)
+        + wordnettools.getdomainterms(synset)):
+         words.add(wordnettools.getnamepretty(subsynset))
+
+    return words
+
+def getSynsetMetadata(synset):
+    """Returns metadata related to a synset."""
+    return {"related_synsets": wordnettools.getrelatedforms(synset),
+            "definition": synset.definition,
+            "examples": synset.examples,
+            "name": synset.name}
+
+####################### OLD FILE STARTS HERE ##############################
 
 def makeframe(frameword):
     """Returns a frame (Set of synsets) based on frame word and user input to shell.
@@ -84,18 +112,18 @@ def pickleframe(word):
     pickle.dump(makeframe(word),f)
     f.close()
 
-def picklemultiframe(framewords,word):
-    """Make and pickle a frame about multiple framewords, dump it in 'word.txt'.
+# def picklemultiframe(framewords,word):
+#     """Make and pickle a frame about multiple framewords, dump it in 'word.txt'.
 
-        Arguments:
-        word - name of the file and overall name of the frame
-        framewords - list of words which will collectively make up the frame
+#         Arguments:
+#         word - name of the file and overall name of the frame
+#         framewords - list of words which will collectively make up the frame
 
-    """
-    fname = '1' + word + '.txt'
-    f = open(fname, 'w')
-    pickle.dump(multimakeframe(framewords,word),f)
-    f.close()
+#     """
+#     fname = '1' + word + '.txt'
+#     f = open(fname, 'w')
+#     pickle.dump(multimakeframe(framewords,word),f)
+#     f.close()
 
 def addset2pickledframe(frame, myset):
     """Add a set of synsets to an existing pickled frame and save in a .txt file.
