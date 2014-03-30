@@ -127,8 +127,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               Speech.where(dataPointfilters).then(function (response) {
                 console.log(response); // response.meta.count; response.meta.pages;
                 $scope.speeches = response.data;
-                $scope.current.filters.page = 1;
-                $scope.current.count = response.meta.count;
+                // $scope.current.filters.page = 1;
+                // $scope.current.count = response.meta.count;
               });
 
             },

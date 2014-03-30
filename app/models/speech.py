@@ -86,11 +86,6 @@ class Speech(object):
         response = si.query(**query).paginate(rows=numFound, start=0).exclude(speaker_party=None).execute()
         frame = Frame.get(Frame.id == kwargs['frame'])
         response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
-        blah = Speech.order_by_frame_prevalance(response.result.docs, frame)
-        
-        # # print blah
-        # for bl in blah:
-        #   print bl['document_title']
     else:
       response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
     
@@ -147,10 +142,10 @@ class Speech(object):
 
           speech_prevalances.append((speech, frame_prevalance))
 
-      for blah in speech_prevalances:
+      for blah in sorted(speech_prevalances, key=lambda x: x[1], reverse=True):
         print blah[0]['document_title'], blah[1]
 
-      return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1]))
+      return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1], reverse=True))
 
       # ################################################################
       # # Better Implementaiton Stub - if simple counts don't work well
