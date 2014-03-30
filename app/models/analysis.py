@@ -89,11 +89,16 @@ class Analysis(db.Model):
         - returns ID of that instance
         """
 
+        #duplicated code, shouldn't be here again
+        #convert date from string 
+        start_date_isadate = dateparser.parse(start_date).date() if start_date else datetime.datetime(1994,1,1)
+        end_date_isadate = dateparser.parse(end_date).date() if end_date else datetime.datetime.now()
+
         # Update existing Analysis Object with a new start_date and end_date
         if id != None:
             analysis_obj = Analysis.get(Analysis.id == id)
-            analysis_obj.start_date = start_date
-            analysis_obj.end_date = end_date
+            analysis_obj.start_date = start_date_isadate
+            analysis_obj.end_date = end_date_isadate
             # analysis_obj.frame = Frame.get(Frame.id == frame)
             # analysis_obj.phrase = phrase
             # analysis_obj.states = states
@@ -104,8 +109,8 @@ class Analysis(db.Model):
             analysis_obj = Analysis(
                 frame = Frame.get(Frame.id == frame), 
                 phrase = phrase,
-                start_date = start_date, 
-                end_date = end_date, 
+                start_date = start_date_isadate, #so much hack
+                end_date = end_date_isadate, #wowowowowow
                 states = states, 
                 to_update = to_update
             )

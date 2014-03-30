@@ -71,9 +71,9 @@ class AnalysisListController(Resource):
 		"""Compute analysis. Place in persistant storage."""
 		args = parser.parse_args()
 
-		if args['start_date']: 
-			args['start_date'] = dateparser.parse(args['start_date']).date()
-			args['end_date'] = dateparser.parse(args['start_date']).date()
+		# if args['start_date']: 
+		# 	args['start_date'] = dateparser.parse(args['start_date']).date()
+		# 	args['end_date'] = dateparser.parse(args['start_date']).date()
 		
 		analysis_obj = Analysis.compute_analysis(
 			id = args.get('id'),
@@ -82,7 +82,7 @@ class AnalysisListController(Resource):
 			start_date = args.get('start_date'), 
 			end_date = args.get('end_date'), 
 			states = args.get('states'),
-			to_update=False
+			to_update = False
 		)
 
 		data = get_dictionary_from_model(analysis_obj)
