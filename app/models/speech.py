@@ -1,6 +1,7 @@
 from __future__ import division
 
 from app import si
+import app
 import httplib2
 from dateutil import parser
 from datetime import datetime
@@ -9,6 +10,7 @@ from sunburnt import RawString
 
 from app.models.frame import Frame
 import re
+import operator
 
 class Speech(object):
   
@@ -46,48 +48,73 @@ class Speech(object):
       start - where to start getting records in solr (offset)
       frame
       order
+      states - list of 2 letter state abbreviations
 
     Output
       List of output
     """
-    query = {}
+    compulsory_params = {}
+    optional_params = {}
 
     if kwargs.get('speech_id'):
-      query['id'] = kwargs['speech_id']
+      compulsory_params['id'] = kwargs['speech_id']
     elif kwargs.get('phrase'):
-      query['speaking'] = kwargs['phrase']
+      compulsory_params['speaking'] = kwargs['phrase']
 
-    kwargs['start_date'] = parser.parse(kwargs['start_date']) if kwargs.get('start_date') else datetime(1994,1,1)
-    kwargs['end_date'] = parser.parse(kwargs['end_date']) if kwargs.get('end_date') else datetime.now()
-    query['date__range'] = (kwargs['start_date'], kwargs['end_date'])
-    query['speaker_party__range'] = ("*", "*")
+      kwargs['start_date'] = parser.parse(kwargs['start_date']) if kwargs.get('start_date') else datetime(1994,1,1)
+      kwargs['end_date'] = parser.parse(kwargs['end_date']) if kwargs.get('end_date') else datetime.now()
+      
+      #If states exist, add to kwargs and then to optional parameters
+      if kwargs.get('states'):
+        kwargs['states'] = kwargs.get('states').split(',')
+        optional_params['speaker_state'] = si.query()
+        # for state in kwargs['states']:
+        #   optional_params['speaker_state'] |= si.Q(speaker_state=state)
+        optional_params['speaker_state'] = reduce(operator.or_, [si.Q(speaker_state=state) for state in kwargs['states']])
+
+      if kwargs.get('speaker_party'):
+        compulsory_params['speaker_party'] = kwargs['speaker_party']
+
+      compulsory_params['date__range'] = (kwargs['start_date'], kwargs['end_date'])
+      compulsory_params['speaker_party__range'] = ("*", "*")
+      
+      solr_query = si.Q(**compulsory_params)    
+      if optional_params.get('speaker_state'):
+        solr_query &= optional_params['speaker_state']
+      solr_query = si.query(solr_query)
+      solr_query = solr_query.exclude(speaker_party=None)
+
     # RawString('[* TO *]')
 
-    # 
     # if the number of docs is less than numFound, then this is the pagination offset
-
-    if kwargs.get('speaker_party'):
-      query['speaker_party'] = kwargs['speaker_party']
-
-
     if kwargs.get('order'):
-
       if kwargs.get('order') != "frame":
-        response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).sort_by(kwargs.get('order')).execute()
+        solr_query = solr_query.paginate(rows=rows, start=start).sort_by(kwargs.get('order'))
+        response = solr_query.execute()
       else:
         # IGNORING ROWS and IGNORE START AND DOWNLOADING ALL SPEECHES WHEN ORDERING BY FRAME
         # HOLY SHIT THIS IS TERRIBLE
         # LIKE SERIOUSLY TERRIBLE
         # PLEASE CHANGE THIS.
         # ~ RIP good coding practices ~
-        print "ordering by frame"
-        numFound = si.query(**query).paginate(rows=0, start=0).exclude(speaker_party=None).execute().result.numFound
-        print numFound
-        response = si.query(**query).paginate(rows=numFound, start=0).exclude(speaker_party=None).execute()
+        numFound = solr_query.paginate(rows=0, start=0).execute().result.numFound
+        app.logging.debug("Ordering by frame. Frames found: %d", numFound)
+        
+        response = solr_query.paginate(rows=numFound, start=0).execute()
         frame = Frame.get(Frame.id == kwargs['frame'])
         response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
     else:
-      response = si.query(**query).paginate(rows=rows, start=start).exclude(speaker_party=None).execute()
+      solr_query = solr_query.paginate(rows=rows, start=start)
+      print "SOLR QUERY"
+      # from pprint import pprint
+      # query_obj=solr_query.__dict__['query_obj'].__dict__
+      # pprint(query_obj)
+      # import pdb; pdb.set_trace()
+      # for subq in query_obj['subqueries']:
+      #   pprint(subq.__dict__)
+      # pprint(solr_query.__dict__['subqueries'][1].__dict__)
+
+      response = solr_query.execute()
     
     speeches = response.result.docs
     current_count = response.result.numFound

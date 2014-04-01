@@ -69,7 +69,8 @@ class SpeechListController(Resource):
       order = args.get('order'),
       highlight = args.get('highlight'),
       rows = rows,
-      start = rows * (args['page'] - 1)
+      start = rows * (args['page'] - 1),
+      states = args.get('states')
     )
 
     count = speeches_dict['count']
