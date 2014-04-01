@@ -26,11 +26,20 @@ angular.module('framingApp').directive('speechBrowser', function() {
         });
       };
 
-      $scope.$watch('current.filters.page', function (newVal, oldVal) {
+      // This may be inefficient because its watching for all changes to
+      // current.filters and then ignoring changes to current.filters.phrase
+      // --------------------------------------------------------------------
+      // Not sure about the implementation details of watchCollection
+      // However, if its possible to have two changes occurr simultaneously
+      // Specifically, if the phrase changes and any other filter changes
+      // simultaneously -- this won't work.
+      $scope.$watchCollection('current.filters', function (newVal, oldVal) {
         if (oldVal === newVal) { return; }
-          console.log($scope.current.page);
-          $scope.loadSpeeches();
-      }, true);      
+        if (oldVal.phrase !== newVal.phrase) { return; } // phrase must remain the same
+        if (newVal.phrase == undefined || newVal.phrase == "" ) { return; } // phrase must exist
+        console.log($scope.current.filters.page);
+        $scope.loadSpeeches();
+      });
       
       $scope.open = function (index) {
         // $scope.currentSpeech = $scope.speeches[index];
