@@ -21,6 +21,9 @@ from dateutil import parser as dateparser
 import inspect
 import math
 
+#Constants (Move creation to where speeches are ingested)
+OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
+
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
     This could be made faster by actually modifying or extending the MultinomialNB 
@@ -31,37 +34,23 @@ class Classifier:
         self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
     def learn_vocabulary(self, document):
-        # self.vocabulary = vocabulary
-        app.logger.debug("hello hello")
+        print "learning vocabulary"
         try:
-            app.logger.debug("i'm in here")
             self.vectorizer.fit([document])
-            app.logger.debug("i'm outta here!!")
         except ValueError as e:
-            app.logger.debug("oh noo. race condition??")
             app.logger.debug(e)
             app.logger.debug(document)
-
-        print "learning vocabulary"
-        # print self.vectorizer.vocabulary_
-
+            raise
+     
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.transform(data)
         print "training classifier"
         self.classifier.fit(sparse_data, target)
-        # print self.vectorizer.vocabulary_
 
     def classify_document(self, document):
         print "Classifying document"
         tfidf_frames_vector = self.vectorizer.transform([document])
-        # print self.vectorizer.vocabulary_
-
-        thing = self.classifier.predict_log_proba(tfidf_frames_vector)[0]
-        # print self.classifier.feature_log_prob_
-        # print class_count_
-        # print feature_count_
-
-        return thing
+        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
@@ -69,10 +58,10 @@ class Analysis(db.Model):
     phrase = CharField(null=False)
 
     celery_id = CharField(null=True)
-    to_update = BooleanField(null=True)
+    to_update = BooleanField(null=True) #mark to regularly update with latest information or not
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
-    states = TextField(null=True) #example: [MA, TX, CA]
+    states = TextField(null=True) #example: [MA,TX,CA]
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
 
@@ -91,21 +80,16 @@ class Analysis(db.Model):
 
         #duplicated code, shouldn't be here again
         #convert date from string 
-        start_date_isadate = dateparser.parse(start_date).date() if start_date else datetime.datetime(1994,1,1)
+        start_date_isadate = dateparser.parse(start_date).date() if start_date else OLDEST_RECORD_DATE
         end_date_isadate = dateparser.parse(end_date).date() if end_date else datetime.datetime.now()
 
-        # Update existing Analysis Object with a new start_date and end_date
         if id != None:
+            # Update existing Analysis Object with a new start_date and end_date
             analysis_obj = Analysis.get(Analysis.id == id)
             analysis_obj.start_date = start_date_isadate
             analysis_obj.end_date = end_date_isadate
-            # analysis_obj.frame = Frame.get(Frame.id == frame)
-            # analysis_obj.phrase = phrase
-            # analysis_obj.states = states
-            # analysis_obj.to_update = to_update
-
-        # Create new Analysis Object
         else:
+            # Create new Analysis Object
             analysis_obj = Analysis(
                 frame = Frame.get(Frame.id == frame), 
                 phrase = phrase,
