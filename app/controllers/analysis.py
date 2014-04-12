@@ -66,7 +66,14 @@ class AnalysisListController(Resource):
 		parser.add_argument('phrase', type = str, required = True, location = 'json')
 		parser.add_argument('start_date', type = str, required = False, location = 'json')
 		parser.add_argument('end_date', type = str, required = False, location = 'json')
-		parser.add_argument('states', type = list, required = False, location = 'json')
+		
+		#subgroup a specific args
+		parser.add_argument('states_a', type = list, required = False, location = 'json')
+		parser.add_argument('party_a', type = str, required = False, location = 'json') #D or R
+
+		#subgroup b specific args
+		parser.add_argument('states_b', type = list, required = False, location = 'json')
+		parser.add_argument('party_b', type = str, required = False, location = 'json') #D or R
 
 		"""Compute analysis. Place in persistant storage."""
 		args = parser.parse_args()
@@ -81,7 +88,12 @@ class AnalysisListController(Resource):
 			frame = args.get('frame'),
 			start_date = args.get('start_date'), 
 			end_date = args.get('end_date'), 
-			states = args.get('states'),
+
+			#Subgroups to Compare
+			states_a = args.get('states_a'),
+			party_a = args.get('party_a'),
+			states_b = args.get('states_b'),
+			party_b = args.get('party_b'),
 			to_update = False
 		)
 

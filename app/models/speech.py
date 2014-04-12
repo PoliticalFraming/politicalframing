@@ -36,8 +36,7 @@ class Speech(object):
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
 
-  @staticmethod
-  def get(rows, start, **kwargs):
+  def build_sunburnt_query(self,**kwargs):
     """
     Input
       speech_id
@@ -53,6 +52,7 @@ class Speech(object):
     Output
       List of output
     """
+
     compulsory_params = {}
     optional_params = {}
 
@@ -83,6 +83,29 @@ class Speech(object):
         solr_query &= optional_params['speaker_state']
       solr_query = si.query(solr_query)
       solr_query = solr_query.exclude(speaker_party=None)
+
+      return solr_query
+
+
+  @staticmethod
+  def get(rows, start, **kwargs):
+    """
+    Input
+      speech_id
+      start_date
+      end_date
+      phrase
+      rows - the number of records to get from solr
+      start - where to start getting records in solr (offset)
+      frame
+      order
+      states - list of 2 letter state abbreviations
+
+    Output
+      List of output
+    """
+    
+    solr_query = build_sunburnt_query(kwargs)
 
     # RawString('[* TO *]')
 

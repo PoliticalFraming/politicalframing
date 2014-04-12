@@ -55,13 +55,25 @@ class Classifier:
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
     frame = ForeignKeyField(Frame, null=False)
+
+    #Phrase Being Queried
     phrase = CharField(null=False)
+
+    #Subgroups to compare
+    subgroupA = ForeignKeyField(Subgroup, null=False)
+    subgroupB = ForeignKeyField(Subgroup, null=False)
 
     celery_id = CharField(null=True)
     to_update = BooleanField(null=True) #mark to regularly update with latest information or not
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
-    states = TextField(null=True) #example: [MA,TX,CA]
+
+    #Subgroup Specific Parameters
+    states_a = TextField(null=True) #example: [MA,TX,CA]
+    states_b = TextField(null=True) #example: [MA,TX,CA]
+    party_a = CharField(Null=True) #D, R, or Null(Both)
+    party_b = CharField(Null=True) #D, R, or Null(Both)
+
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
 
@@ -69,7 +81,8 @@ class Analysis(db.Model):
         db_table = 'analyses'
 
     @classmethod
-    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None, states=None, to_update=None):
+    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None, 
+        states_a=None, party_a=None, states_b=None, party_b=None, to_update=None):
         """
         Class Method:
         - Queries DB for speeches with parameters specified in args.

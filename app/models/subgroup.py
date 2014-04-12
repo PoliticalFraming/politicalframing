@@ -11,6 +11,8 @@ class Subgroup(db.Model):
 	id = PrimaryKeyField(null=True, db_column='id')
 	name = CharField(null=True)
 	query = TextField(null=True)
+	party = CharField(null=True)
+	states = TextField(null=True)
 	#Later break up query into "state, party, ...." - basically 
 	#all of the filters that created this query.
 
