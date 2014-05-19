@@ -21,7 +21,6 @@
     "x-editable": "~1.5.1",
     "fullcalendar": "~1.6.4",
     "jquery.ibutton": "http://www.givainc.com/labs/downloads/jquery.ibutton.zip",
-    "justgage-bower": "~1.0.0",
     "jQuery-Validation-Engine": "~2.6.4",
     "bootstrap-application-wizard": "*",
     "bootstrap-hover-dropdown": "~2.0.1",
@@ -41,14 +40,14 @@
     "addyosmani-jquery-ui-bootstrap": "*",
     "underscore": "~1.6.0",
     "angular-animate": "~1.2.13",
-    "canvasjs": "http://canvasjs.com/\\?wpdmdl=1"
+    "canvasjs": "http://canvasjs.com/\\?wpdmdl=1",
+    "justgage-toorshia": "*"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.13",
     "angular-scenario": "~1.2.13"
   },
   "resolutions": {
-    "jquery": "~1.10.2",
-    "bootstrap": "~3.1.0"
+    "jquery": "~1.10.2"
   }
 }
