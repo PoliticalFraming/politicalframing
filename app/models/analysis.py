@@ -8,6 +8,7 @@ import datetime
 # from app.models.topic import Topic
 from app.models.frame import Frame
 from app.models.speech import Speech
+from app.models.subgroup import Subgroup
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -21,6 +22,9 @@ from dateutil import parser as dateparser
 import inspect
 import math
 
+#Constants (Move creation to where speeches are ingested)
+OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
+
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
     This could be made faster by actually modifying or extending the MultinomialNB 
@@ -31,48 +35,47 @@ class Classifier:
         self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
     def learn_vocabulary(self, document):
-        # self.vocabulary = vocabulary
-        app.logger.debug("hello hello")
+        print "learning vocabulary"
         try:
-            app.logger.debug("i'm in here")
             self.vectorizer.fit([document])
-            app.logger.debug("i'm outta here!!")
         except ValueError as e:
-            app.logger.debug("oh noo. race condition??")
             app.logger.debug(e)
             app.logger.debug(document)
-
-        print "learning vocabulary"
-        # print self.vectorizer.vocabulary_
-
+            raise
+     
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.transform(data)
         print "training classifier"
         self.classifier.fit(sparse_data, target)
-        # print self.vectorizer.vocabulary_
 
     def classify_document(self, document):
         print "Classifying document"
         tfidf_frames_vector = self.vectorizer.transform([document])
-        # print self.vectorizer.vocabulary_
-
-        thing = self.classifier.predict_log_proba(tfidf_frames_vector)[0]
-        # print self.classifier.feature_log_prob_
-        # print class_count_
-        # print feature_count_
-
-        return thing
+        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
     frame = ForeignKeyField(Frame, null=False)
+
+    #Phrase Being Queried
     phrase = CharField(null=False)
 
+    #Subgroups to compare
+    subgroupA = ForeignKeyField(Subgroup, null=False, related_name='analysis_parent1')
+    subgroupB = ForeignKeyField(Subgroup, null=False, related_name='analysis_parent2')
+
     celery_id = CharField(null=True)
-    to_update = BooleanField(null=True)
+    to_update = BooleanField(null=True) #mark to regularly update with latest information or not
+    
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
-    states = TextField(null=True) #example: [MA, TX, CA]
+
+    #Subgroup Specific Parameters
+    # states_a = TextField(null=True) #example: [MA,TX,CA]
+    # states_b = TextField(null=True) #example: [MA,TX,CA]
+    # party_a = CharField(Null=True) #D, R, or Null(Both)
+    # party_b = CharField(Null=True) #D, R, or Null(Both)
+
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
 
@@ -80,7 +83,8 @@ class Analysis(db.Model):
         db_table = 'analyses'
 
     @classmethod
-    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None, states=None, to_update=None):
+    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None, 
+        states_a=None, party_a=None, states_b=None, party_b=None, to_update=None):
         """
         Class Method:
         - Queries DB for speeches with parameters specified in args.
@@ -91,30 +95,41 @@ class Analysis(db.Model):
 
         #duplicated code, shouldn't be here again
         #convert date from string 
-        start_date_isadate = dateparser.parse(start_date).date() if start_date else datetime.datetime(1994,1,1)
+        start_date_isadate = dateparser.parse(start_date).date() if start_date else OLDEST_RECORD_DATE
         end_date_isadate = dateparser.parse(end_date).date() if end_date else datetime.datetime.now()
 
-        # Update existing Analysis Object with a new start_date and end_date
         if id != None:
+            # Update existing Analysis Object with a new start_date and end_date
             analysis_obj = Analysis.get(Analysis.id == id)
             analysis_obj.start_date = start_date_isadate
             analysis_obj.end_date = end_date_isadate
-            # analysis_obj.frame = Frame.get(Frame.id == frame)
-            # analysis_obj.phrase = phrase
-            # analysis_obj.states = states
-            # analysis_obj.to_update = to_update
-
-        # Create new Analysis Object
         else:
+            # Create new Analysis Object
+
+            subgroup_a = Subgroup(
+                states = states_a,
+                party = party_a
+            )
+
+            subgroup_a.save()
+            
+            subgroup_b = Subgroup(
+                states = states_b,
+                party = party_b
+            )
+
+            subgroup_b.save()
+
             analysis_obj = Analysis(
                 frame = Frame.get(Frame.id == frame), 
                 phrase = phrase,
                 start_date = start_date_isadate, #so much hack
-                end_date = end_date_isadate, #wowowowowow
-                states = states, 
+                end_date = end_date_isadate, #wowowowowow doge
+                subgroupA = subgroup_a,
+                subgroupB = subgroup_b,
                 to_update = to_update
             )
-        
+
         analysis_obj.save()
 
         # deal with states
@@ -160,6 +175,8 @@ class Analysis(db.Model):
             if current_end_date.year > 2013:
                 indexes_to_delete.append(i)
         
+        # this removes last bucket post analysis
+
         analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
             enumerate(analysis_obj.topic_plot['end_dates'])))
 

@@ -7,6 +7,7 @@ from app.models.frame import Frame
 from app.models.speech import Speech
 from app.models.user import User
 from app.models.analysis import Analysis
+from app.models.subgroup import Subgroup
 
 manager = Manager(app)
 manager.add_command("runserver", Server(host="0.0.0.0", port=5000))
@@ -21,12 +22,13 @@ def hello():
 @manager.command
 def createdb():
 	Frame.create_table()
+	Subgroup.create_table()
 	Analysis.create_table()
 	User.create_table()
 
 @manager.command
 def deletedb():
-	db.database.execute_sql("DROP TABLE frames, users;")
+	db.database.execute_sql("DROP TABLE frames, users, analyses, subgroup;")
 
 @manager.command
 def seeddb():
