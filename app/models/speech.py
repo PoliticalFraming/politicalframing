@@ -36,7 +36,8 @@ class Speech(object):
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
 
-  def build_sunburnt_query(self,**kwargs):
+  @staticmethod
+  def build_sunburnt_query(**kwargs):
     """
     Input
       speech_id
@@ -105,7 +106,7 @@ class Speech(object):
       List of output
     """
     
-    solr_query = build_sunburnt_query(kwargs)
+    solr_query = Speech.build_sunburnt_query(**kwargs)
 
     # RawString('[* TO *]')
 

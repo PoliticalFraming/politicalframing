@@ -8,7 +8,7 @@ class Subgroup(db.Model):
 	is how we will determine mutual exclusivity among other things.
 	"""
 
-	id = PrimaryKeyField(null=True, db_column='id')
+	id = PrimaryKeyField(null=True) #, db_column='id'
 	name = CharField(null=True)
 	query = TextField(null=True)
 	party = CharField(null=True)

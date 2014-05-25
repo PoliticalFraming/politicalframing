@@ -8,6 +8,7 @@ import datetime
 # from app.models.topic import Topic
 from app.models.frame import Frame
 from app.models.speech import Speech
+from app.models.subgroup import Subgroup
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -60,19 +61,20 @@ class Analysis(db.Model):
     phrase = CharField(null=False)
 
     #Subgroups to compare
-    subgroupA = ForeignKeyField(Subgroup, null=False)
-    subgroupB = ForeignKeyField(Subgroup, null=False)
+    subgroupA = ForeignKeyField(Subgroup, null=False, related_name='analysis_parent1')
+    subgroupB = ForeignKeyField(Subgroup, null=False, related_name='analysis_parent2')
 
     celery_id = CharField(null=True)
     to_update = BooleanField(null=True) #mark to regularly update with latest information or not
+    
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
 
     #Subgroup Specific Parameters
-    states_a = TextField(null=True) #example: [MA,TX,CA]
-    states_b = TextField(null=True) #example: [MA,TX,CA]
-    party_a = CharField(Null=True) #D, R, or Null(Both)
-    party_b = CharField(Null=True) #D, R, or Null(Both)
+    # states_a = TextField(null=True) #example: [MA,TX,CA]
+    # states_b = TextField(null=True) #example: [MA,TX,CA]
+    # party_a = CharField(Null=True) #D, R, or Null(Both)
+    # party_b = CharField(Null=True) #D, R, or Null(Both)
 
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
@@ -103,15 +105,31 @@ class Analysis(db.Model):
             analysis_obj.end_date = end_date_isadate
         else:
             # Create new Analysis Object
+
+            subgroup_a = Subgroup(
+                states = states_a,
+                party = party_a
+            )
+
+            subgroup_a.save()
+            
+            subgroup_b = Subgroup(
+                states = states_b,
+                party = party_b
+            )
+
+            subgroup_b.save()
+
             analysis_obj = Analysis(
                 frame = Frame.get(Frame.id == frame), 
                 phrase = phrase,
                 start_date = start_date_isadate, #so much hack
-                end_date = end_date_isadate, #wowowowowow
-                states = states, 
+                end_date = end_date_isadate, #wowowowowow doge
+                subgroupA = subgroup_a,
+                subgroupB = subgroup_b,
                 to_update = to_update
             )
-        
+
         analysis_obj.save()
 
         # deal with states
@@ -157,6 +175,8 @@ class Analysis(db.Model):
             if current_end_date.year > 2013:
                 indexes_to_delete.append(i)
         
+        # this removes last bucket post analysis
+
         analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
             enumerate(analysis_obj.topic_plot['end_dates'])))
 
