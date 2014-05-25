@@ -16,3 +16,5 @@ https://github.com/gipi/dokku-django-example
 
 
 create persistent storage in dokku for solr at /var/tmp/solr_cache
+
+rvm use ruby-1.9.3-p484
