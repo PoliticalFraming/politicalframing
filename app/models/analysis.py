@@ -70,12 +70,6 @@ class Analysis(db.Model):
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
 
-    #Subgroup Specific Parameters
-    # states_a = TextField(null=True) #example: [MA,TX,CA]
-    # states_b = TextField(null=True) #example: [MA,TX,CA]
-    # party_a = CharField(Null=True) #D, R, or Null(Both)
-    # party_b = CharField(Null=True) #D, R, or Null(Both)
-
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
 
@@ -283,6 +277,7 @@ class Analysis(db.Model):
             while(speeches and (speeches[0]['date'] >= window_start) and (speeches[0]['date'] <= window_end)):
                 current_window.append(speeches.popleft())
 
+            #TODO: change to use subgroups instead of DEM vs REP
             #process speeches in current window
             for current_speech in current_window:
                 if current_speech['speaker_party'] == "D":
@@ -321,6 +316,7 @@ class Analysis(db.Model):
 
         app.logger.debug('Building training set.')
 
+        # TODO: make new target function for subgroups
         def target_function(speech):
             if speech['speaker_party'] == 'D':
                 return 0
@@ -375,6 +371,7 @@ class Analysis(db.Model):
         app.logger.debug("Create empty return variables")
         start_dates = []
         end_dates = []
+        # TODO: change to subgroup a and b (not d r)
         r_likelihoods = []
         d_likelihoods = []
         ratios = []
