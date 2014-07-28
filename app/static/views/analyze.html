@@ -9,12 +9,36 @@
 <div class="row">
   <div class="col-sm-3">
       <h4>Filter by phrase</h4>
-      <input type="text" class="phrase-input" ng-model="current.filters.phrase" />
+      <input type="text" class="phrase-input" ng-model="current.filters.phrase" placeholder="phrase"/>
+
+      <br>
+
+      <select chosen
+        id="states"
+        multiple
+        ng-model="current.filters.states_a"
+        ng-options="state.abbreviation as state.name for state in USStateList"
+        data-placeholder="Select States A"
+        no-results-text="'Could not find any States'"
+        width="'100%'">
+      <input type="text" class="" ng-model="current.filters.party_a" placeholder="party_a"/>
+      <br>
+
+      <select chosen
+        id="states"
+        multiple
+        ng-model="current.filters.states_b"
+        ng-options="state.abbreviation as state.name for state in USStateList"
+        data-placeholder="Select States B"
+        no-results-text="'Could not find any States'"
+        width="'100%'">
+      <input type="text" class="" ng-model="current.filters.party_b" placeholder="party_b"/>
+      <br>
 
       <h4>Select Frame to Highlight</h4>
-      <select chosen id="frames" 
+      <select chosen id="frames"
         ng-model="current.filters.frame"
-        ng-options="frame.id as frame.name for frame in frames" 
+        ng-options="frame.id as frame.name for frame in frames"
         data-placeholder="Select a Frame"
         no-results-text="'Could not find any frames'"
         width="'200px'">
