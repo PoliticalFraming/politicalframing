@@ -62,9 +62,9 @@ class SpeechListController(Resource):
     rows = 10
 
     speeches_dict = Speech.get(
-      phrase = args.get('phrase'), 
-      frame = args.get('frame'), 
-      start_date = args.get('start_date'), 
+      phrase = args.get('phrase'),
+      frame = args.get('frame'),
+      start_date = args.get('start_date'),
       end_date = args.get('end_date'),
       order = args.get('order'),
       highlight = args.get('highlight'),

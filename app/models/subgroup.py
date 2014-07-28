@@ -3,7 +3,7 @@ from peewee import *
 
 class Subgroup(db.Model):
 	"""Subgroups currently only store query and related metadata (name of query) such
-	as "tea-party republicans" or "house rules subcomittee", in the future, this class 
+	as "tea-party republicans" or "house rules subcomittee", in the future, this class
 	will define a subset of congresspeople from our database of congresspeople, and that
 	is how we will determine mutual exclusivity among other things.
 	"""
@@ -13,7 +13,7 @@ class Subgroup(db.Model):
 	query = TextField(null=True)
 	party = CharField(null=True)
 	states = TextField(null=True)
-	#Later break up query into "state, party, ...." - basically 
+	#Later break up query into "state, party, ...." - basically
 	#all of the filters that created this query.
 
 	def is_member(congressperson):

@@ -24,7 +24,7 @@ frame_plot_fields = {
 	'start_dates': fields.List(fields.Raw),
 	'end_dates': fields.List(fields.Raw),
 	'ylabel': fields.String,
-	'title': fields.String	
+	'title': fields.String
 }
 
 analysis_fields = {
@@ -54,7 +54,7 @@ class AnalysisListController(Resource):
 		query = Analysis.select().order_by(Analysis.id)
 		count=query.count()
 		analyses = map(lambda x: get_dictionary_from_model(x), query) #query.paginate(args['page'],20)
-		
+
 		return { 'meta': {'count':count}, 'data': analyses }
 
 
@@ -66,7 +66,7 @@ class AnalysisListController(Resource):
 		parser.add_argument('phrase', type = str, required = True, location = 'json')
 		parser.add_argument('start_date', type = str, required = False, location = 'json')
 		parser.add_argument('end_date', type = str, required = False, location = 'json')
-		
+
 		#subgroup a specific args
 		parser.add_argument('states_a', type = list, required = True, location = 'json')
 		parser.add_argument('party_a', type = str, required = True, location = 'json') #D or R
@@ -78,16 +78,16 @@ class AnalysisListController(Resource):
 		"""Compute analysis. Place in persistant storage."""
 		args = parser.parse_args()
 
-		# if args['start_date']: 
+		# if args['start_date']:
 		# 	args['start_date'] = dateparser.parse(args['start_date']).date()
 		# 	args['end_date'] = dateparser.parse(args['start_date']).date()
-		
+
 		analysis_obj = Analysis.compute_analysis(
 			id = args.get('id'),
-			phrase = args.get('phrase'), 
+			phrase = args.get('phrase'),
 			frame = args.get('frame'),
-			start_date = args.get('start_date'), 
-			end_date = args.get('end_date'), 
+			start_date = args.get('start_date'),
+			end_date = args.get('end_date'),
 
 			#Subgroups to Compare
 			states_a = args.get('states_a'),
@@ -111,7 +111,7 @@ class AnalysisController(Resource):
 	@marshal_with(analysis_marshall)
 	def get(self, id):
 		"""
-		Return percent complete (meta). 
+		Return percent complete (meta).
 		Return either empty json or completed frame and topic plot (text).
 		"""
 		analysis_obj = Analysis.get(Analysis.id == id)

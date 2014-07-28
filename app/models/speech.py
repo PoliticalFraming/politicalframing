@@ -13,7 +13,7 @@ import re
 import operator
 
 class Speech(object):
-  
+
   def __init__(self, *args, **kwargs):
     self.speech_id = kwargs.get('speech_id')
     self.bills = kwargs.get('bills')
@@ -64,7 +64,7 @@ class Speech(object):
 
       kwargs['start_date'] = parser.parse(kwargs['start_date']) if kwargs.get('start_date') else datetime(1994,1,1)
       kwargs['end_date'] = parser.parse(kwargs['end_date']) if kwargs.get('end_date') else datetime.now()
-      
+
       #If states exist, add to kwargs and then to optional parameters
       if kwargs.get('states'):
         kwargs['states'] = kwargs.get('states').split(',')
@@ -78,8 +78,8 @@ class Speech(object):
 
       compulsory_params['date__range'] = (kwargs['start_date'], kwargs['end_date'])
       compulsory_params['speaker_party__range'] = ("*", "*")
-      
-      solr_query = si.Q(**compulsory_params)    
+
+      solr_query = si.Q(**compulsory_params)
       if optional_params.get('speaker_state'):
         solr_query &= optional_params['speaker_state']
       solr_query = si.query(solr_query)
@@ -105,7 +105,7 @@ class Speech(object):
     Output
       List of output
     """
-    
+
     solr_query = Speech.build_sunburnt_query(**kwargs)
 
     # RawString('[* TO *]')
@@ -123,7 +123,7 @@ class Speech(object):
         # ~ RIP good coding practices ~
         numFound = solr_query.paginate(rows=0, start=0).execute().result.numFound
         app.logging.debug("Ordering by frame. Frames found: %d", numFound)
-        
+
         response = solr_query.paginate(rows=numFound, start=0).execute()
         frame = Frame.get(Frame.id == kwargs['frame'])
         response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
@@ -139,7 +139,7 @@ class Speech(object):
       # pprint(solr_query.__dict__['subqueries'][1].__dict__)
 
       response = solr_query.execute()
-    
+
     speeches = response.result.docs
     current_count = response.result.numFound
     current_start = response.result.start
@@ -171,9 +171,9 @@ class Speech(object):
     frame = frame.word_string.split(' ')
 
     speech['speaking'] = \
-      map(lambda sentence: 
-        "".join(map(lambda word: "<span class='highlight'>" + word + "</span>" if word in frame else word, 
-          re.split(r'(\W+)',sentence))), 
+      map(lambda sentence:
+        "".join(map(lambda word: "<span class='highlight'>" + word + "</span>" if word in frame else word,
+          re.split(r'(\W+)',sentence))),
       speech['speaking'])
 
     return speech
@@ -206,6 +206,6 @@ class Speech(object):
       #     for word in frame.word_string.split():
       #         if word in speech.speaking:
       #             frame_words[word] = frame_words.get(word,0) + 1
-      #     # do better ordering using frame_words dictionary 
-      #     # (maybe something like tf/idf based counts) 
+      #     # do better ordering using frame_words dictionary
+      #     # (maybe something like tf/idf based counts)
       # ################################################################

@@ -28,31 +28,31 @@ frame_order = ['christianity','crime','finance','sex','war','common_words']
 def return_framing_data(training_set, output_filepath):
     count_vect = CountVectorizer()
     X_train_counts = count_vect.fit_transform(training_set.data)
-    
+
     tfidf_transformer = TfidfTransformer()
     X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    
+
     clf = MultinomialNB(alpha=1.0,fit_prior=False).fit(X_train_tfidf,training_set.target)
-    
+
     X_new_counts = count_vect.transform(frames)
     X_new_tfidf = tfidf_transformer.transform(X_new_counts)
     predicted_logs = clf.predict_log_proba(X_new_tfidf)
-    
+
     return predicted_logs
 
 def write_framing_data(training_set, output_filepath):
     count_vect = CountVectorizer()
     X_train_counts = count_vect.fit_transform(training_set.data)
-    
+
     tfidf_transformer = TfidfTransformer()
     X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    
+
     clf = MultinomialNB(alpha=1.0,fit_prior=False).fit(X_train_tfidf,training_set.target)
-    
+
     X_new_counts = count_vect.transform(frames)
     X_new_tfidf = tfidf_transformer.transform(X_new_counts)
     predicted_logs = clf.predict_log_proba(X_new_tfidf)
-    
+
     f = open(output_filepath,'w')
     f.write('Frame Names and Order:\n'+str(frame_order)+'\n\n')
     #f.write('Frames:\n'+str(frames)+'\n\n')

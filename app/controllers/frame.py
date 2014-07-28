@@ -49,16 +49,16 @@ class FrameListController(Resource):
 		query = Frame.select().order_by(Frame.id)
 		count=query.count()
 		frames = map(lambda x: get_dictionary_from_model(x), query) #query.paginate(args['page'],20)
-		
+
 		return { 'meta': {'count':count}, 'data': frames }
 
 	@marshal_with(frame_marshall)
 	def post(self, name, description, generation, seed_word, word_count, word_string):
 		frame = Frame(name=name,
-		 description=description, 
-		 generation=generation, 
-		 seed_word=seed_word, 
-		 word_count=word_count, 
+		 description=description,
+		 generation=generation,
+		 seed_word=seed_word,
+		 word_count=word_count,
 		 word_string=word_string)
 		return { 'meta': null, 'data': get_dictionary_from_model(frame) }
 

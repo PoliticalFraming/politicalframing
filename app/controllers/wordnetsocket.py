@@ -6,7 +6,7 @@ from flask import request
 
 @app.route('/api/wordnetsocket/getQuestions/<word>')
 def get_questions(word):
-	"""Input a word, get some questions. A question is a dict that contains a 
+	"""Input a word, get some questions. A question is a dict that contains a
 	feild called 'name' - that is the name of the synset that you can pass back
 	"""
 	synsets = framemaker.getSynsets(word)
@@ -19,7 +19,7 @@ def get_questions(word):
 
 @app.route('/api/wordnetsocket/getWords/')
 def get_words():
-	""" 
+	"""
 	Parameter - list of synsets, comma separated
 	Returns - set of words
 	"""
@@ -38,4 +38,3 @@ def get_words():
 	# for synset in synsets:
 	# 	words[synset] = framemaker.getWords(framemaker.getSynset(synset))
 	# return json.dumps(words)
-	

@@ -1,4 +1,4 @@
-from __future__ import division 
+from __future__ import division
 
 from app import app, db, celery
 from peewee import *
@@ -27,7 +27,7 @@ OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
 
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
-    This could be made faster by actually modifying or extending the MultinomialNB 
+    This could be made faster by actually modifying or extending the MultinomialNB
     in scikit-learn rather than creating a new MultinomialNB object each time."""
 
     def __init__(self):
@@ -42,7 +42,7 @@ class Classifier:
             app.logger.debug(e)
             app.logger.debug(document)
             raise
-     
+
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.transform(data)
         print "training classifier"
@@ -66,7 +66,7 @@ class Analysis(db.Model):
 
     celery_id = CharField(null=True)
     to_update = BooleanField(null=True) #mark to regularly update with latest information or not
-    
+
     start_date = DateTimeField(null=True)
     end_date = DateTimeField(null=True)
 
@@ -83,7 +83,7 @@ class Analysis(db.Model):
         db_table = 'analyses'
 
     @classmethod
-    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None, 
+    def compute_analysis(cls, phrase, frame, id=None, start_date=None, end_date=None,
         states_a=None, party_a=None, states_b=None, party_b=None, to_update=None):
         """
         Class Method:
@@ -94,7 +94,7 @@ class Analysis(db.Model):
         """
 
         #duplicated code, shouldn't be here again
-        #convert date from string 
+        #convert date from string
         start_date_isadate = dateparser.parse(start_date).date() if start_date else OLDEST_RECORD_DATE
         end_date_isadate = dateparser.parse(end_date).date() if end_date else datetime.datetime.now()
 
@@ -112,7 +112,7 @@ class Analysis(db.Model):
             )
 
             subgroup_a.save()
-            
+
             subgroup_b = Subgroup(
                 states = states_b,
                 party = party_b
@@ -121,7 +121,7 @@ class Analysis(db.Model):
             subgroup_b.save()
 
             analysis_obj = Analysis(
-                frame = Frame.get(Frame.id == frame), 
+                frame = Frame.get(Frame.id == frame),
                 phrase = phrase,
                 start_date = start_date_isadate, #so much hack
                 end_date = end_date_isadate, #wowowowowow doge
@@ -174,28 +174,28 @@ class Analysis(db.Model):
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
             if current_end_date.year > 2013:
                 indexes_to_delete.append(i)
-        
+
         # this removes last bucket post analysis
 
-        analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.topic_plot['end_dates'])))
 
-        analysis_obj.topic_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.topic_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.topic_plot['start_dates'])))
 
-        analysis_obj.topic_plot['dem_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.topic_plot['dem_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.topic_plot['dem_counts'])))
 
-        analysis_obj.topic_plot['rep_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.topic_plot['rep_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.topic_plot['rep_counts'])))
 
-        analysis_obj.frame_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.frame_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.frame_plot['end_dates'])))
 
-        analysis_obj.frame_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.frame_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.frame_plot['start_dates'])))
 
-        analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete, 
+        analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.frame_plot['ratios'])))
 
         # when recomputing an analysis, this prevents the old celery_id from overwriting the new celery_id
@@ -227,13 +227,13 @@ class Analysis(db.Model):
         return valid_speeches
 
     def check_if_complete(self):
-        if not self.celery_id: 
+        if not self.celery_id:
             return {'state':"No Celery Task", 'percent_complete':"n/a"}
         async_res = celery.AsyncResult(self.celery_id)
         if async_res: #.ready() == True:
             return {'state':async_res.state, 'percent_complete':async_res.info}
         return "why am i here?"
-        
+
 
     ####################### LOGIC #######################
 
@@ -301,12 +301,12 @@ class Analysis(db.Model):
             window_end = window_start + window_timedelta
 
             if window_end > last_speech_time:
-                window_end = last_speech_time   
+                window_end = last_speech_time
 
         self.topic_plot = {
             'title': "Speeches about %s" % phrase,
             'ylabel': "Number of Speeches",
-            'start_dates': start_dates, 
+            'start_dates': start_dates,
             'end_dates': end_dates,
             'dem_counts':dem_counts,
             'rep_counts':rep_counts
@@ -315,10 +315,10 @@ class Analysis(db.Model):
         return self.topic_plot
 
     def build_training_set(self, speeches):
-        '''This function is an alternative form of the loads in sklearn which loads 
+        '''This function is an alternative form of the loads in sklearn which loads
         from a partiular file structure. This function allows me to load from a the database
         '''
-        
+
         app.logger.debug('Building training set.')
 
         def target_function(speech):
@@ -329,17 +329,17 @@ class Analysis(db.Model):
             else:
                 print "Speech must be categorized as D or R : " + str(speech['speech_id'])
 
-        target = [] #0 and 1 for D or R respectively  
+        target = [] #0 and 1 for D or R respectively
         target_names = ['D','R'] #target_names
         data = [] #data
 
-        for speech in speeches:  
+        for speech in speeches:
             target.append(target_function(speech))
             speech_string = ''
             for sentence in speech['speaking']:
                 speech_string += sentence
             data.append(speech_string)
-        
+
         DESCR = "Trained D vs R classifier"
 
         #Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
@@ -348,9 +348,9 @@ class Analysis(db.Model):
             target_names = target_names,
             data = data,
             DESCR = DESCR)
-        
+
     def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
-        """ 
+        """
         frame = frame object
         speeches = list of speech objects in date order
         n = number of data points to plot
@@ -404,7 +404,7 @@ class Analysis(db.Model):
             #populate return data
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
             log_probabilities = naive_bayes.classify_document(frame.word_string)
-            
+
             d_likelihoods.append(log_probabilities[0])
             r_likelihoods.append(log_probabilities[1])
 
