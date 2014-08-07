@@ -36,6 +36,10 @@ class Speech(object):
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
 
+  def belongs_to(subgroup):
+    """True if speech by someone in the subgroup"""
+    return (self.speaker_party == subgroup.party) and (speech.speaker_state in subgroup.states)
+
   @staticmethod
   def build_sunburnt_query(**kwargs):
     """

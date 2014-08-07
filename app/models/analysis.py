@@ -73,6 +73,21 @@ class Analysis(db.Model):
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
 
+
+    ### TODO: Add state filter and party filter to these queries
+    def build_query_params():
+        """
+        Returns a dict of params for the solr query that will get all
+        speeches related to this analysis.
+        """
+
+        return {
+        'phrase': analysis_obj.phrase,
+        'frame': analysis_obj.frame,
+        'start_date': analysis_obj.start_date,
+        'end_date': analysis_obj.end_date,
+        'order': 'date'}
+
     class Meta:
         db_table = 'analyses'
 
@@ -126,10 +141,7 @@ class Analysis(db.Model):
 
         analysis_obj.save()
 
-        # deal with states
-        query = {'phrase': phrase, 'frame': frame, 'start_date': start_date, 'end_date': end_date, 'order': 'date' }
-
-        result = Analysis.analyze_task.delay(analysis_obj, query)
+        result = Analysis.analyze_task.delay(analysis_obj)
         analysis_obj.celery_id = result.id
         analysis_obj.save()
         # celery.close()
@@ -144,12 +156,15 @@ class Analysis(db.Model):
 
     @staticmethod
     @celery.task(bind=True)
-    def analyze_task(self, analysis_obj, query):
+    def analyze_task(self, analysis_obj):
         celery_id = self.request.id
         celery_obj = self
-        phrase = query['phrase']
-        frame = Frame.get(Frame.id == query['frame'])
-        numFound = Speech.get(0, 0, **query)['count']
+        phrase = analysis_obj.phrase
+
+        query_params = analysis_obj.build_query_params()
+
+        frame = Frame.get(Frame.id == analysis_obj.frame)
+        numFound = Speech.get(0, 0, **query_params)['count']
         speeches = []
         pages = int(math.ceil(numFound/1000))
 
