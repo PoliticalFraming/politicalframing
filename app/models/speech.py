@@ -12,6 +12,8 @@ from app.models.frame import Frame
 import re
 import operator
 
+# from celery.contrib import rdb
+
 class Speech(object):
 
   def __init__(self, *args, **kwargs):
@@ -36,9 +38,11 @@ class Speech(object):
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
 
-  def belongs_to(subgroup):
+  @staticmethod
+  def belongs_to(speech, subgroup):
     """True if speech by someone in the subgroup"""
-    return (self.speaker_party == subgroup.party) and (speech.speaker_state in subgroup.states)
+    # rdb.set_trace()
+    return (speech['speaker_party'].upper() == subgroup.party.upper()) and (speech['speaker_state'] in subgroup.states)
 
   @staticmethod
   def build_sunburnt_query(**kwargs):

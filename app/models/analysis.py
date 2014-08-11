@@ -21,6 +21,7 @@ from dateutil import parser as dateparser
 
 import inspect
 import math
+from celery.contrib import rdb
 
 #Constants (Move creation to where speeches are ingested)
 OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
@@ -75,17 +76,17 @@ class Analysis(db.Model):
 
 
     ### TODO: Add state filter and party filter to these queries
-    def build_query_params():
+    def build_query_params(self):
         """
         Returns a dict of params for the solr query that will get all
         speeches related to this analysis.
         """
 
         return {
-        'phrase': analysis_obj.phrase,
-        'frame': analysis_obj.frame,
-        'start_date': analysis_obj.start_date,
-        'end_date': analysis_obj.end_date,
+        'phrase': self.phrase,
+        'frame': self.frame,
+        'start_date': self.start_date.strftime("%Y-%m-%d"),
+        'end_date': self.end_date.strftime("%Y-%m-%d"),
         'order': 'date'}
 
     class Meta:
@@ -162,6 +163,7 @@ class Analysis(db.Model):
         phrase = analysis_obj.phrase
 
         query_params = analysis_obj.build_query_params()
+        app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
         numFound = Speech.get(0, 0, **query_params)['count']
@@ -171,10 +173,10 @@ class Analysis(db.Model):
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
         for i in range(0, pages):
-            speeches = speeches + Speech.get(start=1000*i, rows=1000, **query)['speeches']
+            speeches = speeches + Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
-        speeches = Analysis.preprocess_speeches(speeches, Analysis.party_fn)
+        speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
         analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase, celery_obj)
@@ -224,6 +226,15 @@ class Analysis(db.Model):
         else:
             return False
 
+    def subgroup_fn(self, speech):
+        # rdb.set_trace()
+        if Speech.belongs_to(speech, self.subgroupA) or Speech.belongs_to(speech, self.subgroupB):
+            app.logger.debug("TRUEEEEEEEEEE")
+            return True
+        else:
+            app.logger.debug("FALSEEEEEEEEEE")
+            return False
+
     @classmethod
     def preprocess_speeches(cls, speeches, relevance_fn):
         '''Includes only speeches that the '''
@@ -256,8 +267,8 @@ class Analysis(db.Model):
         app.logger.debug("plot_topic_usage")
 
         speeches = deque(ordered_speeches)
-        dem_counts = []
-        rep_counts = []
+        subgroup_a_counts = []
+        subgroup_b_counts = []
         start_dates = []
         end_dates = []
 
@@ -279,8 +290,8 @@ class Analysis(db.Model):
         while speeches:
             #clear current window
             current_window  = []
-            dem_count = 0
-            rep_count = 0
+            subgroup_a_count = 0
+            subgroup_b_count = 0
 
             print  "speeches[0]['date'] " + str(speeches[0]['date'])
             print "speeches[-1]['date'] " + str(speeches[-1]['date'])
@@ -292,16 +303,15 @@ class Analysis(db.Model):
             while(speeches and (speeches[0]['date'] >= window_start) and (speeches[0]['date'] <= window_end)):
                 current_window.append(speeches.popleft())
 
-            #TODO: change to use subgroups instead of DEM vs REP
             #process speeches in current window
             for current_speech in current_window:
-                if current_speech['speaker_party'] == "D":
-                    dem_count +=1
-                elif current_speech['speaker_party'] == "R":
-                    rep_count +=1
+                if Speech.belongs_to(current_speech, self.subgroupA):
+                    subgroup_a_count +=1
+                elif Speech.belongs_to(current_speech, self.subgroupB):
+                    subgroup_b_count +=1
 
-            dem_counts.append(dem_count)
-            rep_counts.append(rep_count)
+            subgroup_a_counts.append(subgroup_a_count)
+            subgroup_b_counts.append(subgroup_b_count)
 
             #move current window time
             start_dates.append(window_start)
@@ -318,30 +328,30 @@ class Analysis(db.Model):
             'ylabel': "Number of Speeches",
             'start_dates': start_dates,
             'end_dates': end_dates,
-            'dem_counts':dem_counts,
-            'rep_counts':rep_counts
+            'dem_counts':subgroup_a_counts,
+            'rep_counts':subgroup_b_counts
+            #TODO: Change these names to subgroup_a and subgroup_b counts
         }
 
         return self.topic_plot
 
     def build_training_set(self, speeches):
         '''This function is an alternative form of the loads in sklearn which loads
-        from a partiular file structure. This function allows me to load from a the database
+        from a partiular file structure. This function allows me to load from the database
         '''
 
         app.logger.debug('Building training set.')
 
-        # TODO: make new target function for subgroups
         def target_function(speech):
-            if speech['speaker_party'] == 'D':
+            if Speech.belongs_to(speech, self.subgroupA):
                 return 0
-            elif speech['speaker_party'] == 'R':
+            elif Speech.belongs_to(speech, self.subgroupB):
                 return 1
             else:
-                print "Speech must be categorized as D or R : " + str(speech['speech_id'])
+                print "Speech must belong to subgroup a or b: " + str(speech['speech_id'])
 
-        target = [] #0 and 1 for D or R respectively
-        target_names = ['D','R'] #target_names
+        target = [] #0 and 1 for subgroup a and b respectively
+        target_names = ['a','b'] #target_names
         data = [] #data
 
         for speech in speeches:
@@ -351,7 +361,7 @@ class Analysis(db.Model):
                 speech_string += sentence
             data.append(speech_string)
 
-        DESCR = "Trained D vs R classifier"
+        DESCR = "Trained subgroup_a vs subgroup_b classifier"
 
         #Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
         return Bunch(
@@ -386,9 +396,9 @@ class Analysis(db.Model):
         app.logger.debug("Create empty return variables")
         start_dates = []
         end_dates = []
-        # TODO: change to subgroup a and b (not d r)
-        r_likelihoods = []
-        d_likelihoods = []
+
+        subgroup_a_likelihoods = []
+        subgroup_b_likelihoods = []
         ratios = []
 
         #loop through and plot each point
@@ -417,8 +427,8 @@ class Analysis(db.Model):
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
             log_probabilities = naive_bayes.classify_document(frame.word_string)
 
-            d_likelihoods.append(log_probabilities[0])
-            r_likelihoods.append(log_probabilities[1])
+            subgroup_a_likelihoods.append(log_probabilities[0])
+            subgroup_b_likelihoods.append(log_probabilities[1])
 
             #move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
@@ -428,7 +438,7 @@ class Analysis(db.Model):
                     current_window = current_window[1:]
 
             # do something about the div by zero error
-            ratios = map(lambda x,y: x/y, d_likelihoods, r_likelihoods)
+            ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
 
             #stringify dates
             # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
@@ -437,7 +447,7 @@ class Analysis(db.Model):
         app.logger.debug("Populate Return Values")
         self.frame_plot = {
             'title': "Usage of %s Frame in Speeches about %s" % (frame.name, phrase),
-            'ylabel': "D/R Ratio of Log-Likelihoods",
+            'ylabel': "a/b Ratio of Log-Likelihoods",
             'start_dates': start_dates,
             'end_dates': end_dates,
             'ratios': ratios
