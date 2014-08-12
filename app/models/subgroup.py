@@ -22,7 +22,15 @@ class Subgroup(db.Model):
 
 	def is_from(speech):
 		"""True if speech is by someone in this subgroup"""
-		return (speech["speaker_party"].upper() == party.upper()) and (speech["speaker_state"] in states)
+		if party and state:
+			return (speech.speaker_party.upper() == party.upper()) and (speech.speaker_state in states)
+		elif party:
+			return (speech.speaker_state in states)
+		elif state:
+			return (speech.speaker_party.upper() == party.upper())
+		else:
+			raise "Subgroup has no party or state."
+
 
 	def is_member(congressperson):
 		"""True if congressperson is part of this subgroup."""

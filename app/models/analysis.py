@@ -75,7 +75,6 @@ class Analysis(db.Model):
     frame_plot = TextField(null=True)
 
 
-    ### TODO: Add state filter and party filter to these queries
     def build_query_params(self):
         """
         Returns a dict of params for the solr query that will get all
@@ -171,8 +170,10 @@ class Analysis(db.Model):
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
+        # get speeches by page from api and convert to speech objects
         for i in range(0, pages):
-            speeches = speeches + Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
+            speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
+            speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
@@ -218,25 +219,16 @@ class Analysis(db.Model):
 
     ####################### UTILITIES #######################
 
-    @classmethod
-    def party_fn(cls, speech):
-        if speech['speaker_party']=="D" or speech['speaker_party']=="R":
-            return True
-        else:
-            return False
-
     def subgroup_fn(self, speech):
         # rdb.set_trace()
-        if Speech.belongs_to(speech, self.subgroupA) or Speech.belongs_to(speech, self.subgroupB):
-            app.logger.debug("TRUEEEEEEEEEE")
+        if speech.belongs_to(self.subgroupA) or speech.belongs_to(self.subgroupB):
             return True
         else:
-            app.logger.debug("FALSEEEEEEEEEE")
             return False
 
     @classmethod
     def preprocess_speeches(cls, speeches, relevance_fn):
-        '''Includes only speeches that the '''
+        '''Includes only speeches that pass the relevance_fn'''
         relevant = relevance_fn #plug in what is relevant
 
         valid_speeches=[]
@@ -271,8 +263,8 @@ class Analysis(db.Model):
         start_dates = []
         end_dates = []
 
-        first_speech_time = speeches[0]['date']
-        last_speech_time = speeches[-1]['date']
+        first_speech_time = speeches[0].date
+        last_speech_time = speeches[-1].date
 
         print "first_speech_time " + str(first_speech_time)
         print "last_speech_time " + str(last_speech_time)
@@ -292,21 +284,21 @@ class Analysis(db.Model):
             subgroup_a_count = 0
             subgroup_b_count = 0
 
-            print  "speeches[0]['date'] " + str(speeches[0]['date'])
-            print "speeches[-1]['date'] " + str(speeches[-1]['date'])
+            print  "speeches[0].date " + str(speeches[0].date)
+            print "speeches[-1].date " + str(speeches[-1].date)
 
             print window_start
             print window_end
 
             # get speeches in current window
-            while(speeches and (speeches[0]['date'] >= window_start) and (speeches[0]['date'] <= window_end)):
+            while(speeches and (speeches[0].date >= window_start) and (speeches[0].date <= window_end)):
                 current_window.append(speeches.popleft())
 
             # process speeches in current window
             for current_speech in current_window:
-                if Speech.belongs_to(current_speech, self.subgroupA):
+                if current_speech.belongs_to(self.subgroupA):
                     subgroup_a_count +=1
-                elif Speech.belongs_to(current_speech, self.subgroupB):
+                elif current_speech.belongs_to(self.subgroupB):
                     subgroup_b_count +=1
 
             subgroup_a_counts.append(subgroup_a_count)
@@ -342,12 +334,12 @@ class Analysis(db.Model):
         app.logger.debug('Building training set.')
 
         def target_function(speech):
-            if Speech.belongs_to(speech, self.subgroupA):
+            if speech.belongs_to(self.subgroupA):
                 return 0
-            elif Speech.belongs_to(speech, self.subgroupB):
+            elif speech.belongs_to(self.subgroupB):
                 return 1
             else:
-                print "Speech must belong to subgroup a or b: " + str(speech['speech_id'])
+                print "Speech must belong to subgroup a or b: " + str(speech.id)
 
         target = [] # 0 and 1 for subgroup a and b respectively
         target_names = ['a','b'] # target_names
@@ -356,7 +348,7 @@ class Analysis(db.Model):
         for speech in speeches:
             target.append(target_function(speech))
             speech_string = ''
-            for sentence in speech['speaking']:
+            for sentence in speech.speaking:
                 speech_string += sentence
             data.append(speech_string)
 
@@ -403,8 +395,8 @@ class Analysis(db.Model):
         # loop through and plot each point
         while speeches:
             celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
-            start_dates.append(current_window[0]['date'])
-            end_dates.append(current_window[-1]['date'])
+            start_dates.append(current_window[0].date)
+            end_dates.append(current_window[-1].date)
 
             # create_classifier
             app.logger.debug("Create Classifier")

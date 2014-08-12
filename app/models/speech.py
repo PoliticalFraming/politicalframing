@@ -38,11 +38,9 @@ class Speech(object):
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
 
-  @staticmethod
-  def belongs_to(speech, subgroup):
+  def belongs_to(self, subgroup):
     """True if speech by someone in the subgroup"""
-    # rdb.set_trace()
-    return (speech['speaker_party'].upper() == subgroup.party.upper()) and (speech['speaker_state'] in subgroup.states)
+    return (self.speaker_party.upper() == subgroup.party.upper()) and (self.speaker_state in subgroup.states)
 
   @staticmethod
   def build_sunburnt_query(**kwargs):
