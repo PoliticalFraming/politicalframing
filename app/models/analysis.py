@@ -103,10 +103,9 @@ class Analysis(db.Model):
         - returns ID of that instance
         """
 
-        #duplicated code, shouldn't be here again
-        #convert date from string
-        start_date_isadate = dateparser.parse(start_date).date() if start_date else OLDEST_RECORD_DATE
-        end_date_isadate = dateparser.parse(end_date).date() if end_date else datetime.datetime.now()
+        # If start or end date not set, set them
+        start_date = dateparser.parse(start_date).date() if start_date else OLDEST_RECORD_DATE
+        end_date = dateparser.parse(end_date).date() if end_date else datetime.datetime.now()
 
         if id != None:
             # Update existing Analysis Object with a new start_date and end_date
@@ -133,8 +132,8 @@ class Analysis(db.Model):
             analysis_obj = Analysis(
                 frame = Frame.get(Frame.id == frame),
                 phrase = phrase,
-                start_date = start_date_isadate, #so much hack
-                end_date = end_date_isadate, #wowowowowow doge
+                start_date = start_date,
+                end_date = end_date,
                 subgroupA = subgroup_a,
                 subgroupB = subgroup_b,
                 to_update = to_update
@@ -403,7 +402,7 @@ class Analysis(db.Model):
 
         #loop through and plot each point
         while speeches:
-            celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(speeches), 'total': len(ordered_speeches)})
+            celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
@@ -443,6 +442,8 @@ class Analysis(db.Model):
             #stringify dates
             # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
             # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
+
+        celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
 
         app.logger.debug("Populate Return Values")
         self.frame_plot = {
