@@ -287,7 +287,7 @@ class Analysis(db.Model):
         print "window_end " + str(window_end)
 
         while speeches:
-            #clear current window
+            # clear current window
             current_window  = []
             subgroup_a_count = 0
             subgroup_b_count = 0
@@ -298,11 +298,11 @@ class Analysis(db.Model):
             print window_start
             print window_end
 
-            #get speeches in current window
+            # get speeches in current window
             while(speeches and (speeches[0]['date'] >= window_start) and (speeches[0]['date'] <= window_end)):
                 current_window.append(speeches.popleft())
 
-            #process speeches in current window
+            # process speeches in current window
             for current_speech in current_window:
                 if Speech.belongs_to(current_speech, self.subgroupA):
                     subgroup_a_count +=1
@@ -312,7 +312,7 @@ class Analysis(db.Model):
             subgroup_a_counts.append(subgroup_a_count)
             subgroup_b_counts.append(subgroup_b_count)
 
-            #move current window time
+            # move current window time
             start_dates.append(window_start)
             end_dates.append(window_end)
 
@@ -329,7 +329,7 @@ class Analysis(db.Model):
             'end_dates': end_dates,
             'dem_counts':subgroup_a_counts,
             'rep_counts':subgroup_b_counts
-            #TODO: Change these names to subgroup_a and subgroup_b counts
+            # TODO: Change these names to subgroup_a and subgroup_b counts
         }
 
         return self.topic_plot
@@ -349,9 +349,9 @@ class Analysis(db.Model):
             else:
                 print "Speech must belong to subgroup a or b: " + str(speech['speech_id'])
 
-        target = [] #0 and 1 for subgroup a and b respectively
-        target_names = ['a','b'] #target_names
-        data = [] #data
+        target = [] # 0 and 1 for subgroup a and b respectively
+        target_names = ['a','b'] # target_names
+        data = [] # data
 
         for speech in speeches:
             target.append(target_function(speech))
@@ -362,7 +362,7 @@ class Analysis(db.Model):
 
         DESCR = "Trained subgroup_a vs subgroup_b classifier"
 
-        #Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
+        # Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
         return Bunch(
             target = target,
             target_names = target_names,
@@ -381,7 +381,7 @@ class Analysis(db.Model):
 
         speeches = deque(ordered_speeches)
 
-        #setup current window
+        # setup current window
         current_window = []
         try:
             for _ in range(window_size):
@@ -391,7 +391,7 @@ class Analysis(db.Model):
             raise
 
 
-        #declare return variables
+        # declare return variables
         app.logger.debug("Create empty return variables")
         start_dates = []
         end_dates = []
@@ -400,36 +400,36 @@ class Analysis(db.Model):
         subgroup_b_likelihoods = []
         ratios = []
 
-        #loop through and plot each point
+        # loop through and plot each point
         while speeches:
             celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
             start_dates.append(current_window[0]['date'])
             end_dates.append(current_window[-1]['date'])
 
-            #create_classifier
+            # create_classifier
             app.logger.debug("Create Classifier")
             naive_bayes = Classifier()
 
-            #Learn Vocabulary
+            # Learn Vocabulary
             app.logger.debug("Learn Vocabulary")
             naive_bayes.learn_vocabulary(frame.word_string)
 
-            #Build Training Set
+            # Build Training Set
             app.logger.debug("Building Training Set")
             training_set = self.build_training_set(current_window)
 
-            #train classifier on speeches in current window
+            # train classifier on speeches in current window
             app.logger.debug("Training Classifier")
             naive_bayes.train_classifier(training_set.data, training_set.target)
 
-            #populate return data
+            # populate return data
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
             log_probabilities = naive_bayes.classify_document(frame.word_string)
 
             subgroup_a_likelihoods.append(log_probabilities[0])
             subgroup_b_likelihoods.append(log_probabilities[1])
 
-            #move current window over by 'offset'
+            # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
             for _ in range(offset):
                 if speeches:
