@@ -226,7 +226,6 @@ class Analysis(db.Model):
             return False
 
     def subgroup_fn(self, speech):
-        # rdb.set_trace()
         if Speech.belongs_to(speech, self.subgroupA) or Speech.belongs_to(speech, self.subgroupB):
             app.logger.debug("TRUEEEEEEEEEE")
             return True
@@ -246,13 +245,15 @@ class Analysis(db.Model):
         return valid_speeches
 
     def check_if_complete(self):
+
+        if self.topic_plot and self.frame_plot:
+            return {'state':'SUCCESS', 'percent_complete': {"current": 100, "total": 100, "stage": "analyze"}}
         if not self.celery_id:
             return {'state':"No Celery Task", 'percent_complete':"n/a"}
         async_res = celery.AsyncResult(self.celery_id)
         if async_res: #.ready() == True:
             return {'state':async_res.state, 'percent_complete':async_res.info}
-        return "why am i here?"
-
+        # return "why am i here?"
 
     ####################### LOGIC #######################
 
@@ -367,7 +368,8 @@ class Analysis(db.Model):
             target = target,
             target_names = target_names,
             data = data,
-            DESCR = DESCR)
+            DESCR = DESCR
+        )
 
     def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
         """
@@ -439,7 +441,7 @@ class Analysis(db.Model):
             # do something about the div by zero error
             ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
 
-            #stringify dates
+            # stringify dates
             # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
             # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
 

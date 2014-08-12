@@ -58,6 +58,12 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               console.log(response);
               console.log(response.data.meta.state);
               if (response.data.meta.state === 'SUCCESS') {
+
+                $scope.current.progress_current = response.data.meta.percent_complete.current;
+                $scope.current.progress_total = response.data.meta.percent_complete.total;
+                $scope.current.progress_percent = response.data.meta.percent_complete.current / response.data.meta.percent_complete.total * 100;
+                $scope.current.stage = response.data.meta.percent_complete.stage;
+
                 console.log("success");
                 // $scope.id = id;
                 $scope.currentAnalysis = response.data.data;
