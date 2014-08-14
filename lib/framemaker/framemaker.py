@@ -16,7 +16,7 @@ from nltk.corpus import wordnet
 from sets import Set
 
 import wordnettools
-# import frameextender
+import frameextender
 import pickle
 
 def getSynset(synset):
@@ -49,6 +49,52 @@ def getSynsetMetadata(synset):
 
 ####################### OLD FILE STARTS HERE ##############################
 
+def picksynsets(synsets):
+    """Returns the subset of synsets that the user selects."""
+
+    parsedsynsets = set([])
+    selected_synsets = set([])
+    for synset in synsets:
+        if not (synset in parsedsynsets):
+            parsedsynsets.add(synset) #mark synset as "parsed"
+
+            # Ask user if the synset is relevant to the frame they want to build
+            print '\nDoes this fit the frame you have in mind?: '
+            print str(synset) + '   ' + synset.definition
+            print synset.examples
+
+            # I have chosen not to ask the user about each realted form as they are
+            # synonyms and it becomes cumbersome, but chose to display these anyways
+            # to clarify the meaning that 'synset' conveys.
+            for related_synset in wordnettools.getrelatedforms(synset):
+                if not(related_synset in parsedsynsets):
+                    print '\t' + str(related_synset) + '   ' + related_synset.definition
+                    print '\t' + str(related_synset.examples)
+                    parsedsynsets.add(related_synset) #mark as "parsed"
+
+            #Request user to accept or reject synset
+            userin = raw_input('y or n: ')
+            if userin.lower() == 'y':
+                selected_synsets.add(synset)
+            elif userin.lower() == 'n':
+                print str(synset.name) + ' not included'
+            else:
+                print 'Error - only y or n are valid responses'
+
+    return selected_synsets
+
+def framewords(synset):
+    frame = set([])
+
+    for subsynset in (wordnettools.gethypernymsrecursive(synset)
+        + wordnettools.getlemmas(synset)
+        + wordnettools.getrelatedforms(synset)
+        + wordnettools.gethyponymsrecursive(synset)
+        + wordnettools.getdomainterms(synset)):
+        frame.add(wordnettools.getnamepretty(subsynset))
+
+    return frame
+
 def makeframe(frameword):
     """Returns a frame (Set of synsets) based on frame word and user input to shell.
         See module docstring for more info.
@@ -63,49 +109,8 @@ def makeframe(frameword):
     """
 
     framewordsynsets = wordnet.synsets(frameword) #synsets of frameword
-    frame = Set() # words to include in frame
-    parsedsynsets = Set() #keep track of parsed synsets so you don't ask about the same one twice
-
-
-    for synset in framewordsynsets: #loop through each possible meaning of a word
-        if not (synset in parsedsynsets):
-            parsedsynsets.add(synset) #mark synset as "parsed"
-
-            # Ask user if the synset is relevant to the frame they want to build
-            print '\nDoes this fit the frame you have in mind?: '
-            print str(synset) + '   ' + synset.definition
-            print synset.examples
-
-
-            # I have chosen not to ask the user about each realted form as they are
-            # synonyms and it becomes cumbersome, but chose to display these anyways
-            # to clarify the meaning that 'synset' conveys.
-            for rsynset in wordnettools.getrelatedforms(synset):
-                if not(rsynset in parsedsynsets):
-                    print '\t' + str(rsynset) + '   ' + rsynset.definition
-                    print '\t' + str(rsynset.examples)
-                    parsedsynsets.add(rsynset) #mark as "parsed"
-
-            #Request user to accept or reject frame
-            userin = raw_input('y or n: ')
-
-            if userin.lower() == 'y':
-                #include one hypernym, all lemmas, all related forms, all hyponyms, and all domain terms of synset
-                #see implementation of "all-things" in wordnettools
-                for subsynset in (wordnettools.gethypernymsrecursive(synset)
-                             + wordnettools.getlemmas(synset)
-                             + wordnettools.getrelatedforms(synset)
-                             + wordnettools.gethyponymsrecursive(synset)
-                             + wordnettools.getdomainterms(synset)):
-                    frame.add(wordnettools.getnamepretty(subsynset))
-
-            elif userin.lower() == 'n':
-                print str(synset.name) + ' not included'
-            else:
-                print 'Error - only y or n are valid responses'
-
-
-    return frame
+    selected_synsets = picksynsets(framewordsynsets)
+    return reduce(lambda x,y: x.union(y), map(lambda s: framewords(s), selected_synsets))
 
 def pickleframe(word):
     """Make and pickle a frame about 'word', dump it in 'word.txt'."""
