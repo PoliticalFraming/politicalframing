@@ -36,5 +36,8 @@
 	
 * If this process doesn't output enough words (432 is the magic number right now), then we continue on the process using the frameextender. The frame exender takes a particular synset and will return all of its hyponyms recursively. How to implement the frameextender (ie. which synsets to use is TBD). We intend to start by trying the related forms.
 
+## TODO
+* Make this readme even more explicit so that it can be used in the paper. Ie, explain what is meant by related forms and explain exactly what happens in each of the aforementioned methods. https://trello.com/c/35blaFzC
+
 ## Additional Notes
-*Ideas for improvement. Add "contextual" words in some form (from examples/tf-idf relevant wikipedia pages/google search, etc...)*
+* Ideas for improvement. Add "contextual" words in some form (from examples/tf-idf relevant wikipedia pages/google search, etc...)*
