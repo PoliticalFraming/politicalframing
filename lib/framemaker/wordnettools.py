@@ -6,10 +6,10 @@ Synset - Basic unit of wordnet: a set of "synonyms" that collectively form the d
 Hypernym - A hypernym of a synset is a more general word under which it falls (like a category)
 Hyponym - A hyponym of a synset is a more specific word which falls under it
 Lemma - A single morphological form for a synset
-Derivationally Related Form - 
-Topic Domain - Wordnet synsets can be domain 
+Derivationally Related Form -
+Topic Domain - Wordnet synsets can be domain
 Region Domain -
-Usage Domain - 
+Usage Domain -
 
 
 Functions:
@@ -51,7 +51,7 @@ def printhypernyms(synset, depth):
         Arguments:
         synset -- wordnet.synset
         depth -- how many levels up you want to print hypernyms
-        
+
     """
     print synset.hypernyms()
     if depth !=1:
@@ -69,7 +69,7 @@ def printhyponymsrecursive(synset, level = 0):
 
         Keyword Arguments:
         level -- counts the depth of iteration for pretty printing(default 0)
-        
+
     """
     hyponymlist = synset.hyponyms()
     #generate spacing string
@@ -77,7 +77,7 @@ def printhyponymsrecursive(synset, level = 0):
     for i in range(level):
         spacing += ' '
 
-    #recur and print hyponyms    
+    #recur and print hyponyms
     for x in hyponymlist:
         print spacing + str(x)
         if len(x.hyponyms()) > 0:
@@ -105,18 +105,18 @@ def printsynset(synset):
     print synset.examples
     print '\nlemmas'
     for lemma in synset.lemmas:
-        print str(lemma) + '\t' + str(lemma.name) 
+        print str(lemma) + '\t' + str(lemma.name)
 
     print '\nhypernms'
     for hypernym in gethypernymsrecursive(synset):
         print hypernym
     print "---> " + str(synset)
-          
+
     print '\nhyponyms'
     for hyponym in synset.hyponyms():
          print hyponym
-    
-    
+
+
 
 #GET FUNCTIONS
 
@@ -125,7 +125,7 @@ def gethypernyms(synset, depth):
 
     Arguments:
     synset -- wordnet.synset
-    depth -- how many levels up you want to print hypernyms 
+    depth -- how many levels up you want to print hypernyms
 
     """
     #improvement to make ->
@@ -169,7 +169,7 @@ def getdomainterms(synset):
 def gethyponyms(synset):
     """Return a list containing immediate hyponyms of synset."""
     return synset.hyponyms()
-    
+
 def gethyponymsrecursive(synset):
     """Return a list containing all hyponyms of synset, recursively defined."""
     hyponymlist = synset.hyponyms()

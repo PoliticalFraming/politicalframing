@@ -18,14 +18,14 @@ import wordnettools
 
 def getSynsets(word):
 	"""Returns synsets for a particular word."""
-	return wordnet.synsets(word) 
+	return wordnet.synsets(word)
 
 def getWords(synset):
 	"""Returns all framing words associated with the synset."""
 
 	words = Set() # words to include in frame
 
-	for subsynset in (wordnettools.gethypernymsrecursive(synset) 
+	for subsynset in (wordnettools.gethypernymsrecursive(synset)
 		+ wordnettools.getlemmas(synset)
         + wordnettools.getrelatedforms(synset)
         + wordnettools.gethyponymsrecursive(synset)
