@@ -28,15 +28,12 @@ import string
 #   this means it may contain words with apostrophes or hyphens
 stopwords = Set()
 
-#LINUX
-#stopwordsfiles = [open('.\data\stopwords\stopwords1.txt', 'r'), open('.\data\stopwords\stopwords2.txt', 'r'), open('.\data\stopwords\stopwords3.txt', 'r'),
-#open('.\data\stopwords\stopwords4.txt', 'r'), open('.\data\stopwords\stopwords5.txt', 'r')]
 
-#Shitty Fix for Windows
-stopwordsfiles = [open('data/stopwords/stopwords1.txt', 'r'), 
-open('data/stopwords/stopwords2.txt', 'r'), 
+stopwordsfiles = [
+open('data/stopwords/stopwords1.txt', 'r'),
+open('data/stopwords/stopwords2.txt', 'r'),
 open('data/stopwords/stopwords3.txt', 'r'),
-open('data/stopwords/stopwords4.txt', 'r'), 
+open('data/stopwords/stopwords4.txt', 'r'),
 open('data/stopwords/stopwords5.txt', 'r')]
 
 for myfile in stopwordsfiles:
@@ -64,7 +61,7 @@ def preprocess_word(word):
         lower-cased
         punctuation removed except for apostrophes
         stemmed if not a stopword, empty string returned otherwise
-    
+
     """
     word = word.replace(' ','')
     word = word.lower()
@@ -95,12 +92,12 @@ def preprocess_text(text):
         lower-cased
         punctuation removed except for apostrophes
         stemmed if not a stopword, empty string returned otherwise
-    
+
     """
     newtext = ''
     for word in text.split():
         if preprocess_word(word) != '':
             newtext += preprocess_word(word) + ' '
-    return newtext.strip()          
+    return newtext.strip()
 
 

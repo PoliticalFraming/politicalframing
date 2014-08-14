@@ -3,7 +3,7 @@
 
 # This file will achieve the above by using our very old "database_views.py" code
 # which downloaded speeches within a particular topic. We will combine it with the code
-# we recently wrote "update_bioguide_solr.py" which allows searching through all 
+# we recently wrote "update_bioguide_solr.py" which allows searching through all
 # congresspeople without a speaker_party defined and attempting to re-resolve their
 # party affiliation, state, and other speaker metadata. This data is essential for our
 # classifier.
@@ -45,7 +45,7 @@ class CapitolWords(object):
     total_count = CapitolWords.getCount(data)
 
     print "Successfully Downloaded " + str(total_count)  + " speeches for topic '" + phrase + "'"
-    return 
+    return
 
   @staticmethod
   def download_page(phrase, page):
@@ -53,7 +53,7 @@ class CapitolWords(object):
     query_parameters = {
       'apikey': CapitolWords.API_KEY,
       'phrase': phrase,
-      'per_page' : CapitolWords.RESULTS_PER_PAGE,
+      'per_page': CapitolWords.RESULTS_PER_PAGE,
       'page': page
     }
     response = requests.get(endpoint, params = query_parameters)
