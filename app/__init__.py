@@ -17,6 +17,8 @@ from celery import Celery
 from celery.signals import task_prerun
 import sys
 
+import environment
+
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../lib')
 
 
@@ -43,9 +45,9 @@ def make_celery(app):
 # heroku addons:add heroku-postgresql:dev
 # heroku config:set HEROKU=1
 if 'HEROKU' in os.environ:
-    DEBUG = True 
+    DEBUG = True
     urlparse.uses_netloc.append('postgres')
-    url = urlparse.urlparse(os.environ['DATABASE_URL'])  
+    url = urlparse.urlparse(os.environ['DATABASE_URL'])
     DATABASE = {
         'engine': 'peewee.PostgresqlDatabase',
         'name': url.path[1:],
@@ -131,7 +133,7 @@ db.database.set_autocommit(True)
 # Import All Models and Controllers
 # from app import database_views
 from app import decorators
-from app.models import frame 
+from app.models import frame
 from app.models import user
 from app.controllers import frame
 # from app.controllers import user
@@ -140,7 +142,7 @@ from app.controllers import analysis
 from app.controllers import wordnetsocket
 
 # # Set up Cross Origin Requests
-# @app.after_request 
+# @app.after_request
 # @origin("*") #allow all origins all methods everywhere in the app
 # def after(response): return response
 
@@ -158,7 +160,7 @@ from app.controllers import wordnetsocket
 def catch_all(path):
     print path
     return render_template('index.html')
-    
+
 # Set up Logging
 
 from logging import Formatter, FileHandler
@@ -170,9 +172,9 @@ if os.environ.get('HEROKU') is None:
     LOG_FILENAME = 'logs/framingapp.log'
 
     with open(LOG_FILENAME,'a') as file:
-        # file_handler = FileHandler(LOG_FILENAME) 
-        # file_handler = RotatingFileHandler(LOG_FILENAME, 'a', 1 * 1024 * 1024, 10)        
-        file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False) 
+        # file_handler = FileHandler(LOG_FILENAME)
+        # file_handler = RotatingFileHandler(LOG_FILENAME, 'a', 1 * 1024 * 1024, 10)
+        file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False)
 
     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
     file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
