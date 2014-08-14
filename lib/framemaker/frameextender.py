@@ -11,7 +11,7 @@ def frameextension(synset):
     for hyponym in gethyponymsrecursive(synset):
         for word in removestops(removepunctuation(hyponym.definition)).split():
             extension.append(word)
-    return list(set(extension))
+    return set(extension)
 
 if __name__ == "__main__":
     crime = wordnet.synset('crime.n.01')

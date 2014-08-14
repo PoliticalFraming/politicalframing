@@ -32,7 +32,7 @@ def getWords(synset):
     words = set() # words to include in frame
 
     for subsynset in (wordnettools.gethypernymsrecursive(synset)
-        + wordnettools.getlemmas(synset)
+        + wordnettools.getlemmasgetrelatedforms(synset)(synset)
         + wordnettools.getrelatedforms(synset)
         + wordnettools.gethyponymsrecursive(synset)
         + wordnettools.getdomainterms(synset)):
@@ -83,18 +83,6 @@ def picksynsets(synsets):
 
     return selected_synsets
 
-def framewords(synset):
-    frame = set([])
-
-    for subsynset in (wordnettools.gethypernymsrecursive(synset)
-        + wordnettools.getlemmas(synset)
-        + wordnettools.getrelatedforms(synset)
-        + wordnettools.gethyponymsrecursive(synset)
-        + wordnettools.getdomainterms(synset)):
-        frame.add(wordnettools.getnamepretty(subsynset))
-
-    return frame
-
 def makeframe(frameword):
     """Returns a frame (Set of synsets) based on frame word and user input to shell.
         See module docstring for more info.
@@ -108,9 +96,9 @@ def makeframe(frameword):
 
     """
 
-    framewordsynsets = wordnet.synsets(frameword) #synsets of frameword
-    selected_synsets = picksynsets(framewordsynsets)
-    return reduce(lambda x,y: x.union(y), map(lambda s: framewords(s), selected_synsets))
+    synsets = getSynsets(frameword)
+    selected_synsets = picksynsets(synsets)
+    return reduce(lambda x,y: x.union(y), map(lambda s: set(getWords(s)), selected_synsets))
 
 def pickleframe(word):
     """Make and pickle a frame about 'word', dump it in 'word.txt'."""
