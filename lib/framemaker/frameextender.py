@@ -1,17 +1,18 @@
 from nltk.corpus import wordnet
 from sets import Set
 import framemaker
-import preprocessor
+from preprocessor import removestops, removepunctuation
+from wordnettools import gethyponymsrecursive
 
 ## HOLY CRAP WEIGHTED FRAMES !!!
 
-#crime = wordnet.synset('crime.n.01')
-
 def frameextension(synset):
     extension = []
-    for hyponym in framemaker.gethyponymsrecursive(synset):
-        for word in preprocessor.removestops(myutilities.removepunctuation(hyponym.definition)).split():
+    for hyponym in gethyponymsrecursive(synset):
+        for word in removestops(removepunctuation(hyponym.definition)).split():
             extension.append(word)
-    return extension
+    return list(set(extension))
 
-#print set(frameextension(crime))
+if __name__ == "__main__":
+    crime = wordnet.synset('crime.n.01')
+    print frameextension(crime)

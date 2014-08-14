@@ -22,25 +22,25 @@ preprocess_text(text)
 
 from sets import Set
 import string
+import os
 
 # LOADING STOPWORDS
 #   stopwords is a set containing raw stopwords without any pre-processing.
 #   this means it may contain words with apostrophes or hyphens
 stopwords = Set()
 
-
+PACKAGEROOT = os.path.dirname(os.path.abspath(__file__))
 stopwordsfiles = [
-open('data/stopwords/stopwords1.txt', 'r'),
-open('data/stopwords/stopwords2.txt', 'r'),
-open('data/stopwords/stopwords3.txt', 'r'),
-open('data/stopwords/stopwords4.txt', 'r'),
-open('data/stopwords/stopwords5.txt', 'r')]
+open(PACKAGEROOT + '/data/stopwords/stopwords1.txt', 'r'),
+open(PACKAGEROOT + '/data/stopwords/stopwords2.txt', 'r'),
+open(PACKAGEROOT + '/data/stopwords/stopwords3.txt', 'r'),
+open(PACKAGEROOT + '/data/stopwords/stopwords4.txt', 'r'),
+open(PACKAGEROOT + '/data/stopwords/stopwords5.txt', 'r')]
 
-for myfile in stopwordsfiles:
-    for word in myfile.readlines():
+for f in stopwordsfiles:
+    for word in f.readlines():
         stopwords.add(word.replace("\n", ""))
-    myfile.close()
-
+    f.close()
 
 # PREPROCESSING TOOLS
 from nltk.stem.lancaster import LancasterStemmer

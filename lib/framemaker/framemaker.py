@@ -77,9 +77,9 @@ def makeframe(frameword):
             print synset.examples
 
 
-            #I have chosen not to ask the user about each realted form as they are
-            #synonyms and it becomes cumbersome, but chose to display these anyways
-            #to clarify the meaning that 'synset' conveys.
+            # I have chosen not to ask the user about each realted form as they are
+            # synonyms and it becomes cumbersome, but chose to display these anyways
+            # to clarify the meaning that 'synset' conveys.
             for rsynset in wordnettools.getrelatedforms(synset):
                 if not(rsynset in parsedsynsets):
                     print '\t' + str(rsynset) + '   ' + rsynset.definition
