@@ -5,3 +5,12 @@ https://www.openshift.com/
 https://github.com/openruko
 https://github.com/openruko/vagrant-openruko
 https://github.com/progrium/buildstep
+
+
+speaker_raw:"recorder"					147023
+speaker_raw:"the presiding officer"		29263
+speaker_raw:"the vice president"		194
+
+speaker_raw:"recorder" OR speaker_raw:"the presiding officer" OR speaker_raw:"the vice president" 176480
+
+(speaker_raw:"recorder" OR speaker_raw:"the presiding officer" OR speaker_raw:"the vice president") AND speaker_party:* 0

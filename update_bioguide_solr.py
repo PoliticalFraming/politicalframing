@@ -189,16 +189,21 @@ def get_speaker_metadata(id, date, congress, speaker, chamber):
 
 	if chamber == 'extensions':
 		chamber = 'house'
-	
+
 	data = db_bioguide_lookup(lastname, congress, chamber, date, state)
 
+	if len(data) > 1:
+		print "woah too many broah %s" % (speaker)
+
 	if not data or len(data) > 1:
+		msg = '%d responses for %s, %s, %s, %s, %s.' % (len(data) if data else 0, lastname, congress, chamber, date, state)
+		print msg
 		data = fallback_bioguide_lookup(speaker, congress, position)
 		if not data:
-			msg = 'No data or too many responses for %s, %s, %s, %s' % (lastname, year, position, state)
+			msg = '\t %d responses for %s, %s, %s, %s with fallback.' % ( len(data) if data else 0, lastname, year, position, state)
 			print msg
 			return None
-		
+
 	match = data[0]
 
 	partial_document = {
