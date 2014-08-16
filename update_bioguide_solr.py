@@ -21,18 +21,34 @@ def main():
 	h = httplib2.Http(cache="/var/tmp/solr_cache")
 	si = SolrInterface(url = solr_url, http_connection = h)
 
-	# chamber = 'Senate'
-	# print commit_solr()
+	totalNumFound = si.query(**{"*":"*"}).exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
+	print "Number of Speeches in Solr without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore " + str(totalNumFound)
 
-	numFound = si.query(chamber='Senate').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	senateNumFound = si.query(chamber='Senate').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
+	print "Number of Speeches in Senate without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore  " + str(senateNumFound)
+
+	houseNumFound = si.query(chamber='House').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
+	print "Number of Speeches in House without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore   " + str(houseNumFound)
+
+	extensionsNumFound = si.query(chamber='Extensions').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
+	print "Number of Speeches in Extensions without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore   " + str(extensionsNumFound)
+
+	print "Sum: " + str(senateNumFound + houseNumFound + extensionsNumFound)
+
 	print "-----------------------"
-	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
+	print "-----------------------"
+
+
+	numFound = si.query(chamber='Senate').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
+	print "-----------------------"
+	print "Number of Speeches in Senate without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore   " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
+		current_speeches = si.query(chamber='Senate').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("speaker_raw").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
 			partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Senate')
 
+			print speech['id']
 			if partial_document:
 				print speech['speaker_raw'] + " queued to be ingested"
 				json_documents.append(partial_document)
@@ -43,16 +59,16 @@ def main():
 			print body
 			print commit_solr()
 
-	# chamber = 'House'
-	numFound = si.query(chamber='House').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='House').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
-	print "Number of Speeches about Topic X in House without a Speaker Party " + str(numFound)
+	print "Number of Speeches in House without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore   " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
+		current_speeches = si.query(chamber='House').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("speaker_raw").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
 			partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='House')
 
+			print speech['id']
 			if partial_document:
 				print speech['speaker_raw'] + " queued to be ingested"
 				json_documents.append(partial_document)
@@ -63,16 +79,16 @@ def main():
 			print body
 			print commit_solr()
 
-	# chamber = 'Extensions'
-	numFound = si.query(chamber='Extensions').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='Extensions').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").sort_by("speaker_raw").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
-	print "Number of Speeches about Topic X in Extensions without a Speaker Party " + str(numFound)
+	print "Number of Speeches in Extensions without a Speaker Party that isn't recorder, the presiding officer, vice president, or the speaker pro tempore, or the acting president pro tempore   " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
+		current_speeches = si.query(chamber='Extensions').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").exclude(speaker_raw="the acting president pro tempore").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("speaker_raw").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
 			partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Extensions')
 
+			print speech['id']
 			if partial_document:
 				print speech['speaker_raw'] + " queued to be ingested"
 				json_documents.append(partial_document)
@@ -239,6 +255,7 @@ def db_bioguide_lookup(lastname, congress, chamber, date, state=None):
 	# cursor.execute(query, args)
 	fields = ['bioguide', 'firstname', 'middlename', 'lastname', 'party', 'title', 'state', 'district', ]
 	cursor.execute(query, args)
+	# import pdb; pdb.set_trace()
 	return [dict(zip(fields, x)) for x in cursor.fetchall()]
 
 def fallback_bioguide_lookup(name, congress, position):

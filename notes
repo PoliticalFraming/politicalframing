@@ -27,3 +27,10 @@ chamber:"Extensions" AND -speaker_raw:"recorder"
 
 
 "the presiding officer"
+
+
+(chamber:"Senate") AND (-speaker_raw:"recorder") AND (-speaker_raw:"the presiding officer*")
+
+chamber:"Senate" AND -speaker_raw:"the presiding officer*"
+
+-speaker_party:* AND -speaker_raw:recorder AND -speaker_raw:"the presiding officer" AND -speaker_raw:"the vice president" AND -speaker_raw:"the speaker pro tempore"
