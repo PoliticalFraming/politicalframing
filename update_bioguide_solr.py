@@ -24,23 +24,18 @@ def main():
 	# chamber = 'Senate'
 	# print commit_solr()
 
-	numFound = si.query(chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='Senate').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
 		current_speeches = si.query(chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
-			if ((speech['speaker_raw'] != 'recorder') 
-				and (speech['speaker_raw'] != 'the presiding officer') 
-				and (speech['speaker_raw'] != 'the vice president') 
-				and ('the presiding officer' not in speech['speaker_raw'])
-				and ('pro tempore' not in speech['speaker_raw'])):
-				partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Senate')
+			partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Senate')
 
-				if partial_document:
-					print speech['speaker_raw'] + " queued to be ingested"
-					json_documents.append(partial_document)
+			if partial_document:
+				print speech['speaker_raw'] + " queued to be ingested"
+				json_documents.append(partial_document)
 
 		if len(json_documents) > 1:
 			json_doc_list_string, body = update_solr2(json_documents)
@@ -49,23 +44,18 @@ def main():
 			print commit_solr()
 
 	# chamber = 'House'
-	numFound = si.query(chamber='House').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='House').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in House without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
 		current_speeches = si.query(chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
-		for j, speech in enumerate(current_speeches):	
-			if ((speech['speaker_raw'] != 'recorder') 
-				and (speech['speaker_raw'] != 'the presiding officer') 
-				and (speech['speaker_raw'] != 'the vice president') 
-				and ('the presiding officer' not in speech['speaker_raw'])
-				and ('pro tempore' not in speech['speaker_raw'])):
-				partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='House')
+		for j, speech in enumerate(current_speeches):
+			partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='House')
 
-				if partial_document:
-					print speech['speaker_raw'] + " queued to be ingested"
-					json_documents.append(partial_document)
+			if partial_document:
+				print speech['speaker_raw'] + " queued to be ingested"
+				json_documents.append(partial_document)
 
 		if len(json_documents) > 1:
 			json_doc_list_string, body = update_solr2(json_documents)
@@ -74,23 +64,18 @@ def main():
 			print commit_solr()
 
 	# chamber = 'Extensions'
-	numFound = si.query(chamber='Extensions').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='Extensions').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Extensions without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
 		current_speeches = si.query(chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
-		for j, speech in enumerate(current_speeches):	
-			if ((speech['speaker_raw'] != 'recorder') 
-				and (speech['speaker_raw'] != 'the presiding officer') 
-				and (speech['speaker_raw'] != 'the vice president') 
-				and ('the presiding officer' not in speech['speaker_raw'])
-				and ('pro tempore' not in speech['speaker_raw'])):
-				partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Extensions')
+		for j, speech in enumerate(current_speeches):
+			partial_document = get_speaker_metadata(id=speech['id'], date=speech['date'], congress=speech['congress'], speaker=speech['speaker_raw'], chamber='Extensions')
 
-				if partial_document:
-					print speech['speaker_raw'] + " queued to be ingested"
-					json_documents.append(partial_document)
+			if partial_document:
+				print speech['speaker_raw'] + " queued to be ingested"
+				json_documents.append(partial_document)
 
 		if len(json_documents) > 1:
 			json_doc_list_string, body = update_solr2(json_documents)
@@ -225,7 +210,7 @@ def db_bioguide_lookup(lastname, congress, chamber, date, state=None):
 	import MySQLdb
 	cursor = MySQLdb.Connection(*DB_PARAMS, use_unicode=True).cursor()
 
-	query = """SELECT 
+	query = """SELECT
 						bioguide_id AS bioguide,
 						first       AS firstname,
 						middle      AS middlename,
@@ -273,7 +258,7 @@ def fallback_bioguide_lookup(name, congress, position):
 			if '|'.join(row[1:]) == '|'.join([name, congress, position, ]):
 				cursor.execute("""SELECT bioguide_id, party, state, first, last
 										FROM bioguide_legislator
-										WHERE bioguide_id = %s 
+										WHERE bioguide_id = %s
 											  AND congress = %s
 										LIMIT 1""", [row[0], congress, ])
 				fields = ['bioguide', 'party', 'state', 'firstname', 'lastname', ]

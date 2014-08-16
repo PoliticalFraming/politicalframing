@@ -6,11 +6,24 @@ https://github.com/openruko
 https://github.com/openruko/vagrant-openruko
 https://github.com/progrium/buildstep
 
+speaker_raw:"recorder"					225887
+speaker_raw:"the presiding officer"		53793
+speaker_raw:"the vice president"		301
+speaker_raw:"the speaker pro tempore"	85557
 
-speaker_raw:"recorder"					147023
-speaker_raw:"the presiding officer"		29263
-speaker_raw:"the vice president"		194
-
-speaker_raw:"recorder" OR speaker_raw:"the presiding officer" OR speaker_raw:"the vice president" 176480
-
+speaker_raw:"recorder" OR speaker_raw:"the presiding officer" OR speaker_raw:"the vice president" 		279981
 (speaker_raw:"recorder" OR speaker_raw:"the presiding officer" OR speaker_raw:"the vice president") AND speaker_party:* 0
+
+
+
+numFound = si.query(chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+
+numFound2 = si.query(chamber='Senate').exclude(speaker_party="*").exclude(speaker_raw="recorder").exclude(speaker_raw="the presiding officer").exclude(speaker_raw="the vice president").exclude(speaker_raw="the speaker pro tempore").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+
+
+
+chamber:"Extensions" AND -speaker_raw:"the speaker pro tempore"
+chamber:"Extensions" AND -speaker_raw:"recorder"
+
+
+"the presiding officer"
