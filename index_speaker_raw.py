@@ -24,14 +24,14 @@ def main():
 	# chamber = 'Senate'
 	# print commit_solr()
 
-	numFound = si.query(chamber='Senate').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='Senate').sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Senate without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(chamber='Senate').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
+		current_speeches = si.query(chamber='Senate').field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=10000, start=10000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
-			partial_document = get_speaker_metadata(id=speech['id'], speaker=speech['speaker_raw'], chamber='Extensions')
+			partial_document = get_speaker_metadata(id=speech['id'], speaker=speech['speaker_raw'], chamber='Senate')
 
 			if partial_document:
 				print speech['speaker_raw'] + " queued to be ingested"
@@ -44,14 +44,14 @@ def main():
 			print commit_solr()
 
 	# chamber = 'House'
-	numFound = si.query(chamber='House').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='House').sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in House without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(chamber='House').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
+		current_speeches = si.query(chamber='House').field_limit(["id", "speaker_raw"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
-			partial_document = get_speaker_metadata(id=speech['id'], speaker=speech['speaker_raw'], chamber='Extensions')
+			partial_document = get_speaker_metadata(id=speech['id'], speaker=speech['speaker_raw'], chamber='House')
 
 			if partial_document:
 				print speech['speaker_raw'] + " queued to be ingested"
@@ -64,11 +64,11 @@ def main():
 			print commit_solr()
 
 	# chamber = 'Extensions'
-	numFound = si.query(chamber='Extensions').exclude(speaker_party="*").sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
+	numFound = si.query(chamber='Extensions').sort_by("-score").paginate(rows=0, start=0).execute().result.numFound
 	print "-----------------------"
 	print "Number of Speeches about Topic X in Extensions without a Speaker Party " + str(numFound)
 	for i in range(0, int(math.ceil(numFound/100000))):
-		current_speeches = si.query(chamber='Extensions').exclude(speaker_party="*").field_limit(["id", "speaker_raw", "congress", "date"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
+		current_speeches = si.query(chamber='Extensions').field_limit(["id", "speaker_raw"]).sort_by("-score").paginate(rows=100000, start=100000*i).execute().result.docs
 		json_documents = []
 		for j, speech in enumerate(current_speeches):
 			partial_document = get_speaker_metadata(id=speech['id'], speaker=speech['speaker_raw'], chamber='Extensions')
