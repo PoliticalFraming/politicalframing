@@ -19,3 +19,4 @@ app/static/components
 .vagrant
 .bower-cache
 .bower-registry
+jsons/*.json
