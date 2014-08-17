@@ -231,9 +231,15 @@ class Analysis(db.Model):
         relevant = relevance_fn #plug in what is relevant
 
         valid_speeches=[]
+        invalid_speeches = []
         for speech in speeches:
             if relevant(speech):
                 valid_speeches.append(speech)
+            else:
+                invalid_speeches.append(speech)
+
+        app.logger.debug("%d valid speeches, %d invalid speeches" % (len(valid_speeches), len(invalid_speeches)))
+
         return valid_speeches
 
     def check_if_complete(self):
