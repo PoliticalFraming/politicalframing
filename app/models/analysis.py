@@ -259,6 +259,7 @@ class Analysis(db.Model):
         """
         ordered_speeches - list of speech objects in date order
         phrase - string
+        n - # of buckets
 
         *** needs to be modified
         """
