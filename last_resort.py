@@ -1,24 +1,12 @@
-# This file will help get rid of our recent errors with analyzing speeches by
-# rolling back to using CapitolWord data for particular topics.
+#!/usr/bin/env python
 
-# This file will achieve the above by using our very old "database_views.py" code
-# which downloaded speeches within a particular topic. We will combine it with the code
-# we recently wrote "update_bioguide_solr.py" which allows searching through all
-# congresspeople without a speaker_party defined and attempting to re-resolve their
-# party affiliation, state, and other speaker metadata. This data is essential for our
-# classifier.
-
-# To begin afresh we will use a new local sort instance.
-
-# cd ~
-# wget http://archive.apache.org/dist/lucene/solr/4.6.1/solr-4.6.1.zip
-# unzip solr-4.6.1.zip
-# cd solr-4.6.1/example/solr/collection1/conf
-# vim schema.xml
+# usage
+# python last_resort.py phrase
 
 import requests
 import math
 import pickle
+import sys
 
 class CapitolWords(object):
 
@@ -32,11 +20,11 @@ class CapitolWords(object):
     page = 0
     speeches = []
     relevance = 0
-    data = {}
+    current_data = {}
 
     filename = phrase + ".pickle"
     # loop through pages of results and add each page to the pickle
-    while page == 0 or data.get('results') != None:
+    while page == 0 or current_data.get('results') != []:
       speeches = []
       current_data = CapitolWords.download_page(phrase, page)
       current_count = CapitolWords.getCount(current_data)
@@ -54,9 +42,11 @@ class CapitolWords(object):
         print "creating new file"
 
       with open(filename, 'w') as f:
-        pickled_speeches = speeches if not pickled_speeches else pickled_speeches.append(speeches)
+        if pickled_speeches == None:
+          pickled_speeches = speeches
+        else:
+          pickled_speeches += speeches
         pickle.dump(pickled_speeches,f)
-    return
 
   @staticmethod
   def download_page(phrase, page):
@@ -83,4 +73,4 @@ class CapitolWords(object):
   	return data[u'num_found']
 
 if __name__ == "__main__":
-  CapitolWords.download_speeches("potato")
+  CapitolWords.download_speeches(sys.argv[1])
