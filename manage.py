@@ -18,6 +18,7 @@ def shell_imports():
 
     # add yer imports here
     import os, pickle, json, requests, httplib2
+    from pprint import pprint as pp
     from sunburnt import SolrInterface
     from app.models import __all__
     for obj in __all__: exec "from app.models import %s" % obj
