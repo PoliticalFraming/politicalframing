@@ -18,6 +18,7 @@
 
 import requests
 import math
+import pickle
 
 class CapitolWords(object):
 
@@ -33,18 +34,28 @@ class CapitolWords(object):
     relevance = 0
     data = {}
 
-    while page == 0 or data.get('results') != []:
+    filename = phrase + ".pickle"
+    # loop through pages of results and add each page to the pickle
+    while page == 0 or data.get('results') != None:
+      speeches = []
       current_data = CapitolWords.download_page(phrase, page)
       current_count = CapitolWords.getCount(current_data)
       if CapitolWords.isFirst(page): print "%d speeches found" % current_count
       for speech in current_data[u'results']:
-        # save_to_solr(speech)
-
+        speeches.append(speech)
       page = page+1
 
-    total_count = CapitolWords.getCount(data)
+      # add this page of speeches to pickle speeches to pickle
+      pickled_speeches = None
+      try:
+        with open(filename, 'r') as f:
+          pickled_speeches = pickle.load(f)
+      except:
+        print "creating new file"
 
-    print "Successfully Downloaded " + str(total_count)  + " speeches for topic '" + phrase + "'"
+      with open(filename, 'w') as f:
+        pickled_speeches = speeches if not pickled_speeches else pickled_speeches.append(speeches)
+        pickle.dump(pickled_speeches,f)
     return
 
   @staticmethod
@@ -59,7 +70,7 @@ class CapitolWords(object):
     response = requests.get(endpoint, params = query_parameters)
     if not(response.ok): response.raise_for_status() # Raises stored HTTPError, if one occured.
     data = response.json()
-    print "Downloaded page " + str(page) + " of " + str(int(math.ceil(data[u'num_found']/CapitolWords.RESULTS_PER_PAGE)))
+    print "Downloaded page " + str(page) + " of " + str(int(math.ceil(data[u'num_found']/CapitolWords.RESULTS_PER_PAGE)) + 1)
     return data
 
   @staticmethod
@@ -72,4 +83,4 @@ class CapitolWords(object):
   	return data[u'num_found']
 
 if __name__ == "__main__":
-  CapitolWords.download_speeches("immigration")
+  CapitolWords.download_speeches("potato")
