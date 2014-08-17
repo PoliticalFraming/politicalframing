@@ -36,6 +36,22 @@ getrelatedforms(synset)
 getallthings(synset)
 getallthingspretty(synset)
 
+ADDITIONAL NOTES:
+================
+Do i have full coverage?
+
+NOUN NETWORK
+- 11 abstract concepts at the top (unique beginners)
+- 9 types of relations in addition to synonymy relation implicit in each synset
+1. hyponymy (is-a)
+2. hypernymy
+3. 6 meronymic (part-of) relations
+component-of
+member-of
+substance-of
+and their inverses
+4. antonymy (complement-of)
+
 """
 
 from nltk.corpus import wordnet
@@ -185,6 +201,14 @@ def getrelatedforms(synset):
         for item in lemma.derivationally_related_forms():
             relatedforms.add(item.synset)
     return list(relatedforms)
+
+# >>> vocal.derivationally_related_forms()
+# [Lemma('vocalize.v.02.vocalize')]
+# >>> vocal.pertainyms()
+# [Lemma('voice.n.02.voice')]
+# >>> vocal.antonyms()
+# [Lemma('instrumental.a.01.instrumental')]
+
 
 def getallthings(synset):
     """Return a list of synsets containing all hypernyms, lemmas, related forms, hyponyms, and domain terms of synset"""
