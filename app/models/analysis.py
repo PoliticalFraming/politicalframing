@@ -31,21 +31,21 @@ class Classifier:
     This could be made faster by actually modifying or extending the MultinomialNB
     in scikit-learn rather than creating a new MultinomialNB object each time."""
 
-    def __init__(self):
-        self.vectorizer = TfidfVectorizer(min_df=1)
-        self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
+    def __init__(self, vocabulary):
+        self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocabulary)
+        self.classifier = MultinomialNB(alpha=1.0,fit_prior=False)
 
-    def learn_vocabulary(self, document):
+    def learn_vocabulary(self, documents):
         print "learning vocabulary"
         try:
-            self.vectorizer.fit([document])
+            self.vectorizer.fit(documents)
         except ValueError as e:
             app.logger.debug(e)
             app.logger.debug(document)
             raise
 
     def train_classifier(self, data, target):
-        sparse_data = self.vectorizer.transform(data)
+        sparse_data = self.vectorizer.fit_transform(data)
         print "training classifier"
         self.classifier.fit(sparse_data, target)
 
@@ -409,11 +409,11 @@ class Analysis(db.Model):
 
             # create_classifier
             app.logger.debug("Create Classifier")
-            naive_bayes = Classifier()
+            naive_bayes = Classifier(vocabulary=frame.word_string.split())
 
             # Learn Vocabulary
-            app.logger.debug("Learn Vocabulary")
-            naive_bayes.learn_vocabulary(frame.word_string)
+            # app.logger.debug("Learn Vocabulary")
+            # naive_bayes.learn_vocabulary(map(lambda x: ' '.join(x.speaking), current_window))
 
             # Build Training Set
             app.logger.debug("Building Training Set")
