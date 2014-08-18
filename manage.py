@@ -19,13 +19,9 @@ def shell_imports():
     # add yer imports here
     import os, pickle, json, requests, httplib2
     from pprint import pprint as pp
-    from sunburnt import SolrInterface
+    from app import si
     from app.models import __all__
     for obj in __all__: exec "from app.models import %s" % obj
-
-    solr_url = "http://politicalframing.com:8983/solr/collection1"
-    h = httplib2.Http(cache="/var/tmp/solr_cache")
-    si = SolrInterface(url = solr_url, http_connection = h)
 
     imports = {}
 
