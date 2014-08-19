@@ -31,8 +31,11 @@ class Classifier:
     This could be made faster by actually modifying or extending the MultinomialNB
     in scikit-learn rather than creating a new MultinomialNB object each time."""
 
-    def __init__(self, vocabulary):
-        self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocabulary)
+    def __init__(self, vocab=None):
+        if vocab:
+            self.vectorizer = TfidfVectorizer(min_df=0.5, stop_words='english')
+        else:
+            self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocab, stop_words='english')
         self.classifier = MultinomialNB(alpha=1.0,fit_prior=False)
 
     def learn_vocabulary(self, documents):
@@ -41,7 +44,7 @@ class Classifier:
             self.vectorizer.fit(documents)
         except ValueError as e:
             app.logger.debug(e)
-            app.logger.debug(document)
+            app.logger.debug(documents)
             raise
 
     def train_classifier(self, data, target):
@@ -75,7 +78,7 @@ class Analysis(db.Model):
     frame_plot = TextField(null=True)
 
 
-    def build_query_params(self):
+    def build_query_params(self, order='date'):
         """
         Returns a dict of params for the solr query that will get all
         speeches related to this analysis.
@@ -86,7 +89,7 @@ class Analysis(db.Model):
         'frame': self.frame,
         'start_date': self.start_date.strftime("%Y-%m-%d"),
         'end_date': self.end_date.strftime("%Y-%m-%d"),
-        'order': 'date'}
+        'order': order}
 
     class Meta:
         db_table = 'analyses'
@@ -160,13 +163,13 @@ class Analysis(db.Model):
         celery_obj = self
         phrase = analysis_obj.phrase
 
-        query_params = analysis_obj.build_query_params()
+        query_params = analysis_obj.build_query_params(order='score')
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
-        numFound = Speech.get(0, 0, **query_params)['count']
+        # numFound = Speech.get(0, 0, **query_params)['count']
         speeches = []
-        pages = int(math.ceil(numFound/1000))
+        pages = 5 # int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
@@ -175,6 +178,16 @@ class Analysis(db.Model):
             speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
+
+        # order speeches by date
+
+        app.logger.debug("started sorting")
+
+        speeches = sorted(speeches, key=lambda speech: speech.date )
+
+        app.logger.debug("ended sorting")
+
+        app.logger.debug("first %s and last %s speech" % (str(speeches[0].date), str(speeches[-1].date)))
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
@@ -409,11 +422,11 @@ class Analysis(db.Model):
 
             # create_classifier
             app.logger.debug("Create Classifier")
-            naive_bayes = Classifier(vocabulary=frame.word_string.split())
+            naive_bayes = Classifier(vocab=frame.word_string.split())
 
             # Learn Vocabulary
-            # app.logger.debug("Learn Vocabulary")
-            # naive_bayes.learn_vocabulary(map(lambda x: ' '.join(x.speaking), current_window))
+            app.logger.debug("Learn Vocabulary")
+            naive_bayes.learn_vocabulary(map(lambda speech: " ".join(speech.speaking),current_window))
 
             # Build Training Set
             app.logger.debug("Building Training Set")
