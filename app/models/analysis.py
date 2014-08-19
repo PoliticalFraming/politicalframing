@@ -5,14 +5,12 @@ from peewee import *
 from collections import deque
 import datetime
 
+from app.classifier import Classifier
+
 # from app.models.topic import Topic
 from app.models.frame import Frame
 from app.models.speech import Speech
 from app.models.subgroup import Subgroup
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.datasets.base import Bunch
 
 from dateutil import parser as dateparser
 
@@ -25,37 +23,6 @@ from celery.contrib import rdb
 
 #Constants (Move creation to where speeches are ingested)
 OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
-
-class Classifier:
-    """Used to allow the adding and removing of speeches to the classifer.
-    This could be made faster by actually modifying or extending the MultinomialNB
-    in scikit-learn rather than creating a new MultinomialNB object each time."""
-
-    def __init__(self, vocab=None):
-        if vocab:
-            self.vectorizer = TfidfVectorizer(min_df=0.5, stop_words='english')
-        else:
-            self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocab, stop_words='english')
-        self.classifier = MultinomialNB(alpha=1.0,fit_prior=False)
-
-    def learn_vocabulary(self, documents):
-        print "learning vocabulary"
-        try:
-            self.vectorizer.fit(documents)
-        except ValueError as e:
-            app.logger.debug(e)
-            app.logger.debug(documents)
-            raise
-
-    def train_classifier(self, data, target):
-        sparse_data = self.vectorizer.fit_transform(data)
-        print "training classifier"
-        self.classifier.fit(sparse_data, target)
-
-    def classify_document(self, document):
-        print "Classifying document"
-        tfidf_frames_vector = self.vectorizer.transform([document])
-        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
@@ -347,7 +314,7 @@ class Analysis(db.Model):
 
         return self.topic_plot
 
-    def build_training_set(self, speeches):
+    def bunch_with_targets (self, speeches):
         '''This function is an alternative form of the loads in sklearn which loads
         from a partiular file structure. This function allows me to load from the database
         '''
@@ -430,7 +397,7 @@ class Analysis(db.Model):
 
             # Build Training Set
             app.logger.debug("Building Training Set")
-            training_set = self.build_training_set(current_window)
+            training_set = self.bunch_with_targets(current_window)
 
             # train classifier on speeches in current window
             app.logger.debug("Training Classifier")
