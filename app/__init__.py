@@ -168,9 +168,11 @@ from logging import Formatter, FileHandler
 from logging.handlers import TimedRotatingFileHandler
 from logging.handlers import SysLogHandler
 
+root = os.path.dirname(os.path.realpath(__file__))
+
 if os.environ.get('HEROKU') is None:
     from logging.handlers import RotatingFileHandler
-    LOG_FILENAME = 'logs/framingapp.log'
+    LOG_FILENAME = root + '/../logs/framingapp.log'
 
     with open(LOG_FILENAME,'a') as file:
         # file_handler = FileHandler(LOG_FILENAME)

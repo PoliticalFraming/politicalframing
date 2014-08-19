@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from app import app
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.datasets.base import Bunch
@@ -15,7 +17,7 @@ class Classifier:
             self.vectorizer = TfidfVectorizer(min_df=0.5)
         else:
             self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocab)
-        self.classifier = MultinomialNB(alpha=1.0,fit_prior=False)
+        self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
     def learn_vocabulary(self, documents):
         print "learning vocabulary"
@@ -47,3 +49,32 @@ class Classifier:
         X = self.vectorizer.fit(documents)
         y = targets
         return cross_val_score(self.classifier, X, y, cv=5)
+
+    @staticmethod
+    def bunch_with_targets (speeches, target_function):
+        '''This function is an alternative form of the loads in sklearn which loads
+        from a partiular file structure. This function allows me to load from the database
+        '''
+
+        app.logger.debug('Building bunch containing data and target vector.')
+
+        target = [] # 0 and 1 for subgroup a and b respectively
+        target_names = ['a','b'] # target_names
+        data = [] # data
+
+        for speech in speeches:
+            target.append(target_function(speech))
+            speech_string = ''
+            for sentence in speech.speaking:
+                speech_string += sentence
+            data.append(speech_string)
+
+        DESCR = "Trained subgroup_a vs subgroup_b classifier"
+
+        # Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
+        return Bunch(
+            target = target,
+            target_names = target_names,
+            data = data,
+            DESCR = DESCR
+        )

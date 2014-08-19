@@ -7,7 +7,6 @@ import datetime
 
 from app.classifier import Classifier
 
-# from app.models.topic import Topic
 from app.models.frame import Frame
 from app.models.speech import Speech
 from app.models.subgroup import Subgroup
@@ -314,41 +313,6 @@ class Analysis(db.Model):
 
         return self.topic_plot
 
-    def bunch_with_targets (self, speeches):
-        '''This function is an alternative form of the loads in sklearn which loads
-        from a partiular file structure. This function allows me to load from the database
-        '''
-
-        app.logger.debug('Building training set.')
-
-        def target_function(speech):
-            if speech.belongs_to(self.subgroupA):
-                return 0
-            elif speech.belongs_to(self.subgroupB):
-                return 1
-            else:
-                print "Speech must belong to subgroup a or b: " + str(speech.id)
-
-        target = [] # 0 and 1 for subgroup a and b respectively
-        target_names = ['a','b'] # target_names
-        data = [] # data
-
-        for speech in speeches:
-            target.append(target_function(speech))
-            speech_string = ''
-            for sentence in speech.speaking:
-                speech_string += sentence
-            data.append(speech_string)
-
-        DESCR = "Trained subgroup_a vs subgroup_b classifier"
-
-        # Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
-        return Bunch(
-            target = target,
-            target_names = target_names,
-            data = data,
-            DESCR = DESCR
-        )
 
     def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
         """
@@ -397,7 +361,14 @@ class Analysis(db.Model):
 
             # Build Training Set
             app.logger.debug("Building Training Set")
-            training_set = self.bunch_with_targets(current_window)
+            def target_function(speech):
+                if speech.belongs_to(self.subgroupA):
+                    return 0
+                elif speech.belongs_to(self.subgroupB):
+                    return 1
+                else:
+                    raise Exception("Speech must belong to subgroup a or b: " + str(speech.speech_id))
+            training_set = Classifier.bunch_with_targets(current_window, target_function)
 
             # train classifier on speeches in current window
             app.logger.debug("Training Classifier")
