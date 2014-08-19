@@ -40,4 +40,7 @@ npm install -g grunt bower
 bower install
 npm install
 
+createdb framingappdb
+python manage.py createdb
+python manage.py seeddb
 ```
