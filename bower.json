@@ -40,7 +40,7 @@
     "addyosmani-jquery-ui-bootstrap": "*",
     "underscore": "~1.6.0",
     "angular-animate": "~1.2.13",
-    "canvasjs": "http://canvasjs.com/\\?wpdmdl=1",
+    "canvasjs": "git://github.com/AlJohri/bower-canvasjs#master",
     "justgage-toorshia": "*"
   },
   "devDependencies": {
