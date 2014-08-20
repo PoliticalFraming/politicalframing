@@ -60,12 +60,12 @@ target = array(bunch.target)
 # Run Cross Validation Checks
 print "================== CROSS VALIDATION ========================="
 print "F1 scores"
-print cross_val_score(naive_bayes.classifier, data, target, scoring='f1', verbose=1) # f1 = weighted precision and recall (can weigh separately too)
+print cross_val_score(naive_bayes, data, target, scoring='f1', verbose=1) # f1 = weighted precision and recall (can weigh separately too)
 print "Accuracy"
-print cross_val_score(naive_bayes.classifier, data, target, scoring='accuracy', verbose=1)
+print cross_val_score(naive_bayes, data, target, scoring='accuracy', verbose=1)
 print "Average precision"
-print cross_val_score(naive_bayes.classifier, data, target, scoring='average_precision', verbose=1)
+print cross_val_score(naive_bayes, data, target, scoring='average_precision', verbose=1)
 print "Precision"
-print cross_val_score(naive_bayes.classifier, data, target, scoring='precision', verbose=1)
+print cross_val_score(naive_bayes, data, target, scoring='precision', verbose=1)
 print "Recall"
-print cross_val_score(naive_bayes.classifier, data, target, scoring='recall', verbose=1)
+print cross_val_score(naive_bayes, data, target, scoring='recall', verbose=1)
