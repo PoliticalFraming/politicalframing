@@ -42,6 +42,8 @@ class CapitolWords(object):
         del speech[u'bioguide_id']
         del speech[u'capitolwords_url']
         del speech[u'order']
+        speech[u'bill'] = speech[u'bills']
+        del speech[u'bills']
         date = parser.parse(speech[u'date']) if speech[u'date'] else None
         speech[u'date'] = date.isoformat('T')+"Z" if date else None
         speech[u'year'] = str(date.year) if date else ''
@@ -63,24 +65,30 @@ class CapitolWords(object):
 
         speeches.append(speech)
 
-        with open(CapitolWords.OUTPUT_PATH + speech[u'id'], 'w') as f:
-          json.dump(speech, f)
+        solr_doc = {
+          "add": {
+            "doc": speech
+          }
+        }
+
+        with open(CapitolWords.OUTPUT_PATH + speech[u'id'] + ".json", 'w') as f:
+          json.dump(solr_doc, f)
       page = page+1
 
       # add this page of speeches to pickle speeches to pickle
-      pickled_speeches = None
-      try:
-        with open(filename, 'r') as f:
-          pickled_speeches = pickle.load(f)
-      except:
-        print "creating new file"
+      # pickled_speeches = None
+      # try:
+      #   with open(filename, 'r') as f:
+      #     pickled_speeches = pickle.load(f)
+      # except:
+      #   print "creating new file"
 
-      with open(filename, 'w') as f:
-        if pickled_speeches == None:
-          pickled_speeches = speeches
-        else:
-          pickled_speeches += speeches
-        pickle.dump(pickled_speeches,f)
+      # with open(filename, 'w') as f:
+      #   if pickled_speeches == None:
+      #     pickled_speeches = speeches
+      #   else:
+      #     pickled_speeches += speeches
+      #   pickle.dump(pickled_speeches,f)
 
   @staticmethod
   def download_page(phrase, page):
