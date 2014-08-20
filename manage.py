@@ -18,6 +18,7 @@ def shell_imports():
 
     # add yer imports here
     import os, pickle, json, requests, httplib2
+    from datetime import datetime
     from pprint import pprint as pp
     from app import si
     from app.models import __all__
