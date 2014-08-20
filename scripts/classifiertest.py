@@ -1,4 +1,5 @@
-import sys; sys.path.append("..")
+import os;  root = os.path.dirname(os.path.realpath(__file__))
+import sys; sys.path.append(root + "/..")
 
 from app.classifier import Classifier
 
