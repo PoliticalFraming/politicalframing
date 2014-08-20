@@ -33,6 +33,8 @@ pyenv local 2.7.8
 
 mkvirtualenv pf
 pip install numpy==1.7.1
+pip install --upgrade setuptools
+pip install --upgrade distribute
 pip install -r requirements.txt
 
 brew install node
