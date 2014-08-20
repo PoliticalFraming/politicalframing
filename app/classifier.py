@@ -25,7 +25,6 @@ class Classifier:
         app.logger.debug("learning vocabulary")
         try:
             self.vectorizer.fit(documents)
-            import pdb; pdb.set_trace()
             app.logger.debug("learned")
         except ValueError as e:
             app.logger.debug(e)
