@@ -79,7 +79,7 @@ else:
     # CELERY_TASK_SERIALIZER = 'pickle' # change this to json
     # Can be pickle (default), json, yaml, msgpack
 
-solr_url = "http://politicalframing.com:8983/solr" # "http://localhost:8983/solr/"
+solr_url = "http://politicalframing.com:8984/solr" # "http://localhost:8983/solr/"
 h = httplib2.Http(cache="/var/tmp/solr_cache")
 si = SolrInterface(url = solr_url, http_connection = h)
 

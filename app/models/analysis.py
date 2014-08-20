@@ -18,6 +18,8 @@ from dateutil import parser as dateparser
 
 # from celery.utils.log import get_task_logger
 # logger = get_task_logger(__name__)
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 
 import inspect
 import math
@@ -35,13 +37,14 @@ class Classifier:
         self.vectorizer = TfidfVectorizer(min_df=1)
         self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
 
-    def learn_vocabulary(self, document):
+    def learn_vocabulary(self, documents):
         print "learning vocabulary"
         try:
-            self.vectorizer.fit([document])
+            self.vectorizer.fit(documents)
         except ValueError as e:
             app.logger.debug(e)
-            app.logger.debug(document)
+            # app.logger.debug(document)
+            app.logger.debug("Could not learn vocabulary.")
             raise
 
     def train_classifier(self, data, target):
@@ -140,8 +143,9 @@ class Analysis(db.Model):
 
         analysis_obj.save()
 
-        result = Analysis.analyze_task.delay(analysis_obj)
-        analysis_obj.celery_id = result.id
+        result = Analysis.analyze_task(analysis_obj)
+        # result = Analysis.analyze_task.delay(analysis_obj)
+        # analysis_obj.celery_id = result.id
         analysis_obj.save()
         # celery.close()
 
@@ -154,10 +158,10 @@ class Analysis(db.Model):
     ####################### CELERY TASK #######################
 
     @staticmethod
-    @celery.task(bind=True)
-    def analyze_task(self, analysis_obj):
-        celery_id = self.request.id
-        celery_obj = self
+    # @celery.task(bind=True)
+    def analyze_task(analysis_obj):
+        # celery_id = self.request.id
+        # celery_obj = self
         phrase = analysis_obj.phrase
 
         query_params = analysis_obj.build_query_params()
@@ -168,18 +172,18 @@ class Analysis(db.Model):
         speeches = []
         pages = int(math.ceil(numFound/1000))
 
-        celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
+        # celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
         # get speeches by page from api and convert to speech objects
         for i in range(0, pages):
             speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
-            celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
+            # celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
-        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase, celery_obj)
+        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
@@ -211,11 +215,11 @@ class Analysis(db.Model):
 
         # when recomputing an analysis, this prevents the old celery_id from overwriting the new celery_id
         # this can be done less hackily later
-        analysis_obj.celery_id = celery_id
+        # analysis_obj.celery_id = celery_id
 
         analysis_obj.save()
 
-        return self
+        # return self
 
     ####################### UTILITIES #######################
 
@@ -255,7 +259,7 @@ class Analysis(db.Model):
 
     ####################### LOGIC #######################
 
-    def plot_topic_usage(self, ordered_speeches, phrase, n, celery_obj):
+    def plot_topic_usage(self, ordered_speeches, phrase, n):
         """
         ordered_speeches - list of speech objects in date order
         phrase - string
@@ -370,7 +374,7 @@ class Analysis(db.Model):
             DESCR = DESCR
         )
 
-    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
+    def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase):
         """
         frame = frame object
         speeches = list of speech objects in date order
@@ -403,34 +407,52 @@ class Analysis(db.Model):
 
         # loop through and plot each point
         while speeches:
-            celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
+            # celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
             start_dates.append(current_window[0].date)
             end_dates.append(current_window[-1].date)
 
-            # create_classifier
-            app.logger.debug("Create Classifier")
-            naive_bayes = Classifier()
-
-            # Learn Vocabulary
-            app.logger.debug("Learn Vocabulary")
-            naive_bayes.learn_vocabulary(frame.word_string)
-
-            # Build Training Set
-            app.logger.debug("Building Training Set")
             training_set = self.build_training_set(current_window)
+            count_vect = CountVectorizer()
+            X_train_counts = count_vect.fit_transform(training_set.data)
 
-            # train classifier on speeches in current window
-            app.logger.debug("Training Classifier")
-            naive_bayes.train_classifier(training_set.data, training_set.target)
+            tfidf_transformer = TfidfTransformer()
+            X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
 
-            # populate return data
-            app.logger.debug("Request Log Probability of Frame %s " , frame.name)
-            log_probabilities = naive_bayes.classify_document(frame.word_string)
+            clf = MultinomialNB(alpha=1.0,fit_prior=False).fit(X_train_tfidf,training_set.target)
 
-            subgroup_a_likelihoods.append(log_probabilities[0])
-            subgroup_b_likelihoods.append(log_probabilities[1])
+            X_new_counts = count_vect.transform([frame.word_string])
+            X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+            log_probabilities = clf.predict_log_proba(X_new_tfidf)
 
-            # move current window over by 'offset'
+            # import pdb; pdb.set_trace()
+
+            ############################################################################################
+            # # create_classifier
+            # app.logger.debug("Create Classifier")
+            # naive_bayes = Classifier()
+
+            # # Learn Vocabulary
+            # app.logger.debug("Learn Vocabulary")
+            # # naive_bayes.learn_vocabulary([frame.word_string])
+            # naive_bayes.learn_vocabulary(map(lambda x: ' '.join(x.speaking), current_window))
+            # # naive_bayes.learn_vocabulary(map(lambda x: ' '.join(x.speaking), ordered_speeches))
+
+            # # Build Training Set
+            # app.logger.debug("Building Training Set")
+            # training_set = self.build_training_set(current_window)
+
+            # # train classifier on speeches in current window
+            # app.logger.debug("Training Classifier")
+            # naive_bayes.train_classifier(training_set.data, training_set.target)
+
+            # # populate return data
+            # app.logger.debug("Request Log Probability of Frame %s " , frame.name)
+            # log_probabilities = naive_bayes.classify_document(frame.word_string)
+
+            subgroup_a_likelihoods.append(log_probabilities[0][0])
+            subgroup_b_likelihoods.append(log_probabilities[0][1])
+
+            # # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
             for _ in range(offset):
                 if speeches:
@@ -444,7 +466,7 @@ class Analysis(db.Model):
             # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
             # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
 
-        celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
+        # celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
 
         app.logger.debug("Populate Return Values")
         self.frame_plot = {

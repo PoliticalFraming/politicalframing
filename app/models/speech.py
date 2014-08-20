@@ -96,7 +96,9 @@ class Speech(object):
       if optional_params.get('speaker_state'):
         solr_query &= optional_params['speaker_state']
       solr_query = si.query(solr_query)
-      solr_query = solr_query.exclude(speaker_party=None)
+      # solr_query = solr_query.exclude(speaker_party=None)
+
+      print solr_query.params()
 
       return solr_query
 
