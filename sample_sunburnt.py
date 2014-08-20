@@ -9,16 +9,14 @@ query = si.query(phrase) \
 		  .highlight(q=highlight_query) \
 		  .terms('speaking') \
 		  .terms(tf=True) \
-		  .query(date__range=(datetime(2003,7,1), datetime(2004,1,1)))
+		  .query(date__range=(datetime(2003,7,1), datetime(2004,1,1))) \
+		  .paginate(rows=100, start=0)
 
 params = query.params()
-params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word,frame_words.split())) + "), norm(speaking))"))
-params.append(("fl", "*, $frameFreq"))
+params.append(('norm', 'norm(speaking)'))
+params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word,frame_words.split())) + "), $norm)"))
+params.append(("fl", "*, $frameFreq, $norm"))
 params.append(("sort", "$frameFreq desc"))
-
-# query($qq) desc
-
-# qq={!v="speaking:(chain OR rob OR resistance OR gang OR holdout OR defraud OR shanghai OR violation OR breach)"}
 
 response = si.conn.select(params)
 parsed_response = si.schema.parse_response(response)
@@ -30,6 +28,10 @@ highlighting = parsed_response.highlighting
 term_vectors = parsed_response.term_vectors
 
 pp(numFound)
+
+# query($qq) desc
+
+# qq={!v="speaking:(chain OR rob OR resistance OR gang OR holdout OR defraud OR shanghai OR violation OR breach)"}
 
 # {!frange l=0.85}query($qq)
 # date
