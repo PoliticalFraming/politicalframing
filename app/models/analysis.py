@@ -143,7 +143,7 @@ class Analysis(db.Model):
         for i in range(0, pages):
             speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
-            update_progress((i+1)/pages)
+            # update_progress((i+1)/pages)
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         # order speeches by date
@@ -159,7 +159,7 @@ class Analysis(db.Model):
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase, celery_obj)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 500, 100, phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
