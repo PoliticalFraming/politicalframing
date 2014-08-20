@@ -17,7 +17,7 @@ class Classifier:
             self.vectorizer = TfidfVectorizer(min_df=0.5)
         else:
             self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocab)
-        self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
+        self.classifier = MultinomialNB(alpha=0.1,fit_prior=True)
 
     def learn_vocabulary(self, documents):
         print "learning vocabulary"

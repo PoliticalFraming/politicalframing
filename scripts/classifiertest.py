@@ -8,6 +8,11 @@ from app.models.speech import Speech
 from app.models.subgroup import Subgroup
 from app.models.analysis import Analysis
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.datasets.base import Bunch
+from sklearn.cross_validation import cross_val_score
+
 from sklearn.cross_validation import cross_val_score
 from numpy import array
 
@@ -22,7 +27,8 @@ print("Found %d speeches with a party." % len(speeches))
 
 # Build Classifier
 print("Create Classifier")
-naive_bayes = Classifier()
+naive_bayes = MultinomialNB(alpha=1.0,fit_prior=True)
+vectorizer = TfidfVectorizer(min_df=0.5) #, vocabulary=vocab)
 
 # Build Targets
 print("Build target vector and data vector from documents")
@@ -34,8 +40,10 @@ def party_fn(speech):
     else:
         raise Exception("Speech must have party 'D' or 'R': " + str(speech.speech_id))
 bunch = Classifier.bunch_with_targets(speeches=speeches, target_function=party_fn)
-data = naive_bayes.vectorizer.fit_transform(bunch.data) #.tocsr()#.toarray()
+data = vectorizer.fit_transform(bunch.data) #.tocsr()#.toarray()
+print data
 target = array(bunch.target)
+
 
 # Run Cross Validation Checks
 print "================== CROSS VALIDATION ========================="
