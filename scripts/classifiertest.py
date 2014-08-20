@@ -14,6 +14,8 @@ from app.models.analysis import Analysis
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
 from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
@@ -39,8 +41,10 @@ print("Found %d %s speeches with a party." % (len(speeches), phrase) )
 
 # Build Classifier
 print("Create Classifier")
-naive_bayes = MultinomialNB(alpha=1.0,fit_prior=True)
-vectorizer = TfidfVectorizer(min_df=0.5) #, vocabulary=vocab)
+naive_bayes = MultinomialNB(alpha=0.1,fit_prior=True)
+# naive_bayes = BernoulliNB(alpha=0.1,fit_prior=True)
+# naive_bayes = GaussianNB()
+vectorizer = TfidfVectorizer(min_df=0.1) #, vocabulary=vocab)
 
 # Build Targets
 print("Build target vector and data vector from documents")
@@ -53,7 +57,8 @@ def party_fn(speech):
         raise Exception("Speech must have party 'D' or 'R': " + str(speech.speech_id))
 bunch = Classifier.bunch_with_targets(speeches=speeches, target_function=party_fn)
 data = vectorizer.fit_transform(bunch.data) #.tocsr()#.toarray()
-print data
+
+#import pdb; pdb.set_trace()
 target = array(bunch.target)
 
 
