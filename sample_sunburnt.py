@@ -36,3 +36,6 @@ pp(numFound)
 # {!frange l=0.85}query($qq)
 # date
 # qq=speaking:immigration
+
+# params.append(("qq", "{!v='speaking:(%s)'}" % highlight_query))
+# params.append(("sort", "query($qq) desc"))
