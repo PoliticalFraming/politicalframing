@@ -4,6 +4,8 @@ from app import app
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
 from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
@@ -14,9 +16,9 @@ class Classifier:
 
     def __init__(self, vocab=None):
         if vocab:
-            self.vectorizer = TfidfVectorizer(min_df=0.5)
+            self.vectorizer = TfidfVectorizer(min_df=2)
         else:
-            self.vectorizer = TfidfVectorizer(min_df=0.5, vocabulary=vocab)
+            self.vectorizer = TfidfVectorizer(min_df=2, vocabulary=vocab)
         self.classifier = MultinomialNB(alpha=0.1,fit_prior=True)
 
     def learn_vocabulary(self, documents):
