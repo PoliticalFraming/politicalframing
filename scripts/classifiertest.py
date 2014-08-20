@@ -1,5 +1,9 @@
-import os;  root = os.path.dirname(os.path.realpath(__file__))
-import sys; sys.path.append(root + "/..")
+import os, sys
+
+root = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(root + "/..")
+
+from app.utils import update_progress
 
 from app.classifier import Classifier
 
@@ -16,12 +20,20 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.cross_validation import cross_val_score
 from numpy import array
 
-topic = "immigration"
+phrase = "immigration"
 
-# Get speeches for a particular topic
-print("Get speeches for topic '%s'" % topic)
-speech_dicts = Speech.get(5000, 0, phrase=topic)['speeches']
-speeches = map(lambda x: Speech(**x), speech_dicts)
+# Get speeches for a particular phrase
+num_speeches = Speech.get(0, 0, phrase=phrase)['count']
+print("Getting up to 5000 of %d speeches for phrase '%s'" % (num_speeches, phrase))
+
+speeches = []
+for i in range(0, 5): # first 5 pages
+    curr_speech_dicts = Speech.get(start=1000*i, rows=1000, phrase=phrase)['speeches']
+    curr_speech_objs = map(lambda x: Speech(**x), curr_speech_dicts)
+    speeches = speeches + curr_speech_objs
+    update_progress((i+1)/5.0)
+print ""
+
 speeches = filter(lambda x: x.speaker_party == 'D' or x.speaker_party == 'R', speeches)
 print("Found %d speeches with a party." % len(speeches))
 
