@@ -6,7 +6,7 @@
 	    </tr>
 	  </thead>
 	  <tbody>
-		  <tr ng-repeat="speech in speeches" ng-click="open($index)">
+		  <tr ng-repeat="speech in speeches track by $index" ng-click="open($index)">
 		    <td>{{(current.filters.page-1) * 10 + $index+1}}</td>
 		    <td>{{speech.document_title}}</td>
 		    <td>{{speech.date}}</td>

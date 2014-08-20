@@ -382,6 +382,8 @@ class Analysis(db.Model):
             subgroup_a_likelihoods.append(log_probabilities[0])
             subgroup_b_likelihoods.append(log_probabilities[1])
 
+            app.logger.debug( "%s to %s - %f, %f" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1]) )
+
             # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
             for _ in range(offset):
@@ -389,12 +391,12 @@ class Analysis(db.Model):
                     current_window.append(speeches.popleft())
                     current_window = current_window[1:]
 
-            # do something about the div by zero error
-            ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
-
             # stringify dates
             # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
             # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
+
+        # do something about the div by zero error
+        ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
 
         celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
 

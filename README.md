@@ -46,3 +46,17 @@ createdb framingappdb
 python manage.py createdb
 python manage.py seeddb
 ```
+
+
+some sunburnt stuff
+
+```
+  # print "SOLR QUERY"
+  # from pprint import pprint
+  # query_obj=solr_query.__dict__['query_obj'].__dict__
+  # pprint(query_obj)
+  # import pdb; pdb.set_trace()
+  # for subq in query_obj['subqueries']:
+  #   pprint(subq.__dict__)
+  # pprint(solr_query.__dict__['subqueries'][1].__dict__)
+```

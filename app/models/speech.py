@@ -125,32 +125,20 @@ class Speech(object):
 
     # if the number of docs is less than numFound, then this is the pagination offset
     if kwargs.get('order'):
-      if kwargs.get('order') != "frame":
+      if kwargs.get('order') == "frame":
+        frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
+        params = solr_query.paginate(rows=rows, start=start).params()
+        params.append(('norm', 'norm(speaking)'))
+        params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"))
+        params.append(("fl", "*, $frameFreq, $norm"))
+        params.append(("sort", "$frameFreq desc"))
+        response = si.schema.parse_response(si.conn.select(params))
+      else:
         solr_query = solr_query.paginate(rows=rows, start=start).sort_by(kwargs.get('order'))
         response = solr_query.execute()
-      else:
-        # IGNORING ROWS and IGNORE START AND DOWNLOADING ALL SPEECHES WHEN ORDERING BY FRAME
-        # HOLY SHIT THIS IS TERRIBLE
-        # LIKE SERIOUSLY TERRIBLE
-        # PLEASE CHANGE THIS.
-        # ~ RIP good coding practices ~
-        numFound = solr_query.paginate(rows=0, start=0).execute().result.numFound
-        app.logging.debug("Ordering by frame. Frames found: %d", numFound)
 
-        response = solr_query.paginate(rows=numFound, start=0).execute()
-        frame = Frame.get(Frame.id == kwargs['frame'])
-        response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
     else:
       solr_query = solr_query.paginate(rows=rows, start=start)
-      # print "SOLR QUERY"
-      # from pprint import pprint
-      # query_obj=solr_query.__dict__['query_obj'].__dict__
-      # pprint(query_obj)
-      # import pdb; pdb.set_trace()
-      # for subq in query_obj['subqueries']:
-      #   pprint(subq.__dict__)
-      # pprint(solr_query.__dict__['subqueries'][1].__dict__)
-
       response = solr_query.execute()
 
     speeches = response.result.docs
@@ -191,34 +179,14 @@ class Speech(object):
 
     return speech
 
-  @staticmethod
-  def order_by_frame_prevalance(speeches, frame):
-      print ("ORDER BY FRAME PREVALANCE")
-      speech_prevalances = [] #array of tuples containing speeches and ther prevalance values
-      for speech in speeches:
-          speech_words = " ".join(speech['speaking']).lower().split()
-          framewords_count = 0
-          for word in frame.word_string.split():
-              if word in speech_words:
-                framewords_count += 1
-
-          frame_prevalance = framewords_count / len(speech_words)
-
-          speech_prevalances.append((speech, frame_prevalance))
-
-      for blah in sorted(speech_prevalances, key=lambda x: x[1], reverse=True):
-        print blah[0]['document_title'], blah[1]
-
-      return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1], reverse=True))
-
-      # ################################################################
-      # # Better Implementaiton Stub - if simple counts don't work well
-      # ################################################################
-      #for speech in speeches:
-      #     frame_words = {} #dict containing word:count_in_speech
-      #     for word in frame.word_string.split():
-      #         if word in speech.speaking:
-      #             frame_words[word] = frame_words.get(word,0) + 1
-      #     # do better ordering using frame_words dictionary
-      #     # (maybe something like tf/idf based counts)
-      # ################################################################
+  # ################################################################
+  # # Better Implementaiton Stub - if simple counts don't work well
+  # ################################################################
+  #for speech in speeches:
+  #     frame_words = {} #dict containing word:count_in_speech
+  #     for word in frame.word_string.split():
+  #         if word in speech.speaking:
+  #             frame_words[word] = frame_words.get(word,0) + 1
+  #     # do better ordering using frame_words dictionary
+  #     # (maybe something like tf/idf based counts)
+  # ################################################################

@@ -9,12 +9,15 @@ angular.module('framingApp').controller('BrowseSpeechesCtrl', function ($scope, 
     pages: 0,
     filters: {
       page: 1,
-      states: [],
+      states_a: [],
+      states_b: [],
+      party_a: null,
+      party_b: null,
       frame: null,
       phrase: '',
       start_date: null,
       end_date: null,
-      highlight: 'true'      
+      highlight: 'true'
     }
   };
   $scope.dateOptions = { changeYear: true, changeMonth: true, yearRange: '1900:-0' };
