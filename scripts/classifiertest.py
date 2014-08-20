@@ -19,7 +19,6 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
-from sklearn.cross_validation import cross_val_score
 from numpy import array
 
 phrase = "immigration"
@@ -58,9 +57,17 @@ def party_fn(speech):
 bunch = Classifier.bunch_with_targets(speeches=speeches, target_function=party_fn)
 data = vectorizer.fit_transform(bunch.data) #.tocsr()#.toarray()
 
-#import pdb; pdb.set_trace()
+# Print Stuff
+learned_vocabulary = vectorizer.get_feature_names()
+print("Learned %d words in vocabulary" % len(learned_vocabulary))
+print(learned_vocabulary)
+print("")
+print("Sparse Matrix of TfIdf Values pf each term for each document")
+print data
+
 target = array(bunch.target)
 
+print("")
 
 # Run Cross Validation Checks
 print "================== CROSS VALIDATION ========================="
