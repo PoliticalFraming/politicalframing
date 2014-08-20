@@ -1,4 +1,4 @@
-import sys
+import sys, numpy
 
 # update_progress() : Displays or updates a console progress bar
 ## Accepts a float between 0 and 1. Any int will be converted to a float.
@@ -22,3 +22,11 @@ def update_progress(progress):
     text = "\rPercent: [{0}] {1}% {2}".format( "#"*block + "-"*(barLength-block), progress*100, status)
     sys.stdout.write(text)
     sys.stdout.flush()
+
+def fullprint(*args, **kwargs):
+    from pprint import pprint
+    import numpy
+    opt = numpy.get_printoptions()
+    numpy.set_printoptions(threshold='nan')
+    pprint(*args, **kwargs)
+    numpy.set_printoptions(**opt)

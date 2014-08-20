@@ -17,7 +17,6 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
-from sklearn.cross_validation import cross_val_score
 from numpy import array
 
 phrase = "immigration"
@@ -40,7 +39,7 @@ print("Found %d %s speeches with a party." % (len(speeches), phrase) )
 # Build Classifier
 print("Create Classifier")
 naive_bayes = MultinomialNB(alpha=1.0,fit_prior=True)
-vectorizer = TfidfVectorizer(min_df=0.5) #, vocabulary=vocab)
+vectorizer = TfidfVectorizer(min_df=0.1) #, vocabulary=vocab)
 
 # Build Targets
 print("Build target vector and data vector from documents")
@@ -53,9 +52,16 @@ def party_fn(speech):
         raise Exception("Speech must have party 'D' or 'R': " + str(speech.speech_id))
 bunch = Classifier.bunch_with_targets(speeches=speeches, target_function=party_fn)
 data = vectorizer.fit_transform(bunch.data) #.tocsr()#.toarray()
+learned_vocabulary = vectorizer.get_feature_names()
+print("Learned %d words in vocabulary" % len(learned_vocabulary))
+print(learned_vocabulary)
+print("")
+print("Sparse Matrix of TfIdf Values pf each term for each document")
 print data
+
 target = array(bunch.target)
 
+print("")
 
 # Run Cross Validation Checks
 print "================== CROSS VALIDATION ========================="

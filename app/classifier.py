@@ -20,9 +20,11 @@ class Classifier:
         self.classifier = MultinomialNB(alpha=0.1,fit_prior=True)
 
     def learn_vocabulary(self, documents):
-        print "learning vocabulary"
+        app.logger.debug("learning vocabulary")
         try:
             self.vectorizer.fit(documents)
+            import pdb; pdb.set_trace()
+            app.logger.debug("learned")
         except ValueError as e:
             app.logger.debug(e)
             app.logger.debug(documents)
@@ -30,11 +32,11 @@ class Classifier:
 
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.fit_transform(data)
-        print "training classifier"
+        app.logger.debug("training classifier")
         self.classifier.fit(sparse_data, target)
 
     def classify_document(self, document):
-        print "Classifying document"
+        app.logger.debug("classifying document")
         tfidf_frames_vector = self.vectorizer.transform([document])
         return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
