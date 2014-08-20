@@ -1,5 +1,5 @@
 phrase="iraq"
-frame_words = Frame.get(Frame.name == 'common_words').word_string
+frame_words = Frame.get(Frame.name == 'crime').word_string
 highlight_query = frame_words.replace(" ", " OR ")
 
 query = si.query(phrase) \
@@ -12,7 +12,7 @@ query = si.query(phrase) \
 		  .query(date__range=(datetime(2003,7,1), datetime(2004,1,1)))
 
 params = query.params()
-params.append(('frameFreq', "sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word,frame_words.split())) + ")"))
+params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word,frame_words.split())) + "), norm(speaking))"))
 params.append(("fl", "*, $frameFreq"))
 params.append(("sort", "$frameFreq desc"))
 
