@@ -142,7 +142,7 @@ class Speech(object):
         response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
     else:
       solr_query = solr_query.paginate(rows=rows, start=start)
-      print "SOLR QUERY"
+      # print "SOLR QUERY"
       # from pprint import pprint
       # query_obj=solr_query.__dict__['query_obj'].__dict__
       # pprint(query_obj)
