@@ -143,6 +143,7 @@ class Analysis(db.Model):
         for i in range(0, pages):
             speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
+            update_progress((i+1)/pages)
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         # order speeches by date

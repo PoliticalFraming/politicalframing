@@ -18,19 +18,19 @@ from numpy import array
 phrase = "immigration"
 
 # Get speeches for a particular phrase
-num_speeches = Speech.get(0, 0, phrase=phrase)['count']
-print("Getting up to 5000 of %d speeches for phrase '%s'" % (num_speeches, phrase))
+num_speeches = Speech.get(0, 0, phrase=phrase, speaker_party="*")['count']
+print("Getting up to 5000 of %d speeches for speaking:%s AND speaker_party:*" % (num_speeches, phrase))
 
 speeches = []
 for i in range(0, 5): # first 5 pages
-    curr_speech_dicts = Speech.get(start=1000*i, rows=1000, phrase=phrase)['speeches']
+    curr_speech_dicts = Speech.get(start=1000*i, rows=1000, phrase=phrase, speaker_party="*")['speeches']
     curr_speech_objs = map(lambda x: Speech(**x), curr_speech_dicts)
     speeches = speeches + curr_speech_objs
     update_progress((i+1)/5.0)
 print ""
 
 speeches = filter(lambda x: x.speaker_party == 'D' or x.speaker_party == 'R', speeches)
-print("Found %d speeches with a party." % len(speeches))
+print("Found %d %s speeches with a party." % (len(speeches), phrase) )
 
 # Build Classifier
 print("Create Classifier")
