@@ -129,13 +129,13 @@ class Analysis(db.Model):
         celery_obj = self
         phrase = analysis_obj.phrase
 
-        query_params = analysis_obj.build_query_params(order='tfidf')
+        query_params = analysis_obj.build_query_params(order='date')
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
-        # numFound = Speech.get(0, 0, **query_params)['count']
+        numFound = Speech.get(0, 0, **query_params)['count']
         speeches = []
-        pages = 3 #int(math.ceil(numFound/1000))
+        pages = int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
@@ -147,10 +147,9 @@ class Analysis(db.Model):
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         # order speeches by date
-
-        app.logger.debug("started sorting")
-        speeches = sorted(speeches, key=lambda speech: speech.date)
-        app.logger.debug("ended sorting")
+        # app.logger.debug("started sorting")
+        # speeches = sorted(speeches, key=lambda speech: speech.date)
+        # app.logger.debug("ended sorting")
 
         app.logger.debug("first %s and last %s speech" % (str(speeches[0].date), str(speeches[-1].date)))
 
