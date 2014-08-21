@@ -137,7 +137,7 @@ class Speech(object):
 
     dict_params['q'] += " AND {!frange l=8}$tfidf"
 
-    if kwargs.get('order') == "tfidf":
+    if kwargs.get('order') == None or kwargs.get('order') == "tfidf":
       dict_params["sort"] = "$tfidf desc"
 
     if kwargs.get('frame'):
