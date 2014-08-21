@@ -9,7 +9,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
       current: '='
     },
     controller: function ($scope, $modal, $log, Speech) {
-      $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State', 'Party', 'Frame'];
+      $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State', 'Party', 'Frame', 'TfIdf', 'Tf', 'TermFreq'];
 
       $scope.$on('phraseSearched', function(event, args) {
         $scope.current.filters.page = 1;

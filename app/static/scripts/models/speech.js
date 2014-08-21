@@ -24,7 +24,11 @@ angular.module('framingApp').factory('Speech', ['ActiveResource', function(Activ
 		this.string('document_title');
 		this.integer('volume');
 		this.integer('$frameFreq');
+		this.integer('$termFreq');
 		this.integer('$norm');
+		this.integer('$tf');
+		this.integer('$idf');
+		this.integer('$tfidf');
 		this.integer('score');
 
 		// this.hasMany('topics');
@@ -38,7 +42,7 @@ angular.module('framingApp').factory('Speech', ['ActiveResource', function(Activ
 	Speech.api.updateURL = '/api/speeches/:id/';
 	Speech.api.deleteURL = '/api/speeches/:id/';
 
-	// Speech.primaryKey = 'speech_id';
+	// Speech.primaryKey = 'id';
 
 	return Speech;
 }]);

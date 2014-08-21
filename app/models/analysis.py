@@ -129,13 +129,13 @@ class Analysis(db.Model):
         celery_obj = self
         phrase = analysis_obj.phrase
 
-        query_params = analysis_obj.build_query_params(order='score')
+        query_params = analysis_obj.build_query_params(order='tfidf')
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
         # numFound = Speech.get(0, 0, **query_params)['count']
         speeches = []
-        pages = 5 # int(math.ceil(numFound/1000))
+        pages = 3 #int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
@@ -149,9 +149,7 @@ class Analysis(db.Model):
         # order speeches by date
 
         app.logger.debug("started sorting")
-
-        speeches = sorted(speeches, key=lambda speech: speech.date )
-
+        speeches = sorted(speeches, key=lambda speech: speech.date)
         app.logger.debug("ended sorting")
 
         app.logger.debug("first %s and last %s speech" % (str(speeches[0].date), str(speeches[-1].date)))
@@ -159,7 +157,7 @@ class Analysis(db.Model):
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 500, 100, phrase, celery_obj)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 10, phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
@@ -368,7 +366,7 @@ class Analysis(db.Model):
                 elif speech.belongs_to(self.subgroupB):
                     return 1
                 else:
-                    raise Exception("Speech must belong to subgroup a or b: " + str(speech.speech_id))
+                    raise Exception("Speech must belong to subgroup a or b: " + str(speech.id))
             training_set = Classifier.bunch_with_targets(current_window, target_function)
 
             # train classifier on speeches in current window
@@ -382,7 +380,11 @@ class Analysis(db.Model):
             subgroup_a_likelihoods.append(log_probabilities[0])
             subgroup_b_likelihoods.append(log_probabilities[1])
 
-            app.logger.debug( "%s to %s - %f, %f" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1]) )
+            app.logger.debug( "%s to %s - %f, %f -- %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
+            # app.logger.debug("CURRENT WINDOW DATES:")
+            # for s in current_window:
+            #     app.logger.debug(str(s.date))
+            #     app.logger.debug(str(s.id))
 
             # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)

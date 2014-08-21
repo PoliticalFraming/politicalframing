@@ -31,7 +31,11 @@ speech_fields = {
     'document_title': fields.String,
     'volume': fields.Integer,
     '$frameFreq': fields.Raw,
+    '$termFreq': fields.Raw,
     '$norm': fields.Raw,
+    '$tf': fields.Raw,
+    '$idf': fields.Raw,
+    '$tfidf': fields.Raw,
     'score': fields.Raw
 }
 
@@ -69,11 +73,12 @@ class SpeechListController(Resource):
       frame = args.get('frame'),
       start_date = args.get('start_date'),
       end_date = args.get('end_date'),
-      order = args.get('order'),
       highlight = args.get('highlight'),
       rows = rows,
       start = rows * (args['page'] - 1),
-      states = args.get('states')
+      states = args.get('states'),
+      order = args.get('order')
+      # order = "tfidf"
     )
 
     count = speeches_dict['count']

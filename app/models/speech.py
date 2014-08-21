@@ -17,7 +17,7 @@ import operator
 class Speech(object):
 
   def __init__(self, *args, **kwargs):
-    self.speech_id = kwargs.get('speech_id')
+    self.id = kwargs.get('id')
     self.bills = kwargs.get('bills')
     self.biouguide = kwargs.get('biouguide')
     self.capitolwords_url = kwargs.get('capitolwords_url')
@@ -56,7 +56,7 @@ class Speech(object):
   def build_sunburnt_query(**kwargs):
     """
     Input
-      speech_id
+      id
       start_date
       end_date
       phrase
@@ -73,8 +73,8 @@ class Speech(object):
     compulsory_params = {}
     optional_params = {}
 
-    if kwargs.get('speech_id'):
-      compulsory_params['id'] = kwargs['speech_id']
+    if kwargs.get('id'):
+      compulsory_params['id'] = kwargs['id']
     elif kwargs.get('phrase'):
       compulsory_params['speaking'] = kwargs['phrase']
 
@@ -95,16 +95,11 @@ class Speech(object):
       compulsory_params['date__range'] = (kwargs['start_date'], kwargs['end_date'])
       compulsory_params['speaker_party__range'] = ("*", "*")
 
-      if kwargs.get('order') and kwargs.get('order') != "frame":
-        solr_query = solr_query.sort_by(kwargs.get('order'))
-
       solr_query = si.Q(**compulsory_params)
       if optional_params.get('speaker_state'):
         solr_query &= optional_params['speaker_state']
       solr_query = si.query(solr_query)
       solr_query = solr_query.exclude(speaker_party=None)
-
-      solr_query = solr_query.field_limit(score=True)
 
       return solr_query
 
@@ -112,7 +107,7 @@ class Speech(object):
   def get(rows, start, **kwargs):
     """
     Input
-      speech_id
+      id
       start_date
       end_date
       phrase
@@ -128,17 +123,29 @@ class Speech(object):
 
     solr_query = Speech.build_sunburnt_query(**kwargs).paginate(rows=rows, start=start)
 
+    if kwargs.get('order') and kwargs.get('order') not in ["frame", "tfidf", "idf", "termFreq"]:
+      solr_query = solr_query.sort_by(kwargs.get('order'))
+
     params = solr_query.params()
-    params.append(('norm', 'norm(speaking)'))
+    dict_params = dict(params)
+    dict_params['norm'] = 'norm(speaking)'
+    dict_params['tf'] = 'tf(speaking, %s)' % kwargs['phrase']
+    dict_params['idf'] = 'idf(speaking, %s)' % kwargs['phrase']
+    dict_params['tfidf'] = 'mul($tf, $idf)'
+    dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs['phrase']
+    dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
+
+    if kwargs.get('order') == "tfidf":
+      dict_params["sort"] = "$tfidf desc"
 
     if kwargs.get('frame'):
       frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
-      params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"))
-      params.append(("fl", "*, score, $frameFreq, $norm"))
+      dict_params['frameFreq'] = "product(sum(" + ", ".join(map(lambda word: "tf(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"
+      dict_params['fl'] += ", $frameFreq"
       if kwargs.get('order') == "frame":
-        params.append(("sort", "$frameFreq desc"))
-    else:
-      params.append(("fl", "*, score, $norm"))
+        dict_params["sort"] = "$frameFreq desc"
+
+    params = zip(dict_params.keys(), dict_params.values())
 
     print params
 
