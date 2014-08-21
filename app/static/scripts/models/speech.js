@@ -23,6 +23,9 @@ angular.module('framingApp').factory('Speech', ['ActiveResource', function(Activ
 		this.string('speaking');
 		this.string('document_title');
 		this.integer('volume');
+		this.integer('$frameFreq');
+		this.integer('$norm');
+		this.integer('score');
 
 		// this.hasMany('topics');
 	}

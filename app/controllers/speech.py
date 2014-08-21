@@ -29,7 +29,10 @@ speech_fields = {
     'speaker_state': fields.String,
     'speaking': fields.List(fields.String),
     'document_title': fields.String,
-    'volume': fields.Integer
+    'volume': fields.Integer,
+    '$frameFreq': fields.Raw,
+    '$norm': fields.Raw,
+    'score': fields.Raw
 }
 
 speech_marshall = {

@@ -5,15 +5,16 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     restrict: 'E',
     transclude: true,
     scope: {
+      speeches: '=',
       current: '='
     },
     controller: function ($scope, $modal, $log, $http, Speech, Analysis) {
 
-      $scope.recomputeAnalysis = function() {
-        if ($scope.current.filters.id == undefined) return;
-        $scope.analyzeSpeeches();
-        // HIDE CURRENT GRAPHS AND SHIT
-      }
+      // $scope.recomputeAnalysis = function() {
+      //   if ($scope.current.filters.id == undefined) return;
+      //   $scope.analyzeSpeeches();
+      //   // HIDE CURRENT GRAPHS AND SHIT
+      // }
 
       console.log("single Analysis directive loaded");
 
@@ -35,7 +36,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               data: data
             }
           };
-          // console.log(data);
+
           $scope.graphFramePlot(response);
           $scope.graphTopicPlot(response);
         });
@@ -88,8 +89,15 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           }
           setTimeout( function() { pollData(id); }, 1000);
         });
-      };      
-   
+      };
+
+      // $scope.updateFilters = function(filters) {
+      //   $scope.current.filters = filters;
+
+      //   if(!$scope.$$phase) { $scope.$digest(); }
+
+      // };
+
 
       $scope.graphFramePlot = function(response) {
 
@@ -108,7 +116,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             zoomEnabled: true,
             title: { text: frame_plot.title
             },
-            axisX:{      
+            axisX:{
                 valueFormatString: "DD-MMM-YYYY",
                 labelAngle: -50,
                 title: frame_plot.ylabel,
@@ -121,21 +129,17 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           {
             click: function(e) {
 
-              var dataPointfilters = {
+              $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 order: 'frame',
-                highlight: 'true'
-              }
+                highlight: 'true',
+                page: 1
+              };
 
-              Speech.where(dataPointfilters).then(function (response) {
-                console.log(response); // response.meta.count; response.meta.pages;
-                $scope.speeches = response.data;
-                // $scope.current.filters.page = 1;
-                // $scope.current.count = response.meta.count;
-              });
+              if(!$scope.$$phase) { $scope.$digest(); }
 
             },
             type: "line",
@@ -150,7 +154,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               {x: maxDate, y: 0}
             ]
           }
-        
+
         ]
         });
         chart.render();
@@ -166,7 +170,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             zoomEnabled: true,
             title: { text: topic_plot.title
             },
-            axisX:{      
+            axisX:{
                 valueFormatString: "DD-MMM-YYYY",
                 labelAngle: -50,
                 title: topic_plot.ylabel,
@@ -179,7 +183,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           {
             click: function(e) {
 
-              var dataPointfilters = {
+              $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
                 start_date: e.dataPoint.start_date,
@@ -187,26 +191,21 @@ angular.module('framingApp').directive('singleAnalysis', function() {
                 speaker_party: 'D',
                 order: 'frame',
                 highlight: 'true'
-              }
+              };
 
-              Speech.where(dataPointfilters).then(function (response) {
-                console.log(response); // response.meta.count; response.meta.pages;
-                $scope.currentSpeeches = response.data;
-                $scope.current.filters.page = 1;
-                $scope.current.count = response.meta.count;
-              });
+              if(!$scope.$$phase) { $scope.$digest(); }
 
-            },                
+            },
             type: "line",
-            showInLegend: true, 
-            legendText: "Dem Counts",        
+            showInLegend: true,
+            legendText: "Dem Counts",
             color: "blue",
             dataPoints: dataPointsDem
         },
-          { 
+          {
             click: function(e) {
 
-              var dataPointfilters = {
+              $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
                 start_date: e.dataPoint.start_date,
@@ -214,23 +213,18 @@ angular.module('framingApp').directive('singleAnalysis', function() {
                 speaker_party: 'R',
                 order: 'frame',
                 higlight: 'true'
-              }
+              };
 
-              Speech.where(dataPointfilters).then(function (response) {
-                console.log(response); // response.meta.count; response.meta.pages;
-                $scope.currentSpeeches = response.data; 
-                $scope.current.filters.page = 1;
-                $scope.current.count = response.meta.count;
-              });
+              if(!$scope.$$phase) { $scope.$digest(); }
 
-            },                
+            },
             type: "line",
-            showInLegend: true, 
+            showInLegend: true,
             legendText: "Rep Counts",
             color: "red",
             dataPoints: dataPointsRep
-        }    
-        
+        }
+
         ]
         });
         chart.render();
@@ -239,7 +233,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     },
     templateUrl: '/views/single-analysis.html',
     link: function(scope, element, attrs) {
-      
+
       // console.log($table);
       // console.log($table.closest('.table-wrapper'));
 

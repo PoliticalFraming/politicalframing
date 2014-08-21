@@ -2,6 +2,7 @@
 
 angular.module('framingApp').controller('BrowseSpeechesCtrl', function ($scope, $window, Speech, Frame, State) {
 
+  Frame.all().then(function(response) { $scope.frames = response.data; });
   $scope.USStateList = State.getStates();
   $scope.speeches = [];
   $scope.current = {

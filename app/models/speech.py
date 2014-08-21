@@ -37,6 +37,9 @@ class Speech(object):
     self.speaking = kwargs.get('speaking')
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
+    self.frame_freq = kwargs.get('$frameFreq')
+    self.norm = kwargs.get('$norm')
+    self.score = kwargs.get('$score')
 
   def belongs_to(self, subgroup):
     """True if speech is by someone in this subgroup"""
@@ -92,14 +95,18 @@ class Speech(object):
       compulsory_params['date__range'] = (kwargs['start_date'], kwargs['end_date'])
       compulsory_params['speaker_party__range'] = ("*", "*")
 
+      if kwargs.get('order') and kwargs.get('order') != "frame":
+        solr_query = solr_query.sort_by(kwargs.get('order'))
+
       solr_query = si.Q(**compulsory_params)
       if optional_params.get('speaker_state'):
         solr_query &= optional_params['speaker_state']
       solr_query = si.query(solr_query)
       solr_query = solr_query.exclude(speaker_party=None)
 
-      return solr_query
+      solr_query = solr_query.field_limit(score=True)
 
+      return solr_query
 
   @staticmethod
   def get(rows, start, **kwargs):
@@ -119,27 +126,23 @@ class Speech(object):
       List of output
     """
 
-    solr_query = Speech.build_sunburnt_query(**kwargs)
+    solr_query = Speech.build_sunburnt_query(**kwargs).paginate(rows=rows, start=start)
 
-    # RawString('[* TO *]')
+    params = solr_query.params()
+    params.append(('norm', 'norm(speaking)'))
 
-    # if the number of docs is less than numFound, then this is the pagination offset
-    if kwargs.get('order'):
+    if kwargs.get('frame'):
+      frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
+      params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"))
+      params.append(("fl", "*, score, $frameFreq, $norm"))
       if kwargs.get('order') == "frame":
-        frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
-        params = solr_query.paginate(rows=rows, start=start).params()
-        params.append(('norm', 'norm(speaking)'))
-        params.append(('frameFreq', "product(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"))
-        params.append(("fl", "*, $frameFreq, $norm"))
         params.append(("sort", "$frameFreq desc"))
-        response = si.schema.parse_response(si.conn.select(params))
-      else:
-        solr_query = solr_query.paginate(rows=rows, start=start).sort_by(kwargs.get('order'))
-        response = solr_query.execute()
-
     else:
-      solr_query = solr_query.paginate(rows=rows, start=start)
-      response = solr_query.execute()
+      params.append(("fl", "*, score, $norm"))
+
+    print params
+
+    response = si.schema.parse_response(si.conn.select(params))
 
     speeches = response.result.docs
     current_count = response.result.numFound

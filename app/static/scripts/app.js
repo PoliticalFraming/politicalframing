@@ -23,7 +23,7 @@ var app = angular.module('framingApp', [
       })
       .when('/browse', {
         templateUrl: 'views/browse/browse.html',
-        controller: 'BrowseCtrl'
+        controller: 'BrowseSpeechesCtrl'
       })
       .when('/analysis/:id', {
         templateUrl: 'views/analysis.html',
@@ -37,7 +37,7 @@ var app = angular.module('framingApp', [
 
 angular.module('framingApp').run(function($rootScope, $location) {
   $rootScope.location = $location;
-  
+
   $rootScope.isActive = function(route) {
     return route === $location.path();
   }

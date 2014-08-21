@@ -4,8 +4,10 @@
 
 angular.module('framingApp').controller('AnalysisViewerCtrl', function ($scope, $window, $routeParams) {
 
+  $scope.speeches = [];
   $scope.current = {
-    count: null,
+    count: 0,
+    pages: 0,
     filters: {
       page: null,
       phrase: null,
@@ -21,7 +23,7 @@ angular.module('framingApp').controller('AnalysisViewerCtrl', function ($scope, 
   // console.log("after broadcast");
 
   // $scope.$apply(function () {
-    
+
   // });
 
   // $scope.$apply();
