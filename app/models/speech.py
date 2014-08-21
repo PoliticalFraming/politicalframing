@@ -135,6 +135,8 @@ class Speech(object):
     dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs['phrase']
     dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
 
+    dict_params['q'] += " AND {!frange l=8}$tfidf"
+
     if kwargs.get('order') == "tfidf":
       dict_params["sort"] = "$tfidf desc"
 
