@@ -156,7 +156,7 @@ class Analysis(db.Model):
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 10, phrase, celery_obj)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):

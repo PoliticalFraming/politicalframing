@@ -10,12 +10,6 @@ angular.module('framingApp').directive('singleAnalysis', function() {
     },
     controller: function ($scope, $modal, $log, $http, Speech, Analysis) {
 
-      // $scope.recomputeAnalysis = function() {
-      //   if ($scope.current.filters.id == undefined) return;
-      //   $scope.analyzeSpeeches();
-      //   // HIDE CURRENT GRAPHS AND SHIT
-      // }
-
       console.log("single Analysis directive loaded");
 
       // TODO:
@@ -90,14 +84,6 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           setTimeout( function() { pollData(id); }, 1000);
         });
       };
-
-      // $scope.updateFilters = function(filters) {
-      //   $scope.current.filters = filters;
-
-      //   if(!$scope.$$phase) { $scope.$digest(); }
-
-      // };
-
 
       $scope.graphFramePlot = function(response) {
 

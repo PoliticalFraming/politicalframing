@@ -23,7 +23,7 @@ var app = angular.module('framingApp', [
       })
       .when('/browse', {
         templateUrl: 'views/browse/browse.html',
-        controller: 'BrowseSpeechesCtrl'
+        controller: 'BrowseCtrl'
       })
       .when('/analysis/:id', {
         templateUrl: 'views/analysis.html',

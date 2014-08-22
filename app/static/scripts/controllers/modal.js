@@ -9,5 +9,5 @@ angular.module('framingApp').controller('ModalInstanceCtrl', function ($scope, $
   $scope.cancel = function () {
     $modalInstance.dismiss('cancel');
   };
-  
+
 });
