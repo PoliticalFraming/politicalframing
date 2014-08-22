@@ -20,6 +20,7 @@
     "bootstrap3-wysihtml5-bower": "~0.2.6",
     "x-editable": "~1.5.1",
     "fullcalendar": "~1.6.4",
+    "jquery.ibutton": "http://www.givainc.com/labs/downloads/jquery.ibutton.zip",
     "jQuery-Validation-Engine": "~2.6.4",
     "bootstrap-application-wizard": "*",
     "bootstrap-hover-dropdown": "~2.0.1",
