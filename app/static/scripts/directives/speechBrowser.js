@@ -9,7 +9,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
       current: '='
     },
     controller: function ($scope, $modal, $log, Speech) {
-      $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State'];
+      $scope.headers = ['ID', 'Title', 'Date', 'Speaker', 'State', 'Party', 'Frame', 'TfIdf', 'Tf', 'TermFreq'];
 
       $scope.$on('phraseSearched', function(event, args) {
         $scope.current.filters.page = 1;
@@ -40,7 +40,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
         console.log($scope.current.filters.page);
         $scope.loadSpeeches();
       });
-      
+
       $scope.open = function (index) {
         // $scope.currentSpeech = $scope.speeches[index];
         var modalInstance = $modal.open({
@@ -58,7 +58,7 @@ angular.module('framingApp').directive('speechBrowser', function() {
     },
     templateUrl: '/views/speech-browser.html',
     link: function(scope, element, attrs) {
-      
+
       // console.log($table);
       // console.log($table.closest('.table-wrapper'));
 

@@ -20,18 +20,6 @@ class Subgroup(db.Model):
 	#Later break up query into "state, party, ...." - basically
 	#all of the filters that created this query.
 
-	def is_from(speech):
-		"""True if speech is by someone in this subgroup"""
-		if party and state:
-			return (speech.speaker_party.upper() == party.upper()) and (speech.speaker_state in states)
-		elif party:
-			return (speech.speaker_state in states)
-		elif state:
-			return (speech.speaker_party.upper() == party.upper())
-		else:
-			raise "Subgroup has no party or state."
-
-
 	def is_member(congressperson):
 		"""True if congressperson is part of this subgroup."""
 		pass

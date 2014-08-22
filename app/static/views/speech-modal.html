@@ -49,7 +49,7 @@
   <span ng-show="currentSpeech.volume">Volume: {{currentSpeech.volume}}</span>   
 -->  
 
-  <div class="daspeech" ng-repeat="sentence in currentSpeech.speaking">
+  <div class="daspeech" ng-repeat="sentence in currentSpeech.speaking track by $index">
     <span ng-bind-html="sentence | unsafe"></span>
   </div>
 

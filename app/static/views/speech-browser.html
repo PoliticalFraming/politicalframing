@@ -1,20 +1,25 @@
 <div class="">
-	<table class="table table-striped table-responsive table-hover table-condensed speech-browser-table">
-	  <thead>
-	    <tr>
-	      <th ng-repeat="header in headers">{{header | titlecase}}</th>
-	    </tr>
-	  </thead>
-	  <tbody>
-		  <tr ng-repeat="speech in speeches" ng-click="open($index)">
-		    <td>{{(current.filters.page-1) * 10 + $index+1}}</td>
-		    <td>{{speech.document_title}}</td>
-		    <td>{{speech.date}}</td>
-		    <td>{{speech.speaker_firstname + " " + speech.speaker_lastname}}</td>
-		    <td>{{speech.speaker_state}}</td>
-		  </tr>
-	  </tbody>
-	</table>
+    <table class="table table-striped table-responsive table-hover table-condensed speech-browser-table">
+      <thead>
+        <tr>
+          <th ng-repeat="header in headers">{{header | titlecase}}</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr ng-repeat="speech in speeches track by $index" ng-click="open($index)">
+            <td>{{(current.filters.page-1) * 10 + $index+1}}</td>
+            <td>{{speech.document_title}}</td>
+            <td>{{speech.date}}</td>
+            <td>{{speech.speaker_firstname + " " + speech.speaker_lastname}}</td>
+            <td>{{speech.speaker_state}}</td>
+            <td>{{speech.speaker_party}}</td>
+            <td>{{speech.$frameFreq}}</td>
+            <td>{{speech.$tfidf}}</td>
+            <td>{{speech.$tf}}</td>
+            <td>{{speech.$termFreq}}</td>
+          </tr>
+      </tbody>
+    </table>
 </div>
 
 <!-- {{current}} -->

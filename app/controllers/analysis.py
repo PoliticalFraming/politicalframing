@@ -68,11 +68,11 @@ class AnalysisListController(Resource):
 		parser.add_argument('end_date', type = str, required = False, location = 'json')
 
 		#subgroup a specific args
-		parser.add_argument('states_a', type = list, required = True, location = 'json')
+		parser.add_argument('states_a', type = list, required = False, location = 'json')
 		parser.add_argument('party_a', type = str, required = True, location = 'json') #D or R
 
 		#subgroup b specific args
-		parser.add_argument('states_b', type = list, required = True, location = 'json')
+		parser.add_argument('states_b', type = list, required = False, location = 'json')
 		parser.add_argument('party_b', type = str, required = True, location = 'json') #D or R
 
 		"""Compute analysis. Place in persistant storage."""

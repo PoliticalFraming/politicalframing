@@ -17,7 +17,7 @@ import operator
 class Speech(object):
 
   def __init__(self, *args, **kwargs):
-    self.speech_id = kwargs.get('speech_id')
+    self.id = kwargs.get('id')
     self.bills = kwargs.get('bills')
     self.biouguide = kwargs.get('biouguide')
     self.capitolwords_url = kwargs.get('capitolwords_url')
@@ -37,16 +37,26 @@ class Speech(object):
     self.speaking = kwargs.get('speaking')
     self.title = kwargs.get('title')
     self.volume = kwargs.get('volume')
+    self.frame_freq = kwargs.get('$frameFreq')
+    self.norm = kwargs.get('$norm')
+    self.score = kwargs.get('$score')
 
   def belongs_to(self, subgroup):
-    """True if speech by someone in the subgroup"""
-    return (self.speaker_party.upper() == subgroup.party.upper()) and (self.speaker_state in subgroup.states)
+    """True if speech is by someone in this subgroup"""
+    if subgroup.party and subgroup.states:
+      return (self.speaker_party.upper() == subgroup.party.upper()) and (self.speaker_state in subgroup.states)
+    elif subgroup.party:
+      return (self.speaker_party.upper() == subgroup.party.upper())
+    elif subgroup.states:
+      return (self.speaker_state in subgroup.states)
+    else:
+      raise "Subgroup has no party or state."
 
   @staticmethod
   def build_sunburnt_query(**kwargs):
     """
     Input
-      speech_id
+      id
       start_date
       end_date
       phrase
@@ -63,8 +73,8 @@ class Speech(object):
     compulsory_params = {}
     optional_params = {}
 
-    if kwargs.get('speech_id'):
-      compulsory_params['id'] = kwargs['speech_id']
+    if kwargs.get('id'):
+      compulsory_params['id'] = kwargs['id']
     elif kwargs.get('phrase'):
       compulsory_params['speaking'] = kwargs['phrase']
 
@@ -93,12 +103,11 @@ class Speech(object):
 
       return solr_query
 
-
   @staticmethod
   def get(rows, start, **kwargs):
     """
     Input
-      speech_id
+      id
       start_date
       end_date
       phrase
@@ -112,39 +121,37 @@ class Speech(object):
       List of output
     """
 
-    solr_query = Speech.build_sunburnt_query(**kwargs)
+    solr_query = Speech.build_sunburnt_query(**kwargs).paginate(rows=rows, start=start)
 
-    # RawString('[* TO *]')
+    if kwargs.get('order') and kwargs.get('order') not in ["frame", "tfidf", "idf", "termFreq"]:
+      solr_query = solr_query.sort_by(kwargs.get('order'))
 
-    # if the number of docs is less than numFound, then this is the pagination offset
-    if kwargs.get('order'):
-      if kwargs.get('order') != "frame":
-        solr_query = solr_query.paginate(rows=rows, start=start).sort_by(kwargs.get('order'))
-        response = solr_query.execute()
-      else:
-        # IGNORING ROWS and IGNORE START AND DOWNLOADING ALL SPEECHES WHEN ORDERING BY FRAME
-        # HOLY SHIT THIS IS TERRIBLE
-        # LIKE SERIOUSLY TERRIBLE
-        # PLEASE CHANGE THIS.
-        # ~ RIP good coding practices ~
-        numFound = solr_query.paginate(rows=0, start=0).execute().result.numFound
-        app.logging.debug("Ordering by frame. Frames found: %d", numFound)
+    params = solr_query.params()
+    dict_params = dict(params)
+    dict_params['norm'] = 'norm(speaking)'
+    dict_params['tf'] = 'tf(speaking, %s)' % kwargs['phrase']
+    dict_params['idf'] = 'idf(speaking, %s)' % kwargs['phrase']
+    dict_params['tfidf'] = 'mul($tf, $idf)'
+    dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs['phrase']
+    dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
 
-        response = solr_query.paginate(rows=numFound, start=0).execute()
-        frame = Frame.get(Frame.id == kwargs['frame'])
-        response.result.docs = Speech.order_by_frame_prevalance(response.result.docs, frame)
-    else:
-      solr_query = solr_query.paginate(rows=rows, start=start)
-      print "SOLR QUERY"
-      # from pprint import pprint
-      # query_obj=solr_query.__dict__['query_obj'].__dict__
-      # pprint(query_obj)
-      # import pdb; pdb.set_trace()
-      # for subq in query_obj['subqueries']:
-      #   pprint(subq.__dict__)
-      # pprint(solr_query.__dict__['subqueries'][1].__dict__)
+    dict_params['q'] += " AND {!frange l=8}$tfidf"
 
-      response = solr_query.execute()
+    if kwargs.get('order') == None or kwargs.get('order') == "tfidf":
+      dict_params["sort"] = "$tfidf desc"
+
+    if kwargs.get('frame'):
+      frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
+      dict_params['frameFreq'] = "product(sum(" + ", ".join(map(lambda word: "tf(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"
+      dict_params['fl'] += ", $frameFreq"
+      if kwargs.get('order') == "frame":
+        dict_params["sort"] = "$frameFreq desc"
+
+    params = zip(dict_params.keys(), dict_params.values())
+
+    print params
+
+    response = si.schema.parse_response(si.conn.select(params))
 
     speeches = response.result.docs
     current_count = response.result.numFound
@@ -184,34 +191,14 @@ class Speech(object):
 
     return speech
 
-  @staticmethod
-  def order_by_frame_prevalance(speeches, frame):
-      print ("ORDER BY FRAME PREVALANCE")
-      speech_prevalances = [] #array of tuples containing speeches and ther prevalance values
-      for speech in speeches:
-          speech_words = " ".join(speech['speaking']).lower().split()
-          framewords_count = 0
-          for word in frame.word_string.split():
-              if word in speech_words:
-                framewords_count += 1
-
-          frame_prevalance = framewords_count / len(speech_words)
-
-          speech_prevalances.append((speech, frame_prevalance))
-
-      for blah in sorted(speech_prevalances, key=lambda x: x[1], reverse=True):
-        print blah[0]['document_title'], blah[1]
-
-      return map(lambda x:x[0] , sorted(speech_prevalances, key=lambda x: x[1], reverse=True))
-
-      # ################################################################
-      # # Better Implementaiton Stub - if simple counts don't work well
-      # ################################################################
-      #for speech in speeches:
-      #     frame_words = {} #dict containing word:count_in_speech
-      #     for word in frame.word_string.split():
-      #         if word in speech.speaking:
-      #             frame_words[word] = frame_words.get(word,0) + 1
-      #     # do better ordering using frame_words dictionary
-      #     # (maybe something like tf/idf based counts)
-      # ################################################################
+  # ################################################################
+  # # Better Implementaiton Stub - if simple counts don't work well
+  # ################################################################
+  #for speech in speeches:
+  #     frame_words = {} #dict containing word:count_in_speech
+  #     for word in frame.word_string.split():
+  #         if word in speech.speaking:
+  #             frame_words[word] = frame_words.get(word,0) + 1
+  #     # do better ordering using frame_words dictionary
+  #     # (maybe something like tf/idf based counts)
+  # ################################################################

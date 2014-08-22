@@ -12,9 +12,12 @@ makeframe(frameword)
 
 """
 
-from nltk.corpus import wordnet
-from sets import Set
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from sets import Set
 
+from nltk.corpus import wordnet
 import wordnettools
 import frameextender
 import pickle

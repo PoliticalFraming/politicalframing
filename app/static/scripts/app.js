@@ -37,7 +37,7 @@ var app = angular.module('framingApp', [
 
 angular.module('framingApp').run(function($rootScope, $location) {
   $rootScope.location = $location;
-  
+
   $rootScope.isActive = function(route) {
     return route === $location.path();
   }

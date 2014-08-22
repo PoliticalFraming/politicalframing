@@ -5,14 +5,11 @@ from peewee import *
 from collections import deque
 import datetime
 
-# from app.models.topic import Topic
+from app.classifier import Classifier
+
 from app.models.frame import Frame
 from app.models.speech import Speech
 from app.models.subgroup import Subgroup
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.datasets.base import Bunch
 
 from dateutil import parser as dateparser
 
@@ -25,34 +22,6 @@ from celery.contrib import rdb
 
 #Constants (Move creation to where speeches are ingested)
 OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
-
-class Classifier:
-    """Used to allow the adding and removing of speeches to the classifer.
-    This could be made faster by actually modifying or extending the MultinomialNB
-    in scikit-learn rather than creating a new MultinomialNB object each time."""
-
-    def __init__(self):
-        self.vectorizer = TfidfVectorizer(min_df=1)
-        self.classifier = MultinomialNB(alpha=1.0,fit_prior=True)
-
-    def learn_vocabulary(self, document):
-        print "learning vocabulary"
-        try:
-            self.vectorizer.fit([document])
-        except ValueError as e:
-            app.logger.debug(e)
-            app.logger.debug(document)
-            raise
-
-    def train_classifier(self, data, target):
-        sparse_data = self.vectorizer.transform(data)
-        print "training classifier"
-        self.classifier.fit(sparse_data, target)
-
-    def classify_document(self, document):
-        print "Classifying document"
-        tfidf_frames_vector = self.vectorizer.transform([document])
-        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
@@ -75,7 +44,7 @@ class Analysis(db.Model):
     frame_plot = TextField(null=True)
 
 
-    def build_query_params(self):
+    def build_query_params(self, order='date'):
         """
         Returns a dict of params for the solr query that will get all
         speeches related to this analysis.
@@ -86,7 +55,7 @@ class Analysis(db.Model):
         'frame': self.frame,
         'start_date': self.start_date.strftime("%Y-%m-%d"),
         'end_date': self.end_date.strftime("%Y-%m-%d"),
-        'order': 'date'}
+        'order': order}
 
     class Meta:
         db_table = 'analyses'
@@ -160,7 +129,7 @@ class Analysis(db.Model):
         celery_obj = self
         phrase = analysis_obj.phrase
 
-        query_params = analysis_obj.build_query_params()
+        query_params = analysis_obj.build_query_params(order='date')
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
@@ -174,12 +143,20 @@ class Analysis(db.Model):
         for i in range(0, pages):
             speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
+            # update_progress((i+1)/pages)
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
+
+        # order speeches by date
+        # app.logger.debug("started sorting")
+        # speeches = sorted(speeches, key=lambda speech: speech.date)
+        # app.logger.debug("ended sorting")
+
+        app.logger.debug("first %s and last %s speech" % (str(speeches[0].date), str(speeches[-1].date)))
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 100, 100, phrase, celery_obj)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
@@ -231,9 +208,15 @@ class Analysis(db.Model):
         relevant = relevance_fn #plug in what is relevant
 
         valid_speeches=[]
+        invalid_speeches = []
         for speech in speeches:
             if relevant(speech):
                 valid_speeches.append(speech)
+            else:
+                invalid_speeches.append(speech)
+
+        app.logger.debug("%d valid speeches, %d invalid speeches" % (len(valid_speeches), len(invalid_speeches)))
+
         return valid_speeches
 
     def check_if_complete(self):
@@ -253,6 +236,7 @@ class Analysis(db.Model):
         """
         ordered_speeches - list of speech objects in date order
         phrase - string
+        n - # of buckets
 
         *** needs to be modified
         """
@@ -327,41 +311,6 @@ class Analysis(db.Model):
 
         return self.topic_plot
 
-    def build_training_set(self, speeches):
-        '''This function is an alternative form of the loads in sklearn which loads
-        from a partiular file structure. This function allows me to load from the database
-        '''
-
-        app.logger.debug('Building training set.')
-
-        def target_function(speech):
-            if speech.belongs_to(self.subgroupA):
-                return 0
-            elif speech.belongs_to(self.subgroupB):
-                return 1
-            else:
-                print "Speech must belong to subgroup a or b: " + str(speech.id)
-
-        target = [] # 0 and 1 for subgroup a and b respectively
-        target_names = ['a','b'] # target_names
-        data = [] # data
-
-        for speech in speeches:
-            target.append(target_function(speech))
-            speech_string = ''
-            for sentence in speech.speaking:
-                speech_string += sentence
-            data.append(speech_string)
-
-        DESCR = "Trained subgroup_a vs subgroup_b classifier"
-
-        # Bunch - https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/datasets/base.py
-        return Bunch(
-            target = target,
-            target_names = target_names,
-            data = data,
-            DESCR = DESCR
-        )
 
     def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
         """
@@ -402,15 +351,22 @@ class Analysis(db.Model):
 
             # create_classifier
             app.logger.debug("Create Classifier")
-            naive_bayes = Classifier()
+            naive_bayes = Classifier(vocab=frame.word_string.split())
 
             # Learn Vocabulary
             app.logger.debug("Learn Vocabulary")
-            naive_bayes.learn_vocabulary(frame.word_string)
+            naive_bayes.learn_vocabulary(map(lambda speech: " ".join(speech.speaking),current_window))
 
             # Build Training Set
             app.logger.debug("Building Training Set")
-            training_set = self.build_training_set(current_window)
+            def target_function(speech):
+                if speech.belongs_to(self.subgroupA):
+                    return 0
+                elif speech.belongs_to(self.subgroupB):
+                    return 1
+                else:
+                    raise Exception("Speech must belong to subgroup a or b: " + str(speech.id))
+            training_set = Classifier.bunch_with_targets(current_window, target_function)
 
             # train classifier on speeches in current window
             app.logger.debug("Training Classifier")
@@ -423,6 +379,12 @@ class Analysis(db.Model):
             subgroup_a_likelihoods.append(log_probabilities[0])
             subgroup_b_likelihoods.append(log_probabilities[1])
 
+            app.logger.debug( "%s to %s - %f, %f -- %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
+            # app.logger.debug("CURRENT WINDOW DATES:")
+            # for s in current_window:
+            #     app.logger.debug(str(s.date))
+            #     app.logger.debug(str(s.id))
+
             # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
             for _ in range(offset):
@@ -430,12 +392,12 @@ class Analysis(db.Model):
                     current_window.append(speeches.popleft())
                     current_window = current_window[1:]
 
-            # do something about the div by zero error
-            ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
-
             # stringify dates
             # start_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), start_dates)
             # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
+
+        # do something about the div by zero error
+        ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
 
         celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
 
