@@ -8,7 +8,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
       speeches: '=',
       current: '='
     },
-    controller: function ($scope, $modal, $log, $http, Speech, Analysis) {
+    controller: function ($scope, $modal, $log, $http, $location, Speech, Analysis) {
 
       console.log("single Analysis directive loaded");
 
@@ -61,9 +61,11 @@ angular.module('framingApp').directive('singleAnalysis', function() {
 
                 console.log("success");
                 // $scope.id = id;
-                $scope.currentAnalysis = response.data.data;
-                $scope.graphFramePlot(response);
-                $scope.graphTopicPlot(response);
+                // $scope.currentAnalysis = response.data.data;
+                // $scope.graphFramePlot(response);
+                // $scope.graphTopicPlot(response);
+
+                $location.path('/analysis/' + id);
                 return;
               }
               else if (response.data.meta.state === 'FAILURE') {
