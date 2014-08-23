@@ -37,3 +37,4 @@ def method2():
 
 ### LEARNING MORE ABOUT WORDNET
 synset = wordnet.synset('crime.n.01')
+method1()
