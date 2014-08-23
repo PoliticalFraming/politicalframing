@@ -142,7 +142,7 @@ class Speech(object):
 
     if kwargs.get('frame'):
       frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
-      dict_params['frameFreq'] = "product(sum(" + ", ".join(map(lambda word: "tf(speaking,\"%s\")" % word, frame_words.split())) + "), $norm)"
+      dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(tf(speaking,\"%s\"), idf(speaking,\"%s\"))" % (word, word), frame_words.split())) + "), $norm)"
       dict_params['fl'] += ", $frameFreq"
       if kwargs.get('order') == "frame":
         dict_params["sort"] = "$frameFreq desc"

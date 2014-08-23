@@ -33,6 +33,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
 
           $scope.graphFramePlot(response);
           $scope.graphTopicPlot(response);
+          $scope.graphWordCountPlot(response);
         });
 
       });
@@ -150,8 +151,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
 
       $scope.graphTopicPlot = function(response) {
         var topic_plot = response.data.data.topic_plot;
-        var dataPointsDem = _.zip(topic_plot.end_dates, topic_plot.dem_counts, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
-        var dataPointsRep = _.zip(topic_plot.end_dates, topic_plot.rep_counts, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+        var dataPointsA = _.zip(topic_plot.end_dates, topic_plot.subgroup_a_counts, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+        var dataPointsB = _.zip(topic_plot.end_dates, topic_plot.subgroup_b_counts, topic_plot.start_dates, topic_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
 
         var chart = new CanvasJS.Chart("chartContainer_topic",
         {
@@ -186,9 +187,9 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             },
             type: "line",
             showInLegend: true,
-            legendText: "Dem Counts",
-            color: "blue",
-            dataPoints: dataPointsDem
+            legendText: "A Counts",
+            color: "green",
+            dataPoints: dataPointsA
         },
           {
             click: function(e) {
@@ -208,9 +209,80 @@ angular.module('framingApp').directive('singleAnalysis', function() {
             },
             type: "line",
             showInLegend: true,
-            legendText: "Rep Counts",
-            color: "red",
-            dataPoints: dataPointsRep
+            legendText: "B Counts",
+            color: "orange",
+            dataPoints: dataPointsB
+        }
+
+        ]
+        });
+        chart.render();
+      }
+
+      $scope.graphWordCountPlot = function(response) {
+        var wordcount_plot = response.data.data.wordcount_plot;
+        // console.log(response.data.data);
+        var dataPointsA = _.zip(wordcount_plot.end_dates, wordcount_plot.subgroup_a_counts, wordcount_plot.start_dates, wordcount_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+        var dataPointsB = _.zip(wordcount_plot.end_dates, wordcount_plot.subgroup_b_counts, wordcount_plot.start_dates, wordcount_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+
+        var chart = new CanvasJS.Chart("chartContainer_wordcount",
+        {
+            zoomEnabled: true,
+            title: { text: wordcount_plot.title
+            },
+            axisX:{
+                valueFormatString: "DD-MMM-YYYY",
+                labelAngle: -50,
+                title: wordcount_plot.ylabel,
+                includeZero: false
+            },
+            axisY: {
+              // valueFormatString: "#,###"
+          },
+          data: [
+          {
+            click: function(e) {
+
+              $scope.current.filters = {
+                phrase: $scope.current.filters.phrase,
+                frame: $scope.current.filters.frame,
+                start_date: e.dataPoint.start_date,
+                end_date: e.dataPoint.end_date,
+                speaker_party: 'D',
+                order: 'frame',
+                highlight: 'true'
+              };
+
+              if(!$scope.$$phase) { $scope.$digest(); }
+
+            },
+            type: "line",
+            showInLegend: true,
+            legendText: "A Counts",
+            color: "green",
+            dataPoints: dataPointsA
+        },
+          {
+            click: function(e) {
+
+              $scope.current.filters = {
+                phrase: $scope.current.filters.phrase,
+                frame: $scope.current.filters.frame,
+                start_date: e.dataPoint.start_date,
+                end_date: e.dataPoint.end_date,
+                speaker_party: 'R',
+                order: 'frame',
+                higlight: 'true'
+              };
+
+              if(!$scope.$$phase) { $scope.$digest(); }
+
+            },
+            type: "line",
+            showInLegend: true,
+            legendText: "B Counts",
+            color: "orange",
+            dataPoints: dataPointsB
         }
 
         ]

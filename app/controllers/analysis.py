@@ -11,8 +11,8 @@ from dateutil import parser as dateparser
 import json
 
 topic_plot_fields = {
-	'dem_counts': fields.List(fields.Integer),
-	'rep_counts': fields.List(fields.Integer),
+	'subgroup_a_counts': fields.List(fields.Integer),
+	'subgroup_b_counts': fields.List(fields.Integer),
 	'start_dates': fields.List(fields.Raw),
 	'end_dates':  fields.List(fields.Raw),
 	'ylabel': fields.String,
@@ -27,6 +27,15 @@ frame_plot_fields = {
 	'title': fields.String
 }
 
+wordcount_plot_fields = {
+    'title': fields.String,
+    'ylabel': fields.String,
+    'start_dates': fields.List(fields.Raw),
+    'end_dates': fields.List(fields.Raw),
+    'subgroup_a_counts': fields.List(fields.Raw),
+    'subgroup_b_counts': fields.List(fields.Raw)
+}
+
 analysis_fields = {
 	'id': fields.Integer,
 	'frame': fields.Integer,
@@ -34,7 +43,8 @@ analysis_fields = {
 	'start_date': fields.Raw, #DateTime
 	'end_date': fields.Raw, #DateTime
 	'topic_plot': fields.Nested(topic_plot_fields),
-	'frame_plot': fields.Nested(frame_plot_fields)
+	'frame_plot': fields.Nested(frame_plot_fields),
+	'wordcount_plot': fields.Nested(wordcount_plot_fields)
 }
 
 analysis_marshall = {
@@ -120,6 +130,7 @@ class AnalysisController(Resource):
 		data = get_dictionary_from_model(analysis_obj)
 		data['topic_plot'] = eval(data['topic_plot']) if data['topic_plot'] else None
 		data['frame_plot'] = eval(data['frame_plot']) if data['frame_plot'] else None
+		data['wordcount_plot'] = eval(data['wordcount_plot']) if data['wordcount_plot'] else None
 
 		return { 'meta': info, 'data': data }
 
