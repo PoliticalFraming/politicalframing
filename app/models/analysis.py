@@ -156,41 +156,43 @@ class Analysis(db.Model):
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
-        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
+        # analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
+        # analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
         analysis_obj.wordcount_plot = analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, phrase, celery_obj)
 
-        indexes_to_delete = []
-        for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
-            if current_end_date.year > 2013:
-                indexes_to_delete.append(i)
+        # indexes_to_delete = []
+        # for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
+        #     if current_end_date.year > 2013:
+        #         indexes_to_delete.append(i)
 
-        # this removes last bucket post analysis
+        # # this removes last bucket post analysis
 
-        analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.topic_plot['end_dates'])))
+        # analysis_obj.topic_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.topic_plot['end_dates'])))
 
-        analysis_obj.topic_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.topic_plot['start_dates'])))
+        # analysis_obj.topic_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.topic_plot['start_dates'])))
 
-        analysis_obj.topic_plot['dem_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.topic_plot['dem_counts'])))
+        # analysis_obj.topic_plot['dem_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.topic_plot['dem_counts'])))
 
-        analysis_obj.topic_plot['rep_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.topic_plot['rep_counts'])))
+        # analysis_obj.topic_plot['rep_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.topic_plot['rep_counts'])))
 
-        analysis_obj.frame_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.frame_plot['end_dates'])))
+        # analysis_obj.frame_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.frame_plot['end_dates'])))
 
-        analysis_obj.frame_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.frame_plot['start_dates'])))
+        # analysis_obj.frame_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.frame_plot['start_dates'])))
 
-        analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
-            enumerate(analysis_obj.frame_plot['ratios'])))
+        # analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+        #     enumerate(analysis_obj.frame_plot['ratios'])))
 
         # when recomputing an analysis, this prevents the old celery_id from overwriting the new celery_id
         # this can be done less hackily later
         analysis_obj.celery_id = celery_id
+
+        # rdb.set_trace()
 
         analysis_obj.save()
 
@@ -313,6 +315,13 @@ class Analysis(db.Model):
 
         return self.topic_plot
 
+    def target_function2(self, speech):
+        if speech.belongs_to(self.subgroupA):
+            return 0
+        elif speech.belongs_to(self.subgroupB):
+            return 1
+        else:
+            raise Exception("Speech must belong to subgroup a or b: " + str(speech.id))
 
     def plot_frame_usage(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
         """
@@ -360,7 +369,6 @@ class Analysis(db.Model):
             naive_bayes.learn_vocabulary(map(lambda speech: " ".join(speech.speaking),current_window))
 
             # Build Training Set
-            app.logger.debug("Building Training Set")
             def target_function(speech):
                 if speech.belongs_to(self.subgroupA):
                     return 0
@@ -368,6 +376,8 @@ class Analysis(db.Model):
                     return 1
                 else:
                     raise Exception("Speech must belong to subgroup a or b: " + str(speech.id))
+
+            app.logger.debug("Building Training Set")
             training_set = Classifier.bunch_with_targets(current_window, target_function)
 
             # train classifier on speeches in current window
@@ -420,22 +430,43 @@ class Analysis(db.Model):
         speeches = list of speech objects in date order
         """
 
-        speeches = deque(ordered_speeches)
+        subgroup_a_start_dates = []
+        subgroup_b_start_dates = []
+
+        subgroup_a_end_dates = []
+        subgroup_b_end_dates = []
+
         subgroup_a_counts = []
         subgroup_b_counts = []
-        start_dates = []
-        end_dates = []
 
-        ## AL'S CODE HERE ##
-        # I left the window size and offset in so that you can transition to "moving average" later.
+        for i, speech in enumerate(ordered_speeches):
+            app.logger.debug(speech.id)
+            app.logger.debug(speech.frame_freq)
+
+            celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': i, 'total': len(ordered_speeches)})
+
+            if self.target_function2(speech) == 0:
+                subgroup_a_start_dates.append(speech.date)
+                subgroup_a_end_dates.append(speech.date)
+                subgroup_a_counts.append(speech.frame_freq)
+            elif self.target_function2(speech) == 1:
+                subgroup_b_start_dates.append(speech.date)
+                subgroup_b_end_dates.append(speech.date)
+                subgroup_b_counts.append(speech.frame_freq)
+            else:
+                raise "shit"
 
         app.logger.debug("Populate Return Values")
         self.wordcount_plot = {
             'title': "Count of '%s' frame words in Speeches about %s" % (frame.name, phrase),
             'ylabel': "tf/idf score of each speeches",
-            'start_dates': start_dates,
-            'end_dates': end_dates,
+            'subgroup_a_start_dates': subgroup_a_start_dates,
+            'subgroup_b_start_dates': subgroup_b_start_dates,
+            'subgroup_a_end_dates': subgroup_a_end_dates,
+            'subgroup_b_end_dates': subgroup_b_end_dates,
             'subgroup_a_counts': subgroup_a_counts,
-            'subgroup_b_counts': subgroup_a_counts
+            'subgroup_b_counts': subgroup_b_counts
         }
+
+        return self.wordcount_plot
 
