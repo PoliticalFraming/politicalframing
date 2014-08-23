@@ -11,6 +11,7 @@ angular.module('framingApp').factory('Analysis', ['ActiveResource', function(Act
     this.string('phrase');
     this.string('frame_plot');
     this.string('topic_plot');
+    this.string('wordcount_plot');
   }
 
   Analysis.inherits(ActiveResource.Base);

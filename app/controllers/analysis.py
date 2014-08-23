@@ -11,8 +11,8 @@ from dateutil import parser as dateparser
 import json
 
 topic_plot_fields = {
-	'dem_counts': fields.List(fields.Integer),
-	'rep_counts': fields.List(fields.Integer),
+	'subgroup_a_counts': fields.List(fields.Integer),
+	'subgroup_b_counts': fields.List(fields.Integer),
 	'start_dates': fields.List(fields.Raw),
 	'end_dates':  fields.List(fields.Raw),
 	'ylabel': fields.String,
@@ -30,10 +30,8 @@ frame_plot_fields = {
 wordcount_plot_fields = {
     'title': fields.String,
     'ylabel': fields.String,
-    'subgroup_a_start_dates': fields.List(fields.Raw),
-    'subgroup_b_start_dates': fields.List(fields.Raw),
-    'subgroup_a_end_dates': fields.List(fields.Raw),
-    'subgroup_b_end_dates': fields.List(fields.Raw),
+    'start_dates': fields.List(fields.Raw),
+    'end_dates': fields.List(fields.Raw),
     'subgroup_a_counts': fields.List(fields.Raw),
     'subgroup_b_counts': fields.List(fields.Raw)
 }
