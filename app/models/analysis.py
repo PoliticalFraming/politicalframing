@@ -42,6 +42,7 @@ class Analysis(db.Model):
 
     topic_plot = TextField(null=True)
     frame_plot = TextField(null=True)
+    wordcount_plot = TextField(null=True)
 
 
     def build_query_params(self, order='date'):
@@ -157,6 +158,7 @@ class Analysis(db.Model):
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
         analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
         analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
+        analysis_obj.wordcount_plot = analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
@@ -411,3 +413,29 @@ class Analysis(db.Model):
         }
 
         return self.frame_plot
+
+    def plot_frame_wordcounts(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
+        """
+        frame = frame object
+        speeches = list of speech objects in date order
+        """
+
+        speeches = deque(ordered_speeches)
+        subgroup_a_counts = []
+        subgroup_b_counts = []
+        start_dates = []
+        end_dates = []
+
+        ## AL'S CODE HERE ##
+        # I left the window size and offset in so that you can transition to "moving average" later.
+
+        app.logger.debug("Populate Return Values")
+        self.wordcount_plot = {
+            'title': "Count of '%s' frame words in Speeches about %s" % (frame.name, phrase),
+            'ylabel': "tf/idf score of each speeches",
+            'start_dates': start_dates,
+            'end_dates': end_dates,
+            'subgroup_a_counts': subgroup_a_counts,
+            'subgroup_b_counts': subgroup_a_counts
+        }
+
