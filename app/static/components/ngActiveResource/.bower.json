@@ -1,0 +1,36 @@
+{
+  "name": "ActiveResource",
+  "authors": [
+    "Brett Shollenberger <brett.shollenberger@gmail.com>"
+  ],
+  "license": "MIT",
+  "main": "dist/ng-active-resource.min.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "active-support": "latest",
+    "angular": "latest",
+    "lodash": "latest",
+    "async": "~0.2.5",
+    "meld": "latest"
+  },
+  "devDependencies": {
+    "angular-route": "latest",
+    "angular-mocks": "latest"
+  },
+  "homepage": "https://github.com/AlJohri/ngActiveResource",
+  "_release": "4369ad005c",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "4369ad005c90ad50cad9bc646376b80512690326"
+  },
+  "_source": "git://github.com/AlJohri/ngActiveResource.git",
+  "_target": "master",
+  "_originalSource": "git://github.com/AlJohri/ngActiveResource"
+}

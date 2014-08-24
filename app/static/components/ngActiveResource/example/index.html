@@ -1,0 +1,66 @@
+<!doctype html>
+<html ng-app="app">
+<head>
+  <meta charset="utf-8">
+  <title>AngularJS test</title>
+
+  <link rel="stylesheet" type="text/css" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="styles/styles.css">
+
+  <script src="http://code.angularjs.org/1.2.4/angular.js"></script>
+  <script src="../angular-route/angular-route.js"></script>
+
+  <script src="../lodash/dist/lodash.js"></script>
+  <script src="../async/lib/async.js"></script>
+  <script src="../active-support/active-support.js"></script>
+  <script src="../ng-active-resource.min.js"></script>
+  <script src="../simple-form/simple-form.js"></script>
+  <script src="scripts/app.js"></script>
+  <script src="scripts/models/post.js"></script>
+  <script src="scripts/models/comment.js"></script>
+  <script src="scripts/controllers/main.js"></script>
+
+</head>
+<body>
+  <div ng-controller="MainCtrl">
+    <div class="container">
+      <h1>{{post.title}}</h1>
+      <p>{{post.body}}</p>
+      <div ng-repeat="comment in post.comments">
+        <p class="alert alert-info">
+          <span>{{comment.author}}</span>
+          <span>{{comment.body}}</span>
+        </p>
+        <button class="btn btn-primary" ng-click="comment.$delete()">Delete</button><br><br>
+      </div>
+    </div>
+    <div class="container">
+      <div ng-show="comment.$errors.body" ng-repeat="error in comment.$errors.body">
+        <div class="alert alert-warning">Body {{error}}</div>
+      </div>
+      <div ng-show="comment.$errors.author" ng-repeat="error in comment.$errors.author">
+        <div class="alert alert-warning">Author {{error}}</div>
+      </div>
+      <form ng-submit="comment.$save()">
+        <h2>New Comment</h2>
+        <textarea 
+         class="col-md-3" 
+         ng-model="comment.body" 
+         ng-blur="comment.validate('body')"
+         ng-change="comment.validateIfErrored('body')">
+       </textarea>
+       <br><br><br>
+       <input
+        class="col-md-3"
+        ng-model="comment.author"
+        ng-blur="comment.validate('author')"
+        ng-change="comment.validateIfErrored('author')">
+       <br>
+       <br>
+       <br>
+        <input class="col-md-3 btn btn-primary" type="submit" id="submit" value="Submit" />
+      </form>
+    </div>
+  </div>
+</body>
+</html>
