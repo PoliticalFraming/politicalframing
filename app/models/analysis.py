@@ -189,6 +189,18 @@ class Analysis(db.Model):
         analysis_obj.frame_plot['ratios'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
             enumerate(analysis_obj.frame_plot['ratios'])))
 
+        analysis_obj.wordcount_plot['end_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+            enumerate(analysis_obj.wordcount_plot['end_dates'])))
+
+        analysis_obj.wordcount_plot['start_dates'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+            enumerate(analysis_obj.wordcount_plot['start_dates'])))
+
+        analysis_obj.wordcount_plot['subgroup_a_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+            enumerate(analysis_obj.wordcount_plot['subgroup_a_counts'])))
+
+        analysis_obj.wordcount_plot['subgroup_b_counts'] = map(lambda x: x[1], filter(lambda (i,x) : i not in indexes_to_delete,
+            enumerate(analysis_obj.wordcount_plot['subgroup_b_counts'])))
+
         # when recomputing an analysis, this prevents the old celery_id from overwriting the new celery_id
         # this can be done less hackily later
         analysis_obj.celery_id = celery_id
