@@ -134,7 +134,8 @@ class Analysis(db.Model):
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
-        numFound = Speech.get(0, 0, **query_params)['count']
+        query_params_without_frame = { key: query_params[key] for key in query_params.keys() if key != "frame" }
+        numFound = Speech.get(0, 0, **query_params_without_frame)['count']
         speeches = []
         pages = int(math.ceil(numFound/1000))
 
