@@ -134,10 +134,10 @@ class Analysis(db.Model):
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
-        query_params_without_frame = { key: query_params[key] for key in query_params.keys() if key != "frame" }
-        numFound = Speech.get(0, 0, **query_params_without_frame)['count']
+        # query_params_without_frame = { key: query_params[key] for key in query_params.keys() if ["frame", "order"] not in key }
+        # numFound = Speech.get(0, 0, **query_params_without_frame)['count']
         speeches = []
-        pages = int(math.ceil(numFound/1000))
+        pages = 1000 #int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
