@@ -1,5 +1,5 @@
 ﻿/**
-* @preserve CanvasJS HTML5 & JavaScript Charts - v1.4.0 Beta 2 - http://canvasjs.com/ 
+* @preserve CanvasJS HTML5 & JavaScript Charts - v1.5.0 Beta 1 - http://canvasjs.com/ 
 * Copyright 2013 fenopix
 */
 
@@ -16,6 +16,7 @@
 *     http://canvasjs.com/
 * 
 */
+
 
 /* jshint -W099 */ //Ignore warning "Mixed Spaces and Tabs"
 
@@ -38,7 +39,9 @@
 			colorSet: "colorSet1",
 			culture: "en",
 			creditHref: "http://canvasjs.com/",
-			creditText: "CanvasJS.com"
+			creditText: "CanvasJS.com",
+			interactivityEnabled: true,
+			exportEnabled: false
 		},
 
 		Title: {
@@ -174,6 +177,8 @@
 			lineThickness: 2,
 
 			color: null,
+			risingColor: "white",
+			fillOpacity: null,
 
 			startAngle: 0,
 
@@ -210,6 +215,11 @@
 			zoomText: "Zoom",
 			panText: "Pan",
 			resetText: "Reset",
+
+			menuText: "More Options",
+			saveJPGText: "Save as JPG",
+			savePNGText: "Save as PNG",
+
 			days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
 			shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
 
@@ -351,7 +361,7 @@
 			"theme1": {
 				Chart:
 					{
-						colorSet: colorSets[0]
+						colorSet: "colorSet1"
 					},
 				Title: {
 					fontFamily: isCanvasSupported ? "Calibri, Optima, Candara, Verdana, Geneva, sans-serif" : "calibri",
@@ -524,7 +534,7 @@
 		dayOfWeekFromInt: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 	};
 
-	//#region Static Methods
+	//#region Static Methods & variables
 
 	function extend(Child, Parent) {
 		Child.prototype = inherit(Parent.prototype);
@@ -1054,32 +1064,39 @@
 		}
 
 		var charCount = 0;
+		var resultAfterDecimal = "";
+		var addDecimalSeparator = false;
 
 		while (fsAfterDecimal.length > 0) {
 			match = fsAfterDecimal.shift();
 
 			if (match === "#" || match === "0") {
 				if (vStringAfterDecimal.length > 0 && Number(vStringAfterDecimal.join("")) !== 0) {
-					result += (charCount++ === 0 ? decimalSeparator : "") + vStringAfterDecimal.shift();
+					resultAfterDecimal += vStringAfterDecimal.shift();
+					addDecimalSeparator = true;
 				}
 				else if (match === "0") {
-					result += (charCount++ === 0 ? decimalSeparator : "") + "0";
+					resultAfterDecimal += "0";
+					addDecimalSeparator = true;
 				}
 			} else if (match.length > 1 && ((match[0] === "\"" && match[match.length - 1] === "\"") || (match[0] === "'" && match[match.length - 1] === "'"))) {
-				result += (charCount++ === 0 ? decimalSeparator : "") + match.slice(1, match.length - 1);
+				resultAfterDecimal += match.slice(1, match.length - 1);
+				//addDecimalSeparator = true;
 			} else if ((match[0] === "E" || match[0] === "e") && match[match.length - 1] === "0" && /[eE][+-]*[0]+/.test(match)) {
 				if (exponent < 0)
 					match = match.replace("+", "").replace("-", "");
 				else
 					match = match.replace("-", "");
-				result += match.replace(/[0]+/, function ($0) {
+				resultAfterDecimal += match.replace(/[0]+/, function ($0) {
 					return pad(exponent, $0.length);
 				});
 			} else {
-				result += (charCount++ === 0 ? decimalSeparator : "") + match;
+				resultAfterDecimal += match;
+				//addDecimalSeparator = true;
 			}
 		}
 
+		result += (addDecimalSeparator ? decimalSeparator : "") + resultAfterDecimal;
 		//window.console.log(result);
 		return result;
 	};
@@ -1225,7 +1242,128 @@
 
 		return canvas;
 	}
-	//#endregion Static Methods
+
+	function exportCanvas(canvas, format) {
+		if (!canvas || !format)
+			return;
+
+		var fileName = "Chart." + (format === "jpeg" ? "jpg" : format);
+		var mimeType = "image/" + format;
+		var img = canvas.toDataURL(mimeType);
+		var saved = false;
+
+		var downloadLink = document.createElement("a");
+		downloadLink.download = fileName;
+		downloadLink.href = img;
+		downloadLink.target = "_blank";
+		var e;
+
+
+		if (!!new Blob()) {
+
+			//alert("blob");
+			var imgData = img.replace(/^data:[a-z/]*;base64,/, '');
+
+			var byteString = atob(imgData);
+			var buffer = new ArrayBuffer(byteString.length);
+			var intArray = new Uint8Array(buffer);
+			for (var i = 0; i < byteString.length; i++) {
+				intArray[i] = byteString.charCodeAt(i);
+			}
+
+			var blob = new Blob([buffer], { type: "image/" + format });
+
+			// Save the blob
+			try {
+				window.navigator.msSaveBlob(blob, fileName);
+				saved = true;
+			}
+			catch (e) {
+				downloadLink.dataset.downloadurl = [mimeType, downloadLink.download, downloadLink.href].join(':');
+				downloadLink.href = window.URL.createObjectURL(blob);
+			}
+		}
+
+		if (!saved) {
+
+			try {
+
+				event = document.createEvent("MouseEvents");
+
+				event.initMouseEvent("click", true, false, window,
+								 0, 0, 0, 0, 0, false, false, false,
+								 false, 0, null);
+
+				if (downloadLink.dispatchEvent) {
+					//alert("dispatchEvent");
+					downloadLink.dispatchEvent(event);
+				}
+				else if (downloadLink.fireEvent) {
+					//alert("fireEvent");
+					downloadLink.fireEvent("onclick");
+				}
+
+			} catch (e) {
+				var win = window.open();
+				//alert("<IE10");
+				//window.console.log("IE");
+				win.document.write("<img src='" + img + "'></img><div>Please right click on the image and save it to your device</div>");
+				win.document.close();
+			}
+		}
+	}
+
+	var base64Images = {
+		reset: {
+			image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAcCAYAAAAAwr0iAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAKRSURBVEiJrdY/iF1FFMfxzwnZrGISUSR/JLGIhoh/QiRNBLWxMLIWEkwbgiAoFgoW2mhlY6dgpY2IlRBRxBSKhSAKIklWJRYuMZKAhiyopAiaTY7FvRtmZ+/ed9/zHRjezLw5v/O9d86cuZGZpmURAfdn5o9DfdZNLXpjz+LziPgyIl6MiG0jPTJzZBuyDrP4BVm0P/AKbljTb4ToY/gGewYA7KyCl+1b3DUYANvwbiHw0gCAGRzBOzjTAXEOu0cC4Ch+r5x/HrpdrcZmvIDFSucMtnYCYC++6HmNDw8FKDT34ETrf639/azOr5vwRk/g5fbeuABtgC04XWk9VQLciMP4EH/3AFzErRNC7MXlQmsesSoHsGPE23hmEoBW+61K66HMXFmIMvN8myilXS36R01ub+KfYvw43ZXwYDX+AHP4BAci4pFJomfmr/ihmNofESsBImJGk7mlncrM45n5JPbhz0kAWpsv+juxaX21YIPmVJS2uNzJMS6ZNexC0d+I7fUWXLFyz2kSZlpWPvASlmqAf/FXNXf3FAF2F/1LuFifAlionB6dRuSI2IwHi6lzmXmp6xR8XY0fiIh7psAwh+3FuDkRHQVjl+a8lkXjo0kLUKH7XaV5oO86PmZ1FTzyP4K/XGl9v/zwfbW7BriiuETGCP5ch9bc9f97HF/vcFzCa5gdEPgWq+t/4v0V63oE1uF4h0DiFJ7HnSWMppDdh1dxtsPvJ2wcBNAKbsJXa0Ck5opdaBPsRNu/usba09i1KsaAVzmLt3sghrRjuK1Tf4xkegInxwy8gKf7dKMVH2QRsV5zXR/Cftyu+aKaKbbkQrsdH+PTzLzcqzkOQAVzM+7FHdiqqe2/YT4zF/t8S/sPmawyvC974vcAAAAASUVORK5CYII="
+		},
+		pan: {
+			image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAJVSURBVFiFvZe7a1RBGMV/x2hWI4JpfKCIiSBKOoOCkID/wP4BFqIIFkE02ChIiC8QDKlSiI3YqRBsBVGwUNAUdiIEUgjiAzQIIsuKJsfizsXr5t7d+8jmwLDfzHz3nLOzc7+ZxTZlGyDgZiWOCuJ9wH2gCUyuqQFgF/AGcKJNrYkBYBj40CIet+muGQi/96kM4WS7C/Tm5VUg7whJg8BkEGkCR4BDYfodsADUgP6wErO5iCtswsuJb32hdbXy8qzL5TIdmzJinHdZoZIBZcSFkGlAKs1Z3YCketZcBtouuaQNkrblMiBpBrhme7mAgU4wMCvpcFsDkq4C54DFVRTH9h+i6vlE0r5UA5ImgCuh28jB28iIs7BIVCOeStoZD64P4uPAjUTygKSx2FsK2TIwkugfk9Qkfd/E+yMWHQCeSRqx/R3gOp3LazfaS2C4B5gHDgD7U9x3E3uAH7KNpC3AHHAwTL4FHgM9GQ8vAaPA0dB/Abxqk2/gBLA9MXba9r1k/d4LfA3JtwueBeM58ucS+edXnAW23wP10N3advEi9CXizTnyN4bPS7Zn4sH/dq3t18AY4e1YLYSy3g/csj2VnFshZPuOpOeSKHCodUINuGj7YetE6je1PV9QoNPJ9StNHKodx7nRbiWrGHBGXAi5DUiqtQwtpcWK0Jubt8CltA5MEV1IfwO7+VffPwGfia5m34CT4bXujIIX0Qna1/cGMNqV/wUJE2czxD8CQ4X5Sl7Jz7SILwCDpbjKPBRMHAd+EtX4HWV5Spdc2w8kDQGPbH8py/MXMygM69/FKz4AAAAASUVORK5CYII="
+		},
+		zoom: {
+			image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAK6wAACusBgosNWgAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAMqSURBVFiFvdfbj91TFMDxz57U6GUEMS1aYzyMtCSSDhWjCZMInpAI3khE/QHtgzdRkXgSCS8SES9epKLi0oRKNETjRahREq2KS1stdRujtDPtbA97n5zdn9+5zJxTK9k5v3POXmt991p7r71+IcaoGwkhTOIebMRqzOBTvIG3Y4zTXRmqSoyx5cAKbMJOHMFJnMZ8/jyFaXyMR7G6nb1aH22cP4BvcBxziG3GKfyTIR9D6BYg1KUghPBCDveFlb/24Av8iuUYw41YVsz5G7uxKcZ4aMEpwGt5NY3V/YbHsQ6rcAHOw/kYxigewr5CZw4fYGxBKcCLOFEYehXrMdRhr5yLETxVScsOLOkKAPfn1TYMPIvLFrShUlS2FDZm8XRHACzFAWl3R2xbqPMCYhmeLCAOYEMngAczbcTvuHYxzguIy/FesR9e6gSwU/OoPYHBHgHgviIKX2Flq7k34KhmcVnbi/PC8JX4MgMcxb118wZwdz5aISscqx7VRcox7MrPQ7i+btIAJrAkf9+bI9EPmZY2IAxiTSuAldLq4Y9+AcSUh78KP0tbAcwU35cXMD1JCIFUoGiehlqAz6TNB1f1C0DK+0h+nsNPrQC2a4bqGmlD9kOGcWt+Po6pVgDvSxfJaSkFd4UQBvoAsBYbCoB3a2flM7slA0R8iyt6rAFDeDPbm8eOTpVwGD9qVq7nLbIaZnmksPU1JtsCZMXNmpdRxFasWITzh6Xj3LCzra1OxcD2QjHiGVzdpfORnMqZio2PcF23ABdJF1Np4BPptlyPi6WzPYBzpJZtHe7A6xW9cnyP8TqA//SEIYRL8Bxul7rihvwgtVn78WcGGZXa9HGd5TDujDHuOePXNiHdKjWgZX/YbsxLx/ktqbjVzTlcjUSnvI5JrdlUVp6WesZZ6R1hRrpq9+EVTGS9jTjYAuKIouGpbcurEkIYxC051KNSamazsc+xK8b4S0VnEi/j0hqTP+M27O258egQwZuzs7pI7Mf4WQXIEDc5s9sux+5+1Py2EmP8UOq6GvWhIScxfdYjUERiAt9Jd84J6a16zf8JEKT3yCm8g1UxRv8CC4pyRhzR1uUAAAAASUVORK5CYII="
+		},
+		menu: {
+			image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAK6wAACusBgosNWgAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMTUvMTTPsvU0AAAAP0lEQVRIie2SMQoAIBDDUvH/X667g8sJJ9KOhYYOkW0qGaU1MPdC0vGSbV19EACo3YMPAFH5BUBUjsqfAPpVXtNgGDfxEDCtAAAAAElFTkSuQmCC"
+		}
+	}
+
+	function setButtonState(chart, button, state) {
+		if (button.getAttribute("state") !== state) {
+
+			button.setAttribute("state", state);
+			button.style.position = "relative";
+			button.style.margin = "0px 0px 0px 0px";
+			button.style.padding = "3px 4px 0px 4px";
+			button.style.cssFloat = "left";
+			button.setAttribute("title", chart._cultureInfo[state + "Text"]);
+			button.innerHTML = "<img style='height:16px;' src='" + base64Images[state].image + "' alt='" + chart._cultureInfo[state + "Text"] + "' />";
+		}
+	}
+
+	function show() {
+
+		var element = null;
+
+		for (var i = 0; i < arguments.length; i++) {
+			element = arguments[i];
+			if (element.style)
+				element.style.display = "inline";
+		}
+	}
+
+	function hide() {
+
+		var element = null;
+
+		for (var i = 0; i < arguments.length; i++) {
+			element = arguments[i];
+			if (element.style)
+				element.style.display = "none";
+		}
+	}
+
+	//#endregion Static Methods & variables
 
 	//#region Class Definitions
 
@@ -1233,15 +1371,15 @@
 	function CanvasJSObject(defaultsKey, options, theme) {
 		this._defaultsKey = defaultsKey;
 
-		var currentTheme = {};
+		var currentThemeOptions = {};
 
 		if (theme && themes[theme] && themes[theme][defaultsKey])
-			currentTheme = themes[theme][defaultsKey];
+			currentThemeOptions = themes[theme][defaultsKey];
 
 		this._options = options ? options : {};
-		this.setOptions(this._options, currentTheme);
+		this.setOptions(this._options, currentThemeOptions);
 	}
-	CanvasJSObject.prototype.setOptions = function (options, currentTheme) {
+	CanvasJSObject.prototype.setOptions = function (options, currentThemeOptions) {
 
 		if (!defaultOptions[this._defaultsKey]) {
 			if (isDebugMode && window.console)
@@ -1253,8 +1391,8 @@
 			for (var prop in defaults) {
 				if (options && prop in options)
 					this[prop] = options[prop];
-				else if (currentTheme && prop in currentTheme)
-					this[prop] = currentTheme[prop];
+				else if (currentThemeOptions && prop in currentThemeOptions)
+					this[prop] = currentThemeOptions[prop];
 				else this[prop] = defaults[prop];
 
 				//if (typeof this[prop] === "function") {
@@ -1264,6 +1402,36 @@
 			}
 		}
 	};
+
+	// Update options. Returns true if changed or else false
+	CanvasJSObject.prototype.updateOption = function (prop) {
+
+		if (!defaultOptions[this._defaultsKey] && isDebugMode && window.console)
+			console.log("defaults not set");
+
+		var defaults = defaultOptions[this._defaultsKey];
+		var theme = this._options.theme ? this._options.theme : (this.chart && this.chart._options.theme) ? this.chart._options.theme : "theme1";
+
+		var currentThemeOptions = {};
+		var newValue = this[prop];
+
+		if (theme && themes[theme] && themes[theme][this._defaultsKey])
+			currentThemeOptions = themes[theme][this._defaultsKey];
+
+		if (prop in defaults) {
+			if (prop in this._options)
+				newValue = this._options[prop];
+			else if (currentThemeOptions && prop in currentThemeOptions)
+				newValue = currentThemeOptions[prop];
+			else newValue = defaults[prop];
+		}
+
+		if (newValue === this[prop])
+			return false;
+
+		this[prop] = newValue;
+		return true;
+	}
 
 	//Stores values in _oldOptions so that it can be tracked for any changes
 	CanvasJSObject.prototype.trackChanges = function (option) {
@@ -1312,14 +1480,14 @@
 		this._indexLabels = [];
 		this._panTimerId = 0;
 		this._lastTouchEventType = "";
+		this._lastTouchData = null;
+
 		this.panEnabled = false;
 		this._defaultCursor = "default";
 		this.plotArea = { canvas: null, ctx: null, x1: 0, y1: 0, x2: 0, y2: 0, width: 0, height: 0 };
 		this._dataInRenderedOrder = [];
 
-		//this._maxZIndex = 0;
-
-		this._container = document.getElementById(this._containerId);
+		this._container = typeof (this._containerId) === "string" ? document.getElementById(this._containerId) : this._containerId;
 
 		if (!this._container) {
 			if (window.console)
@@ -1345,10 +1513,14 @@
 		this.width = width;
 		this.height = height;
 
+		this._selectedColorSet = typeof (colorSets[this.colorSet]) !== "undefined" ? colorSets[this.colorSet] : colorSets["colorSet1"];
+
 		this._canvasJSContainer = document.createElement("div");
 		this._canvasJSContainer.setAttribute("class", "canvasjs-chart-container");
 
 		this._canvasJSContainer.style.position = "relative";
+		this._canvasJSContainer.style.textAlign = "left";
+		this._canvasJSContainer.style.cursor = "auto";
 		if (!isCanvasSupported) {
 			this._canvasJSContainer.style.height = "0px";//In IE6 toolTip doesn't show at proper position if not set.
 		}
@@ -1359,9 +1531,9 @@
 
 		this.canvas.style.position = "absolute";
 		if (this.canvas.getContext) {
-			try {
-				this.canvas.style.background = this.backgroundColor;
-			} catch (e) { }
+			//try {
+			//	this.canvas.style.background = this.backgroundColor;
+			//} catch (e) { }
 			this._canvasJSContainer.appendChild(this.canvas);
 			this.ctx = this.canvas.getContext("2d");
 			this.ctx.textBaseline = "top";
@@ -1390,133 +1562,19 @@
 
 		this._eventManager = new EventManager(this);
 
-		this._toolBar = document.createElement("div");
-		this._toolBar.setAttribute("class", "canvasjs-chart-toolbar");
-		this._toolBar.style.position = "absolute";
-		this._toolBar.style.top = "0px";
-		this._toolBar.style.right = "0px";
-		this._canvasJSContainer.appendChild(this._toolBar);
-
-		if (this.zoomEnabled) {
-			this._zoomButton = document.createElement("button");
-			this._zoomButton.appendChild(document.createTextNode("Pan"));
-			this._toolBar.appendChild(this._zoomButton);
-			addEvent(this._zoomButton, "click", function () {
-				if (_this.zoomEnabled) {
-					_this.zoomEnabled = false;
-					_this.panEnabled = true;
-
-					_this._zoomButton.innerHTML = _this._cultureInfo.zoomText;
-
-					//_this._defaultCursor = "move";
-					//_this.overlaidCanvas.style.cursor = _this._defaultCursor;
-				} else {
-					_this.zoomEnabled = true;
-					_this.panEnabled = false;
-
-					_this._zoomButton.innerHTML = _this._cultureInfo.panText;
-
-					//_this._defaultCursor = "default";
-					//_this.overlaidCanvas.style.cursor = _this._defaultCursor;
-				}
-				_this.render();
-			});
-
-
-			//this._panButton = document.createElement("button");
-			//this._panButton.appendChild(document.createTextNode("Pan"));
-			//this._toolBar.appendChild(this._panButton);
-			//this._panButton.addEventListener("click", function () {
-			//    _this.zoomEnabled = false;
-			//    _this.panEnabled = true;
-			//    _this.render();
-			//}, false);
-		}
-
-		if (this.zoomEnabled) {
-
-			this._resetButton = document.createElement("button");
-			this._resetButton.appendChild(document.createTextNode("Reset"));
-			this._toolBar.appendChild(this._resetButton);
-
-			if (this._options.zoomEnabled) {
-				this.zoomEnabled = true;
-				this.panEnabled = false;
-			} else {
-				this.zoomEnabled = false;
-				this.panEnabled = false;
-			}
-
-			this.overlaidCanvas.style.cursor = _this._defaultCursor;
-
-			addEvent(this._resetButton, "click", function () {
-
-				_this._toolTip.hide();
-
-				if (_this.zoomEnabled || _this.panEnabled) {
-					_this.zoomEnabled = true;
-					_this.panEnabled = false;
-					_this._zoomButton.innerHTML = _this._cultureInfo.panText;
-
-					_this._defaultCursor = "default";
-					_this.overlaidCanvas.style.cursor = _this._defaultCursor;
-				} else {
-					_this.zoomEnabled = false;
-					_this.panEnabled = false;
-				}
-
-				if (_this._options.axisX && _this._options.axisX.minimum)
-					_this.sessionVariables.axisX.internalMinimum = _this._options.axisX.minimum;
-				else
-					_this.sessionVariables.axisX.internalMinimum = null;
-
-				if (_this._options.axisX && _this._options.axisX.maximum)
-					_this.sessionVariables.axisX.internalMaximum = _this._options.axisX.maximum;
-				else
-					_this.sessionVariables.axisX.internalMaximum = null;
-
-				_this.resetOverlayedCanvas();
-
-				_this._toolBar.style.display = "none";
-
-				_this.render();
-			});
-		}
-
 		addEvent(window, "resize", function () {
 			//this._container.addEventListener("DOMSubtreeModified", function () {
 
-			var width = 0;
-			var height = 0;
-
-			if (_this._options.width)
-				width = _this.width;
-			else
-				_this.width = width = _this._container.clientWidth > 0 ? _this._container.clientWidth : _this.width;
-
-			if (_this._options.height)
-				height = _this.height;
-			else
-				_this.height = height = _this._container.clientHeight > 0 ? _this._container.clientHeight : _this.height;
-
-			if (_this.canvas.width !== width * devicePixelBackingStoreRatio || _this.canvas.height !== height * devicePixelBackingStoreRatio) {
-				//_this.renderCount--;
-
-				//_this.canvas.width = width;
-				//_this.canvas.height = height;
-				setCanvasSize(_this.canvas, width, height);
-
-				//_this.overlaidCanvas.width = width;
-				//_this.overlaidCanvas.height = height;
-				setCanvasSize(_this.overlaidCanvas, width, height);
-				setCanvasSize(_this._eventManager.ghostCanvas, width, height);
-
-
+			if (_this._updateSize())
 				_this.render();
-			}
 		});
 
-		this._toolBar.style.display = "none";
+
+		this._toolBar = document.createElement("div");
+		this._toolBar.setAttribute("class", "canvasjs-chart-toolbar");
+		this._toolBar.style.cssText = "position: absolute; right: 2px; top: 0px;";
+		this._canvasJSContainer.appendChild(this._toolBar);
+
 
 		this.bounds = { x1: 0, y1: 0, x2: this.width, y2: this.height };
 
@@ -1534,6 +1592,7 @@
 
 		addEvent(this.overlaidCanvas, 'mousedown', function (e) {
 			_this._mouseEventHandler(e);
+			hide(_this._dropdownMenu);
 		});
 
 		addEvent(this.overlaidCanvas, 'mouseout', function (e) {
@@ -1557,7 +1616,15 @@
 			_this._touchEventHandler(e);
 		});
 
+		if (!this._creditLink) {
+			this._creditLink = document.createElement("a");
+			this._creditLink.setAttribute("class", "canvasjs-chart-credit");
+			this._creditLink.setAttribute("style", "outline:none;margin:0px;position:absolute;right:3px;top:" + (this.height - 14) + "px;color:dimgrey;text-decoration:none;font-size:10px;font-family:Lucida Grande, Lucida Sans Unicode, Arial, sans-serif");
 
+			this._creditLink.setAttribute("tabIndex", -1);
+
+			this._creditLink.setAttribute("target", "_blank");
+		}
 
 		this._toolTip = new ToolTip(this, this._options.toolTip, this.theme);
 
@@ -1567,38 +1634,6 @@
 		this.axisY = null;
 		this.axisY2 = null;
 		this.renderCount = 0;
-
-		if (this.creditText && this.creditHref) {
-			this._creditLink = document.createElement("a");
-			this._creditLink.setAttribute("class", "canvasjs-chart-credit");
-			this._creditLink.setAttribute("style", "outline:none;margin:0px;position:absolute;right:3px;top:" + (height - 14) + "px;color:dimgrey;text-decoration:none;font-size:10px;font-family:Lucida Grande, Lucida Sans Unicode, Arial, sans-serif");
-
-			this._creditLink.setAttribute("tabIndex", -1);
-			this._creditLink.setAttribute("href", this.creditHref);
-			this._creditLink.innerHTML = this.creditText;
-			this._creditLink.setAttribute("target", "_blank");
-
-			//this._creditLink.style.
-
-
-			//var creditLinkString = "<a style='' href='" + (this.creditHref.indexOf("http://") === 0 ? this.creditHref : "http://" + this.creditHref) + "'>" + this.creditHref + "</a>";
-			//var xmlDoc;
-
-
-			//if (window.DOMParser) {
-			//    var parser = new DOMParser();
-			//    xmlDoc = parser.parseFromString(creditLinkString, "text/xml");
-			//    this._creditLink = xmlDoc.firstChild;
-			//}
-			//else // Internet Explorer
-			//{
-			//    xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
-			//    xmlDoc.async = false;
-			//    xmlDoc.loadXML(creditLinkString);
-			//    this._creditLink = xmlDoc.firstChild;
-			//}
-			this._canvasJSContainer.appendChild(this._creditLink);
-		}
 
 
 		this.sessionVariables = {
@@ -1619,6 +1654,255 @@
 
 	extend(Chart, CanvasJSObject);
 
+	//Update Chart Properties
+	Chart.prototype._updateOptions = function () {
+		var _this = this;
+
+		this.updateOption("width");
+		this.updateOption("height");
+
+
+		this.updateOption("theme");
+
+		if (this.updateOption("colorSet"))
+			this._selectedColorSet = typeof (colorSets[this.colorSet]) !== "undefined" ? colorSets[this.colorSet] : colorSets["colorSet1"];
+
+		this.updateOption("backgroundColor");
+		if (!this.backgroundColor)
+			this.backgroundColor = "rgba(0,0,0,0)";
+
+		this.updateOption("culture");
+		this._cultureInfo = new CultureInfo(this, this._options.culture);
+
+		this.updateOption("animationEnabled");
+
+		//Need to check this._options.zoomEnabled because this.zoomEnabled is used internally to keep track of state - and hence changes.
+		if (this._options.zoomEnabled) {
+
+			if (!this._zoomButton) {
+
+				hide(this._zoomButton = document.createElement("button"));
+				
+				setButtonState(this, this._zoomButton, "pan");
+
+				this._toolBar.appendChild(this._zoomButton);
+				addEvent(this._zoomButton, "click", function () {
+					if (_this.zoomEnabled) {
+						_this.zoomEnabled = false;
+						_this.panEnabled = true;
+
+						setButtonState(_this, _this._zoomButton, "zoom");
+
+					} else {
+						_this.zoomEnabled = true;
+						_this.panEnabled = false;
+
+						setButtonState(_this, _this._zoomButton, "pan");
+					}
+
+					_this.render();
+				});
+			}
+
+
+			if (!this._resetButton) {
+				hide(this._resetButton = document.createElement("button"));
+				setButtonState(this, this._resetButton, "reset");
+				this._toolBar.appendChild(this._resetButton);
+
+				addEvent(this._resetButton, "click", function () {
+
+					_this._toolTip.hide();
+
+					if (_this.zoomEnabled || _this.panEnabled) {
+						_this.zoomEnabled = true;
+						_this.panEnabled = false;
+						setButtonState(_this, _this._zoomButton, "pan");
+
+						_this._defaultCursor = "default";
+						_this.overlaidCanvas.style.cursor = _this._defaultCursor;
+					} else {
+						_this.zoomEnabled = false;
+						_this.panEnabled = false;
+					}
+
+					if (_this._options.axisX && _this._options.axisX.minimum)
+						_this.sessionVariables.axisX.internalMinimum = _this._options.axisX.minimum;
+					else
+						_this.sessionVariables.axisX.internalMinimum = null;
+
+					if (_this._options.axisX && _this._options.axisX.maximum)
+						_this.sessionVariables.axisX.internalMaximum = _this._options.axisX.maximum;
+					else
+						_this.sessionVariables.axisX.internalMaximum = null;
+
+					_this.resetOverlayedCanvas();
+
+					hide(_this._zoomButton, _this._resetButton);
+
+					_this.render();
+				});
+
+				this.overlaidCanvas.style.cursor = _this._defaultCursor;
+			}
+
+			if (!this.zoomEnabled && !this.panEnabled) {
+				if (!this._zoomButton) {
+					this.zoomEnabled = true;
+					this.panEnabled = false;
+				} else {
+
+					if (_this._zoomButton.getAttribute("state") === _this._cultureInfo.zoomText) {
+						this.panEnabled = true;
+						this.zoomEnabled = false;
+					}
+					else {
+						this.zoomEnabled = true;
+						this.panEnabled = false;
+					}
+
+					show(_this._zoomButton, _this._resetButton);
+				}
+			}
+
+
+
+		} else {
+			this.zoomEnabled = false;
+			this.panEnabled = false;
+		}
+
+		if (this.exportEnabled && isCanvasSupported && !this._menuButton) {
+			this._menuButton = document.createElement("button");
+			setButtonState(this, this._menuButton, "menu");
+			this._toolBar.appendChild(this._menuButton);
+
+			addEvent(this._menuButton, "click", function () {
+				if (_this._dropdownMenu.style.display === "none") {
+
+					if (_this._dropDownCloseTime && ((new Date()).getTime() - _this._dropDownCloseTime.getTime() <= 500))
+						return;
+
+					_this._dropdownMenu.style.display = "block";
+					_this._menuButton.blur();
+					_this._dropdownMenu.focus();
+				}
+
+			}, true);
+		}
+
+		if (!this._exportMenu) {
+			this._dropdownMenu = document.createElement("div");
+			this._dropdownMenu.setAttribute("tabindex", -1);
+			this._dropdownMenu.style.cssText = "position: absolute; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer;right: 1px;top: 25px;min-width: 120px;outline: 0;border: 1px solid silver;font-size: 14px;font-family: Calibri, Verdana, sans-serif;padding: 5px 0px 5px 0px;text-align: left;background-color: #fff;line-height: 20px;box-shadow: 2px 2px 10px #888888;";
+			_this._dropdownMenu.style.display = "none";
+			this._toolBar.appendChild(this._dropdownMenu);
+
+			addEvent(this._dropdownMenu, "blur", function () {
+				hide(_this._dropdownMenu);
+
+				_this._dropDownCloseTime = new Date();
+			}, true);
+
+			var exportOption = document.createElement("div");
+			exportOption.style.cssText = "padding: 2px 15px 2px 10px"
+			exportOption.innerHTML = this._cultureInfo.saveJPGText;
+			this._dropdownMenu.appendChild(exportOption);
+
+			addEvent(exportOption, "mouseover", function () {
+				this.style.backgroundColor = "#EEEEEE";
+			}, true);
+
+			addEvent(exportOption, "mouseout", function () {
+				this.style.backgroundColor = "transparent";
+			}, true);
+
+			addEvent(exportOption, "click", function () {
+				exportCanvas(_this.canvas, "jpg");
+				hide(_this._dropdownMenu);
+			}, true);
+
+			var exportOption = document.createElement("div");
+			exportOption.style.cssText = "padding: 2px 15px 2px 10px"
+			exportOption.innerHTML = this._cultureInfo.savePNGText;
+			this._dropdownMenu.appendChild(exportOption);
+
+			addEvent(exportOption, "mouseover", function () {
+				this.style.backgroundColor = "#EEEEEE";
+			}, true);
+
+			addEvent(exportOption, "mouseout", function () {
+				this.style.backgroundColor = "transparent";
+			}, true);
+
+			addEvent(exportOption, "click", function () {
+				exportCanvas(_this.canvas, "png");
+				hide(_this._dropdownMenu);
+			}, true);
+		}
+
+
+		if (this._toolBar.style.display !== "none" && this._zoomButton) {
+
+			this.panEnabled ? setButtonState(_this, _this._zoomButton, "zoom") : setButtonState(_this, _this._zoomButton, "pan");
+
+
+			if (_this._resetButton.getAttribute("state") !== _this._cultureInfo.resetText)
+				setButtonState(_this, _this._resetButton, "reset");
+		}
+
+		var creditTextChanged = this.updateOption("creditText");
+		var creditHrefChanged = this.updateOption("creditHref");
+
+		if (this.renderCount === 0 || (creditTextChanged || creditHrefChanged)) {
+			this._creditLink.setAttribute("href", this.creditHref);
+			this._creditLink.innerHTML = this.creditText;
+		}
+
+		if (this.creditHref && this.creditText) {
+			if (!this._creditLink.parentElement)
+				this._canvasJSContainer.appendChild(this._creditLink);
+		}
+		else if (this._creditLink.parentElement)
+			this._canvasJSContainer.removeChild(this._creditLink);
+
+		if (this._options.toolTip && this._toolTip._options !== this._options.toolTip)
+			this._toolTip._options = this._options.toolTip
+
+		this._toolTip.updateOption("enabled");
+		this._toolTip.updateOption("shared");
+		this._toolTip.updateOption("animationEnabled");
+		this._toolTip.updateOption("borderColor");
+		this._toolTip.updateOption("content");
+
+	}
+
+	Chart.prototype._updateSize = function () {
+		var width = 0;
+		var height = 0;
+
+		if (this._options.width)
+			width = this.width;
+		else
+			this.width = width = this._container.clientWidth > 0 ? this._container.clientWidth : this.width;
+
+		if (this._options.height)
+			height = this.height;
+		else
+			this.height = height = this._container.clientHeight > 0 ? this._container.clientHeight : this.height;
+
+		if (this.canvas.width !== width * devicePixelBackingStoreRatio || this.canvas.height !== height * devicePixelBackingStoreRatio) {
+			setCanvasSize(this.canvas, width, height);
+
+			setCanvasSize(this.overlaidCanvas, width, height);
+			setCanvasSize(this._eventManager.ghostCanvas, width, height);
+
+			return true;
+		}
+
+		return false;
+	}
+
 	// initialize chart objects
 	Chart.prototype._initialize = function () {
 		///<signature>
@@ -1626,9 +1910,20 @@
 		///</signature>
 		//this.width = this.width;
 
-		this._selectedColorSet = typeof (colorSets[this.colorSet]) !== "undefined" ? colorSets[this.colorSet] : colorSets["colorSet1"];
+		this.pieDoughnutClickHandler = null;
+		//this._touchCurrentCoordinates = null;
 
-		this.ctx.clearRect(0, 0, this.width, this.height);
+		if (this.animationRequestId)
+			this.cancelRequestAnimFrame.call(window, this.animationRequestId);
+
+		this._updateOptions();
+
+		this._updateSize();
+
+		//this._selectedColorSet = colorSets["colorSet2"];
+
+		//this.ctx.clearRect(0, 0, this.width, this.height);
+		this.clearCanvas();
 		this.ctx.beginPath();
 
 		this.axisX = null;
@@ -1642,11 +1937,6 @@
 			this._eventManager.reset();
 
 		this.plotInfo = {
-			//xMin: Infinity, xMax: -Infinity,
-			//yMin: Infinity, yMax: -Infinity,
-			//viewPortXMin: Infinity, viewPortXMax: -Infinity,
-			//viewPortYMin: Infinity, viewPortYMax: -Infinity,
-			//xMinDiff: Infinity,
 			axisPlacement: null,
 			axisXValueType: null,
 			plotTypes: []//array of plotType: {type:"", axisYType: "primary", dataSeriesIndexes:[]}
@@ -1654,7 +1944,6 @@
 
 		this.layoutManager.reset();
 
-		this._cultureInfo = new CultureInfo(this, this._options.culture);
 
 		this.data = [];
 		var dataSeriesIndex = 0;
@@ -1676,7 +1965,9 @@
 					dataSeries._colorSet = [this._selectedColorSet[dataSeries.index % this._selectedColorSet.length]];
 					dataSeries.color = this._selectedColorSet[dataSeries.index % this._selectedColorSet.length];
 				} else {
-					if (dataSeries.type === "line" || dataSeries.type === "stepLine" || dataSeries.type === "spline" || dataSeries.type === "area" || dataSeries.type === "stepArea" || dataSeries.type === "splineArea" || dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100") {
+					if (dataSeries.type === "line" || dataSeries.type === "stepLine" || dataSeries.type === "spline" || dataSeries.type === "area"
+						|| dataSeries.type === "stepArea" || dataSeries.type === "splineArea" || dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100"
+						|| dataSeries.type === "rangeArea" || dataSeries.type === "rangeSplineArea" || dataSeries.type === "candlestick" || dataSeries.type === "ohlc") {
 						dataSeries._colorSet = [this._selectedColorSet[0]];
 					}
 					else
@@ -1760,7 +2051,13 @@
 	Chart._supportedChartTypes = ["line", "stepLine", "spline", "column", "area", "stepArea", "splineArea", "bar", "bubble", "scatter",
 		"stackedColumn", "stackedColumn100", "stackedBar", "stackedBar100",
 		"stackedArea", "stackedArea100",
-		"pie", "doughnut"
+		"candlestick",
+		"ohlc",
+		"rangeColumn",
+		"rangeBar",
+		"rangeArea",
+		"rangeSplineArea",
+		"pie", "doughnut", "funnel"
 	];
 
 	//indexOf is not supported in IE8-
@@ -1784,8 +2081,10 @@
 		};
 	}
 
-	Chart.prototype.render = function () {
+	Chart.prototype.render = function (options) {
 		//var dt = Date.now();
+		if (options)
+			this._options = options;
 
 		//var fontHeight = getFontHeightInPixels("'Nato Sans'", 18, false);
 
@@ -1907,7 +2206,19 @@
 				else if (plotUnit.type === "pie")
 					this.renderPie(plotUnit);
 				else if (plotUnit.type === "doughnut")
-					this.renderPie(plotUnit);
+					this.renderPie(plotUnit);				
+				else if (plotUnit.type === "candlestick")
+					this.renderCandlestick(plotUnit);
+				else if (plotUnit.type === "ohlc")
+					this.renderCandlestick(plotUnit);
+				else if (plotUnit.type === "rangeColumn")
+					this.renderRangeColumn(plotUnit);
+				else if (plotUnit.type === "rangeBar")
+					this.renderRangeBar(plotUnit);
+				else if (plotUnit.type === "rangeArea")
+					this.renderRangeArea(plotUnit);
+				else if (plotUnit.type === "rangeSplineArea")
+					this.renderRangeSplineArea(plotUnit);
 
 				for (var k = 0; k < plotUnit.dataSeriesIndexes.length; k++) {
 					this._dataInRenderedOrder.push(this.data[plotUnit.dataSeriesIndexes[k]]);
@@ -1920,8 +2231,8 @@
 
 		this.attachPlotAreaEventHandlers();
 
-		if (!this.zoomEnabled && !this.panEnabled && this._toolBar.style.display !== "none") {
-			this._toolBar.style.display = "none";
+		if (!this.zoomEnabled && !this.panEnabled && this._zoomButton && this._zoomButton.style.display !== "none") {			
+			hide(this._zoomButton, this._resetButton);
 		}
 
 		this._toolTip._updateToolTip();
@@ -2081,6 +2392,8 @@
 					this._processStackedPlotUnit(plotUnit);
 				else if (plotUnit.type === "stackedColumn100" || plotUnit.type === "stackedBar100" || plotUnit.type === "stackedArea100")
 					this._processStacked100PlotUnit(plotUnit);
+				else if (plotUnit.type === "candlestick" || plotUnit.type === "ohlc" || plotUnit.type === "rangeColumn" || plotUnit.type === "rangeBar" || plotUnit.type === "rangeArea" || plotUnit.type === "rangeSplineArea")
+					this._processMultiYPlotUnit(plotUnit);
 			}
 		}
 
@@ -2177,6 +2490,9 @@
 					axisXDataInfo.viewPortMin = dataPointX;
 				if (dataPointX > axisXDataInfo.viewPortMax)
 					axisXDataInfo.viewPortMax = dataPointX;
+
+				if (dataPointY === null)
+					continue;
 
 				if (dataPointY < axisYDataInfo.viewPortMin)
 					axisYDataInfo.viewPortMin = dataPointY;
@@ -2280,6 +2596,9 @@
 					axisXDataInfo.viewPortMin = dataPointX;
 				if (dataPointX > axisXDataInfo.viewPortMax)
 					axisXDataInfo.viewPortMax = dataPointX;
+
+				if (dataPointY === null)
+					continue;
 
 				if (dataPointY >= 0) {
 					if (dataPointYPositiveSums[dataPointX])
@@ -2439,6 +2758,9 @@
 				if (dataPointX > axisXDataInfo.viewPortMax)
 					axisXDataInfo.viewPortMax = dataPointX;
 
+				if (dataPointY === null)
+					continue;
+
 				if (dataPointY >= 0) {
 					containsPositiveY = true;
 				} else {
@@ -2475,6 +2797,119 @@
 		//this.dataPoints.sort(function (dataPoint1, dataPoint2) { return dataPoint1.x - dataPoint2.x; });
 
 		//window.console.log("viewPortYMin: " + plotInfo.viewPortYMin + "; viewPortYMax: " + plotInfo.viewPortYMax);
+	}
+
+	Chart.prototype._processMultiYPlotUnit = function (plotUnit) {
+		if (!plotUnit.dataSeriesIndexes || plotUnit.dataSeriesIndexes.length < 1)
+			return;
+
+		var axisYDataInfo = plotUnit.axisY.dataInfo;
+		var axisXDataInfo = plotUnit.axisX.dataInfo;
+		var dataPointX, dataPointY, dataPointYMin, dataPointYMax;
+		var isDateTime = false;
+
+
+		for (var j = 0; j < plotUnit.dataSeriesIndexes.length; j++) {
+			var dataSeries = this.data[plotUnit.dataSeriesIndexes[j]];
+			var i = 0;
+			var isFirstDPInViewPort = false;
+			var isLastDPInViewPort = false;
+
+			if (dataSeries.axisPlacement === "normal" || dataSeries.axisPlacement === "xySwapped") {
+
+				var plotAreaXMin = this.sessionVariables.axisX.internalMinimum ? this.sessionVariables.axisX.internalMinimum : (this._options.axisX && this._options.axisX.minimum) ? this._options.axisX.minimum : -Infinity;
+				var plotAreaXMax = this.sessionVariables.axisX.internalMaximum ? this.sessionVariables.axisX.internalMaximum : (this._options.axisX && this._options.axisX.maximum) ? this._options.axisX.maximum : Infinity;
+			}
+
+
+			if (dataSeries.dataPoints[i].x && dataSeries.dataPoints[i].x.getTime || dataSeries.xValueType === "dateTime") {
+				isDateTime = true;
+			}
+
+			for (i = 0; i < dataSeries.dataPoints.length; i++) {
+
+				if (typeof dataSeries.dataPoints[i].x === "undefined") {
+					dataSeries.dataPoints[i].x = i;
+				}
+
+				if (dataSeries.dataPoints[i].x.getTime) {
+					isDateTime = true;
+					dataPointX = dataSeries.dataPoints[i].x.getTime();//dataPointX is used so that getTime is called only once in case of dateTime values
+				}
+				else
+					dataPointX = dataSeries.dataPoints[i].x;
+
+				dataPointY = dataSeries.dataPoints[i].y;
+
+				if (dataPointY && dataPointY.length) {
+					dataPointYMin = Math.min.apply(null, dataPointY);
+					dataPointYMax = Math.max.apply(null, dataPointY);
+				}
+
+
+				if (dataPointX < axisXDataInfo.min)
+					axisXDataInfo.min = dataPointX;
+				if (dataPointX > axisXDataInfo.max)
+					axisXDataInfo.max = dataPointX;
+
+				if (dataPointYMin < axisYDataInfo.min)
+					axisYDataInfo.min = dataPointYMin;
+
+				if (dataPointYMax > axisYDataInfo.max)
+					axisYDataInfo.max = dataPointYMax;
+
+
+				if (i > 0) {
+					var xDiff = dataPointX - dataSeries.dataPoints[i - 1].x;
+					xDiff < 0 && (xDiff = xDiff * -1); //If Condition shortcut
+
+					if (axisXDataInfo.minDiff > xDiff && xDiff !== 0) {
+						axisXDataInfo.minDiff = xDiff;
+					}
+				}
+
+				// This section makes sure that partially visible dataPoints are included in the begining
+				if (dataPointX < plotAreaXMin && !isFirstDPInViewPort) {
+					continue;
+				} else if (!isFirstDPInViewPort) {
+					isFirstDPInViewPort = true;
+
+					if (i > 0) {
+						i -= 2;
+						continue;
+					}
+				}
+
+				// This section makes sure that partially visible dataPoints are included at the end
+				if (dataPointX > plotAreaXMax && !isLastDPInViewPort) {
+					isLastDPInViewPort = true;
+				} else if (dataPointX > plotAreaXMax && isLastDPInViewPort) {
+					continue;
+				}
+
+				if (dataSeries.dataPoints[i].label)
+					plotUnit.axisX.labels[dataPointX] = dataSeries.dataPoints[i].label;
+
+
+				if (dataPointX < axisXDataInfo.viewPortMin)
+					axisXDataInfo.viewPortMin = dataPointX;
+				if (dataPointX > axisXDataInfo.viewPortMax)
+					axisXDataInfo.viewPortMax = dataPointX;
+
+				if (dataPointY === null)
+					continue;
+
+				if (dataPointYMin < axisYDataInfo.viewPortMin)
+					axisYDataInfo.viewPortMin = dataPointYMin;
+				if (dataPointYMax > axisYDataInfo.viewPortMax)
+					axisYDataInfo.viewPortMax = dataPointYMax;
+			}
+
+			this.plotInfo.axisXValueType = dataSeries.xValueType = isDateTime ? "dateTime" : "number";
+		}
+
+		//this.dataPoints.sort(compareDataPointX);
+		//this.dataPoints.sort(function (dataPoint1, dataPoint2) { return dataPoint1.x - dataPoint2.x; });
 	}
 
 	//getClosest returns objects nearby and hence shouldn't be used for events like click, mouseover, mousemove, etc which require object that is exactly under the mouse.
@@ -2569,27 +3004,71 @@
 		this.overlaidCanvasCtx.clearRect(0, 0, this.width, this.height);
 	}
 
+	Chart.prototype.clearCanvas = function () {
+		this.ctx.clearRect(0, 0, this.width, this.height);
+
+		if (this.backgroundColor) {
+			this.ctx.fillStyle = this.backgroundColor;
+			this.ctx.fillRect(0, 0, this.width, this.height);
+		}
+	}
+
 	Chart.prototype.attachEvent = function (param) {
 		this._events.push(param);
 	}
 
 	Chart.prototype._touchEventHandler = function (ev) {
-		if (!ev.changedTouches)
+		if (!ev.changedTouches || !this.interactivityEnabled)
 			return;
 
 		var mouseEvents = [];
 		var touches = ev.changedTouches;
 		var first = touches ? touches[0] : ev;
+		var touchCurrentCoordinates = null;
+
+		//window.console.log(touches.length);
 
 		switch (ev.type) {
-			case "touchstart": case "MSPointerDown": mouseEvents = ["mousemove", "mousedown"]; break;
+			case "touchstart": case "MSPointerDown":
+				mouseEvents = ["mousemove", "mousedown"];
+				this._lastTouchData = getMouseCoordinates(first);
+				this._lastTouchData.time = new Date();
+				break;
 			case "touchmove": case "MSPointerMove": mouseEvents = ["mousemove"]; break;
 			case "touchend": case "MSPointerUp": mouseEvents = (this._lastTouchEventType === "touchstart" || this._lastTouchEventType === "MSPointerDown") ? ["mouseup", "click"] : ["mouseup"];
 				break;
 			default: return;
 		}
 
+		if (touches && touches.length > 1) return;
+
+
+		touchCurrentCoordinates = getMouseCoordinates(first);
+		touchCurrentCoordinates.time = new Date();
+		try {
+			var dy = touchCurrentCoordinates.y - this._lastTouchData.y;
+			var dx = touchCurrentCoordinates.x - this._lastTouchData.x;
+			var dt = touchCurrentCoordinates.time - this._lastTouchData.time;
+
+			if (Math.abs(dy) > 15 && (!!this._lastTouchData.scroll || dt < 200)) {
+				//this._lastTouchData.y = touchCurrentCoordinates.y;
+				this._lastTouchData.scroll = true;
+
+				var win = window.parent || window;
+				if (win && win.scrollBy)
+					win.scrollBy(0, -dy);
+			}
+		} catch (e) { };
+
 		this._lastTouchEventType = ev.type;
+
+		if (!!this._lastTouchData.scroll && this.zoomEnabled) {
+			if (this.isDrag)
+				this.resetOverlayedCanvas();
+
+			this.isDrag = false;
+			return;
+		}
 
 		for (var i = 0; i < mouseEvents.length; i++) {
 
@@ -2598,7 +3077,7 @@
 			simulatedEvent.initMouseEvent(type, true, true, window, 1,
 									  first.screenX, first.screenY,
 									  first.clientX, first.clientY, false,
-									  false, false, false, 0/*left*/, null);
+									  false, false, false, 0, null);
 
 			first.target.dispatchEvent(simulatedEvent);
 
@@ -2615,6 +3094,10 @@
 	}
 
 	Chart.prototype._mouseEventHandler = function (ev) {
+
+		if (!this.interactivityEnabled)
+			return;
+
 		// stop panning and zooming so we can draw
 		if (ev.preventManipulation) {
 			//alert("preventManipulation");
@@ -2828,7 +3311,7 @@
 								minX = Math.max(minX, this.axisX.dataInfo.min);
 								maxX = Math.min(maxX, this.axisX.dataInfo.max);
 
-								if (Math.abs((maxX - minX) / this.axisX.dataInfo.minDiff) >= 4 / 500 * this.height) {
+								if (Math.abs(maxX - minX) > 2 * Math.abs(this.axisX.dataInfo.minDiff)) {
 
 									this.axisX.sessionVariables.internalMinimum = minX;
 									this.axisX.sessionVariables.internalMaximum = maxX;
@@ -2848,7 +3331,7 @@
 								minX = Math.max(minX, this.axisX.dataInfo.min);
 								maxX = Math.min(maxX, this.axisX.dataInfo.max);
 
-								if (Math.abs((maxX - minX) / this.axisX.dataInfo.minDiff) >= 5 / 500 * this.width) {
+								if (Math.abs(maxX - minX) > 2 * Math.abs(this.axisX.dataInfo.minDiff)) {
 
 									this.axisX.sessionVariables.internalMinimum = minX;
 									this.axisX.sessionVariables.internalMaximum = maxX;
@@ -2859,10 +3342,10 @@
 						}
 					}
 
-					if (this.zoomEnabled && this._toolBar.style.display === "none") {
-						this._toolBar.style.display = "inline";
-						this._zoomButton.innerHTML = this._cultureInfo.panText;
-						this._resetButton.innerHTML = this._cultureInfo.resetText;
+					if (this.zoomEnabled && this._zoomButton.style.display === "none") {
+						show(this._zoomButton, this._resetButton);
+						setButtonState(this, this._zoomButton, "pan");
+						setButtonState(this, this._resetButton, "reset");
 					}
 				}
 			}
@@ -2957,6 +3440,7 @@
 			this._toolTip.mouseMoveHandler(x, y);
 	}
 
+
 	//#endregion Events
 
 	Chart.prototype.preparePlotArea = function () {
@@ -3026,7 +3510,7 @@
 
 			ctx.fillStyle = getProperty("indexLabelFontColor", indexLabel.dataPoint, indexLabel.dataSeries);
 			ctx.font = getFontString("indexLabel", indexLabel.dataPoint, indexLabel.dataSeries);
-			var indexLabelText = this.replaceKeywordsWithValue(getProperty("indexLabel", indexLabel.dataPoint, indexLabel.dataSeries), indexLabel.dataPoint, indexLabel.dataSeries);
+			var indexLabelText = this.replaceKeywordsWithValue(getProperty("indexLabel", indexLabel.dataPoint, indexLabel.dataSeries), indexLabel.dataPoint, indexLabel.dataSeries, null, indexLabel.indexKeyword);
 			var textSize = { width: ctx.measureText(indexLabelText).width, height: getProperty("indexLabelFontSize", indexLabel.dataPoint, indexLabel.dataSeries) };
 			var placement = getProperty("indexLabelPlacement", indexLabel.dataPoint, indexLabel.dataSeries);
 			var orientation = getProperty("indexLabelOrientation", indexLabel.dataPoint, indexLabel.dataSeries);
@@ -3036,14 +3520,21 @@
 			var yMaxLimit = 0;
 			var xMinLimit = 0;
 			var xMaxLimit = 0;
+			var offsetX = 0, offsetY = 0;
+			var direction = indexLabel.direction; // +1 for above the point and -1 for below the point
+
+
 
 			//So that indexLabel is skipped once the point is outside of plotArea
 			if (indexLabel.point.x < plotArea.x1 || indexLabel.point.x > plotArea.x2 || indexLabel.point.y < plotArea.y1 || indexLabel.point.y > plotArea.y2)
 				continue;
 
 			if (indexLabel.chartType === "column" || indexLabel.chartType === "stackedColumn" || indexLabel.chartType === "stackedColumn100"
-				|| indexLabel.chartType === "bar" || indexLabel.chartType === "stackedBar" || indexLabel.chartType === "stackedBar100") {
+				|| indexLabel.chartType === "bar" || indexLabel.chartType === "stackedBar" || indexLabel.chartType === "stackedBar100"
+				|| indexLabel.chartType === "candlestick" || indexLabel.chartType === "ohlc"
+				|| indexLabel.chartType === "rangeColumn" || indexLabel.chartType === "rangeBar") {
 
+				offsetY = 5;
 				var width = Math.abs(indexLabel.bounds.x1, indexLabel.bounds.x2)
 				var height = Math.abs(indexLabel.bounds.y1, indexLabel.bounds.y2)
 
@@ -3058,23 +3549,22 @@
 
 						yMinLimit = indexLabel.bounds.y1;
 						yMaxLimit = indexLabel.bounds.y2;
-
 					}
 
 					if (orientation === "horizontal") {
 						x = indexLabel.point.x - textSize.width / 2;
 
-						if (indexLabel.dataPoint.y >= 0)
-							y = Math.min((Math.max(indexLabel.point.y - textSize.height / 2 - 5, yMinLimit + textSize.height / 2 + 5)), yMaxLimit - textSize.height / 2 - 5);
+						if (direction >= 0)
+							y = Math.min((Math.max(indexLabel.point.y - textSize.height / 2 - offsetY, yMinLimit + textSize.height / 2 + 5)), yMaxLimit - textSize.height / 2 - offsetY);
 						else
-							y = Math.max((Math.min(indexLabel.point.y + textSize.height / 2 + 5, yMaxLimit - textSize.height / 2)), yMinLimit + textSize.height / 2 + 5);
+							y = Math.max((Math.min(indexLabel.point.y + textSize.height / 2 + offsetY, yMaxLimit - textSize.height / 2)), yMinLimit + textSize.height / 2 + offsetY);
 					}
 					else if (orientation === "vertical") {
 						x = indexLabel.point.x;
-						if (indexLabel.dataPoint.y >= 0)
-							y = Math.min(Math.max(indexLabel.point.y - 5, yMinLimit + textSize.width + 5), yMaxLimit);
+						if (direction >= 0)
+							y = Math.min(Math.max(indexLabel.point.y - offsetY, yMinLimit + textSize.width + offsetY), yMaxLimit);
 						else
-							y = Math.max(Math.min(indexLabel.point.y + textSize.width + 5, yMaxLimit - 5), yMinLimit);
+							y = Math.max(Math.min(indexLabel.point.y + textSize.width + offsetY, yMaxLimit - offsetY), yMinLimit);
 
 						angle = -90;
 					}
@@ -3096,18 +3586,18 @@
 					if (orientation === "horizontal") {
 						y = indexLabel.point.y;
 
-						if (indexLabel.dataPoint.y >= 0)
-							x = Math.max((Math.min(indexLabel.point.x + 5, xMaxLimit - textSize.width)), xMinLimit);
+						if (direction >= 0)
+							x = Math.max((Math.min(indexLabel.point.x + offsetY, xMaxLimit - textSize.width)), xMinLimit);
 						else
-							x = Math.min((Math.max(indexLabel.point.x - textSize.width - 5, xMinLimit)), xMaxLimit);
+							x = Math.min((Math.max(indexLabel.point.x - textSize.width - offsetY, xMinLimit)), xMaxLimit);
 					}
 					else if (orientation === "vertical") {
 						y = indexLabel.point.y + textSize.width / 2;
 
-						if (indexLabel.dataPoint.y >= 0)
-							x = Math.max(Math.min(indexLabel.point.x + textSize.height / 2 + 5, xMaxLimit - textSize.height / 2), xMinLimit);
+						if (direction >= 0)
+							x = Math.max(Math.min(indexLabel.point.x + textSize.height / 2 + offsetY, xMaxLimit - textSize.height / 2), xMinLimit);
 						else
-							x = Math.min(Math.max(indexLabel.point.x - textSize.height / 2 - 5, xMinLimit + textSize.height / 2), xMaxLimit + textSize.height / 2);
+							x = Math.min(Math.max(indexLabel.point.x - textSize.height / 2 - offsetY, xMinLimit + textSize.height / 2), xMaxLimit + textSize.height / 2);
 
 						angle = -90;
 					}
@@ -3116,23 +3606,34 @@
 
 			} else {
 
+				offsetY = 5;
+
+
 				if (orientation === "horizontal") {
 
 					x = indexLabel.point.x - textSize.width / 2;
 
-					if (indexLabel.dataPoint.y >= 0)
-						y = Math.max(indexLabel.point.y - textSize.height / 2 - 5, plotArea.y1 + textSize.height / 2);
+					if (indexLabel.chartType === "bubble") {
+						offsetY = -textSize.height / 2;
+					}
+
+					if (direction > 0)
+						y = Math.max(indexLabel.point.y - textSize.height / 2 - offsetY, plotArea.y1 + textSize.height / 2);
 					else
-						y = Math.min(indexLabel.point.y + textSize.height / 2 + 5, plotArea.y2 - textSize.height / 2);
+						y = Math.min(indexLabel.point.y + textSize.height / 2 + offsetY, plotArea.y2 - textSize.height / 2);
 
 				} else if (orientation === "vertical") {
 
 					x = indexLabel.point.x;
 
-					if (indexLabel.dataPoint.y >= 0)
-						y = Math.max(indexLabel.point.y - 5, plotArea.y1 + textSize.width);
+					if (indexLabel.chartType === "bubble") {
+						offsetY = -textSize.width / 2;
+					}
+
+					if (direction > 0)
+						y = Math.max(indexLabel.point.y - offsetY, plotArea.y1 + textSize.width);
 					else
-						y = Math.min(indexLabel.point.y + textSize.width + 5, plotArea.y2);
+						y = Math.min(indexLabel.point.y + textSize.width + offsetY, plotArea.y2);
 
 					angle = -90;
 				}
@@ -3272,9 +3773,9 @@
 						var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 						markers.push(markerProps);
 
-						if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-							dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-						}
+						//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+						//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+						//}
 
 						var markerColor = intToHexColorString(id);
 
@@ -3448,9 +3949,9 @@
 						var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 						markers.push(markerProps);
 
-						if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-							dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-						}
+						//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+						//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+						//}
 
 						var markerColor = intToHexColorString(id);
 
@@ -3616,9 +4117,9 @@
 						var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 						markers.push(markerProps);
 
-						if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-							dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-						}
+						//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+						//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+						//}
 
 						var markerColor = intToHexColorString(id);
 
@@ -3704,7 +4205,12 @@
 		}
 	}
 
-	var drawRect = function (ctx, x1, y1, x2, y2, color, top, bottom, left, right) {
+	var drawRect = function (ctx, x1, y1, x2, y2, color, borderThickness, borderColor, top, bottom, left, right, fillOpacity) {
+		if (typeof (fillOpacity) === "undefined")
+			fillOpacity = 1;
+
+		borderThickness = borderThickness || 0;
+		borderColor = borderColor || "black";
 		//alert("top"+ top + "bottom" + bottom + " lt" + left+ "rt" + right )
 		var a1 = x1, a2 = x2, b1 = y1, b2 = y2, edgeY, edgeX;
 		if (x2 - x1 > 15 && y2 - y1 > 15)
@@ -3721,8 +4227,21 @@
 		ctx.moveTo(x1, y1);
 		ctx.save();
 		ctx.fillStyle = color1;
-		//  ctx.moveTo(x1, y1);
-		ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
+
+		ctx.globalAlpha = fillOpacity;
+		ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+		ctx.globalAlpha = 1;
+
+		if (borderThickness > 0) {
+			var offset = borderThickness % 2 === 0 ? 0 : .5;
+			ctx.beginPath();
+			ctx.lineWidth = borderThickness;
+			ctx.strokeStyle = borderColor;
+			ctx.moveTo(x1, y1);
+			ctx.rect(x1 - offset, y1 - offset, x2 - x1 + 2 * offset, y2 - y1 + 2 * offset);
+			ctx.stroke();
+		}
+
 		ctx.restore();
 		//   ctx.beginPath();
 		if (top === true) {
@@ -3819,7 +4338,7 @@
 
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = (this.width * .15);
+		var maxBarWidth = Math.min((this.width * .15), this.plotArea.width / plotUnit.plotType.totalDataSeries * .9) << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.totalDataSeries * .9) << 0;
 
@@ -3854,7 +4373,7 @@
 
 
 			// Reducing pixelPerUnit by 1 just to overcome any problems due to rounding off of pixels.
-			dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
 
 			//var offsetX = barWidth * plotUnit.index << 0;
 
@@ -3907,7 +4426,7 @@
 					}
 
 					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
-					drawRect(ctx, x1, y1, x2, y2, color, bevelEnabled && (dataPoints[i].y >= 0), (dataPoints[i].y < 0) && bevelEnabled, false, false);
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled && (dataPoints[i].y >= 0), (dataPoints[i].y < 0) && bevelEnabled, false, false, dataSeries.fillOpacity);
 
 					//if (dataSeries.markerType && dataSeries.markerSize > 0) {
 					//    RenderHelper.drawMarker(x1 + (x2 - x1) / 2, y, ctx, dataSeries.markerType, dataSeries.markerSize, color, dataSeries.markerBorderColor, dataSeries.markerBorderThickness ? dataSeries.markerBorderThickness : 1);
@@ -3918,7 +4437,7 @@
 
 					color = intToHexColorString(id);
 					if (isCanvasSupported)
-						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, false, false, false, false);
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
 
 					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
 
@@ -3927,6 +4446,7 @@
 							dataPoint: dataPoints[i],
 							dataSeries: dataSeries,
 							point: { x: x1 + (x2 - x1) / 2, y: dataPoints[i].y >= 0 ? y1 : y2 },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							bounds: { x1: x1, y1: Math.min(y1, y2), x2: x2, y2: Math.max(y1, y2) },
 							color: color
 						});
@@ -3962,7 +4482,7 @@
 		//var yZeroToPixel = (axisYProps.y2 - axisYProps.height / rangeY * Math.abs(0 - plotUnit.axisY.minimum) + .5) << 0;
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.plotUnits.length * .9) << 0;
 
@@ -3996,7 +4516,7 @@
 			var isFirstDataPointInPlotArea = true;
 
 			// Reducing pixelPerUnit by 1 just to overcome any problems due to rounding off of pixels.
-			dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
 
 
 			if (dataPoints.length > 0) {
@@ -4046,7 +4566,7 @@
 
 					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
 
-					drawRect(ctx, x1, y1, x2, y2, color, bevelEnabled && (dataPoints[i].y >= 0), (dataPoints[i].y < 0) && bevelEnabled, false, false);
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled && (dataPoints[i].y >= 0), (dataPoints[i].y < 0) && bevelEnabled, false, false, dataSeries.fillOpacity);
 
 					//if (dataSeries.markerType && dataSeries.markerSize > 0) {
 					//    RenderHelper.drawMarker(x1 + (x2 - x1)/2, y1, ctx, dataSeries.markerType, dataSeries.markerSize, color, dataSeries.markerBorderColor, dataSeries.markerBorderThickness ? dataSeries.markerBorderThickness : 1);
@@ -4057,7 +4577,7 @@
 					color = intToHexColorString(id);
 
 					if (isCanvasSupported)
-						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, false, false, false, false);
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
 
 
 					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
@@ -4067,6 +4587,7 @@
 							dataPoint: dataPoints[i],
 							dataSeries: dataSeries,
 							point: { x: x, y: dataPoints[i].y >= 0 ? y1 : y2 },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							bounds: { x1: x1, y1: Math.min(y1, y2), x2: x2, y2: Math.max(y1, y2) },
 							color: color
 						});
@@ -4102,7 +4623,7 @@
 		//var yZeroToPixel = (axisYProps.y2 - axisYProps.height / rangeY * Math.abs(0 - plotUnit.axisY.minimum) + .5) << 0;
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.plotUnits.length * .9) << 0;
 
@@ -4135,7 +4656,7 @@
 			var isFirstDataPointInPlotArea = true;
 
 
-			dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
 
 
 			if (dataPoints.length > 0) {
@@ -4192,14 +4713,14 @@
 
 
 					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
-					drawRect(ctx, x1, y1, x2, y2, color, bevelEnabled && (dataPoints[i].y >= 0), (dataPoints[i].y < 0) && bevelEnabled, false, false);
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled && (dataPoints[i].y >= 0), (dataPoints[i].y < 0) && bevelEnabled, false, false, dataSeries.fillOpacity);
 
 					var id = dataSeries.dataPointIds[i];
 					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x1, y1: y1, x2: x2, y2: y2 };
 					color = intToHexColorString(id);
 
 					if (isCanvasSupported)
-						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, false, false, false, false);
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
 
 
 					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
@@ -4209,6 +4730,7 @@
 							dataPoint: dataPoints[i],
 							dataSeries: dataSeries,
 							point: { x: x, y: dataPoints[i].y >= 0 ? y1 : y2 },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							bounds: { x1: x1, y1: Math.min(y1, y2), x2: x2, y2: Math.max(y1, y2) },
 							color: color
 						});
@@ -4241,7 +4763,8 @@
 		//In case of Bar Chart, yZeroToPixel is x co-ordinate!
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.height * .15;
+		//var maxBarWidth = this.height * .15;
+		var maxBarWidth = Math.min((this.height * .15), this.plotArea.height / plotUnit.plotType.totalDataSeries * .9) << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		//var barWidth = (((plotArea.height / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / totalDataSeries * .9) << 0;
 
@@ -4277,7 +4800,7 @@
 			var isFirstDataPointInPlotArea = true;
 
 
-			dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
 
 
 			if (dataPoints.length > 0) {
@@ -4316,12 +4839,12 @@
 						x2 = yZeroToPixel;
 					}
 
-					//drawRect(ctx, x1, y1, plotArea.x2, y2, "#EEEEEE", false, false, false, false);
-					//drawRect(ctx, x1, y1, plotArea.x2, y2, "#BDCED3", false, false, false, false);
+					//drawRect(ctx, x1, y1, plotArea.x2, y2, "#EEEEEE", 0, null, false, false, false, false);
+					//drawRect(ctx, x1, y1, plotArea.x2, y2, "#BDCED3", 0, null, false, false, false, false);
 
 					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
 					//color = "#1B4962";
-					drawRect(ctx, x1, y1, x2, y2, color, bevelEnabled, false, false, false);
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled, false, false, false, dataSeries.fillOpacity);
 
 
 					var id = dataSeries.dataPointIds[i];
@@ -4329,7 +4852,7 @@
 					color = intToHexColorString(id);
 
 					if (isCanvasSupported)
-						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, false, false, false, false);
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
 
 
 					this._indexLabels.push({
@@ -4337,6 +4860,7 @@
 						dataPoint: dataPoints[i],
 						dataSeries: dataSeries,
 						point: { x: dataPoints[i].y >= 0 ? x2 : x1, y: y1 + (y2 - y1) / 2 },
+						direction: dataPoints[i].y >= 0 ? 1 : -1,
 						bounds: { x1: Math.min(x1, x2), y1: y1, x2: Math.max(x1, x2), y2: y2 },
 						color: color
 					});
@@ -4370,7 +4894,7 @@
 		//var yZeroToPixel = (axisYProps.y2 - axisYProps.height / rangeY * Math.abs(0 - plotUnit.axisY.minimum) + .5) << 0;
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.height / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.plotUnits.length * .9) << 0;
 
@@ -4403,7 +4927,7 @@
 			var dataPoints = dataSeries.dataPoints;
 			var isFirstDataPointInPlotArea = true;
 
-			dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
 
 			if (dataPoints.length > 0) {
 				//var xy = this.getPixelCoordinatesOnPlotArea(dataPoints[0].x, dataPoints[0].y);
@@ -4453,14 +4977,14 @@
 
 
 					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
-					drawRect(ctx, x1, y1, x2, y2, color, bevelEnabled, false, false, false);
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled, false, false, false, dataSeries.fillOpacity);
 
 					var id = dataSeries.dataPointIds[i];
 					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x1, y1: y1, x2: x2, y2: y2 };
 					color = intToHexColorString(id);
 
 					if (isCanvasSupported)
-						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, false, false, false, false);
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
 
 
 					this._indexLabels.push({
@@ -4468,6 +4992,7 @@
 						dataPoint: dataPoints[i],
 						dataSeries: dataSeries,
 						point: { x: dataPoints[i].y >= 0 ? x2 : x1, y: y },
+						direction: dataPoints[i].y >= 0 ? 1 : -1,
 						bounds: { x1: Math.min(x1, x2), y1: y1, x2: Math.max(x1, x2), y2: y2 },
 						color: color
 					});
@@ -4501,7 +5026,7 @@
 		//var yZeroToPixel = (axisYProps.y2 - axisYProps.height / rangeY * Math.abs(0 - plotUnit.axisY.minimum) + .5) << 0;
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.height / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.plotUnits.length * .9) << 0;
 
@@ -4534,7 +5059,7 @@
 			var dataPoints = dataSeries.dataPoints;
 			var isFirstDataPointInPlotArea = true;
 
-			dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
 
 			if (dataPoints.length > 0) {
 				//var xy = this.getPixelCoordinatesOnPlotArea(dataPoints[0].x, dataPoints[0].y);
@@ -4590,14 +5115,14 @@
 
 
 					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
-					drawRect(ctx, x1, y1, x2, y2, color, bevelEnabled, false, false, false);
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled, false, false, false, dataSeries.fillOpacity);
 
 					var id = dataSeries.dataPointIds[i];
 					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x1, y1: y1, x2: x2, y2: y2 };
 					color = intToHexColorString(id);
 
 					if (isCanvasSupported)
-						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, false, false, false, false);
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
 
 
 					this._indexLabels.push({
@@ -4605,6 +5130,7 @@
 						dataPoint: dataPoints[i],
 						dataSeries: dataSeries,
 						point: { x: dataPoints[i].y >= 0 ? x2 : x1, y: y },
+						direction: dataPoints[i].y >= 0 ? 1 : -1,
 						bounds: { x1: Math.min(x1, x2), y1: y1, x2: Math.max(x1, x2), y2: y2 },
 						color: color
 					});
@@ -4679,6 +5205,8 @@
 				var color = dataSeries._colorSet[i % dataSeries._colorSet.length];
 				//ctx.strokeStyle = "red";
 				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
 
 				var prevDataNull = true;
 				for (; i < dataPoints.length; i++) {
@@ -4734,9 +5262,9 @@
 							var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 							markers.push(markerProps);
 
-							if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-								dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-							}
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
 
 							var markerColor = intToHexColorString(id);
 
@@ -4760,6 +5288,7 @@
 							dataPoint: dataPoints[i],
 							dataSeries: dataSeries,
 							point: { x: x, y: y },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							color: color
 						});
 
@@ -4782,6 +5311,9 @@
 			if (!startPoint)
 				return;
 
+			if (dataSeries.lineThickness > 0)
+				ctx.stroke();
+
 			if (plotUnit.axisY.minimum <= 0 && plotUnit.axisY.maximum >= 0) {
 				baseY = yZeroToPixel;
 			}
@@ -4793,7 +5325,10 @@
 			ctx.lineTo(x, baseY);
 			ctx.lineTo(startPoint.x, baseY);
 			ctx.closePath();
+
+			ctx.globalAlpha = dataSeries.fillOpacity;
 			ctx.fill();
+			ctx.globalAlpha = 1;
 
 			if (isCanvasSupported) {
 				ghostCtx.lineTo(x, baseY);
@@ -4872,8 +5407,9 @@
 			if (dataPoints.length > 0) {
 				//ctx.strokeStyle = "#4572A7 ";                
 				color = dataSeries._colorSet[i % dataSeries._colorSet.length];
-				//ctx.strokeStyle = "red";
 				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
 
 				for (; i < dataPoints.length; i++) {
 
@@ -4906,9 +5442,9 @@
 							var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 							markers.push(markerProps);
 
-							if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-								dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-							}
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
 
 							var markerColor = intToHexColorString(id);
 
@@ -4934,6 +5470,7 @@
 							dataPoint: dataPoints[i],
 							dataSeries: dataSeries,
 							point: { x: x, y: y },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							color: color
 						});
 
@@ -4973,6 +5510,9 @@
 
 				}
 
+				if (dataSeries.lineThickness > 0)
+					ctx.stroke();
+
 				if (plotUnit.axisY.minimum <= 0 && plotUnit.axisY.maximum >= 0) {
 					baseY = yZeroToPixel;
 				}
@@ -4986,7 +5526,10 @@
 				ctx.lineTo(bp[bp.length - 1].x, baseY);
 				ctx.lineTo(startPoint.x, baseY);
 				ctx.closePath();
+
+				ctx.globalAlpha = dataSeries.fillOpacity;
 				ctx.fill();
+				ctx.globalAlpha = 1;
 
 				if (isCanvasSupported) {
 					ghostCtx.lineTo(bp[bp.length - 1].x, baseY);
@@ -5060,6 +5603,8 @@
 				var color = dataSeries._colorSet[i % dataSeries._colorSet.length];
 				//ctx.strokeStyle = "red";
 				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
 
 				for (; i < dataPoints.length; i++) {
 
@@ -5108,34 +5653,9 @@
 							ghostCtx.lineTo(x, y);
 
 						if (i % 250 == 0) {
-
-							if (plotUnit.axisY.minimum <= 0 && plotUnit.axisY.maximum >= 0) {
-								baseY = yZeroToPixel;
+							closeArea();
 							}
-							else if (plotUnit.axisY.maximum < 0)
-								baseY = axisYProps.y1;
-							else if (plotUnit.axisY.minimum > 0)
-								baseY = axisXProps.y2;
-
-							ctx.lineTo(x, baseY);
-							ctx.lineTo(startPoint.x, baseY);
-							ctx.closePath();
-							ctx.fill();
-							ctx.beginPath();
-							ctx.moveTo(x, y);
-
-							if (isCanvasSupported) {
-								ghostCtx.lineTo(x, baseY);
-								ghostCtx.lineTo(startPoint.x, baseY);
-								ghostCtx.closePath();
-								ghostCtx.fill();
-								ghostCtx.beginPath();
-								ghostCtx.moveTo(x, y);
 							}
-
-							startPoint = { x: x, y: y };
-						}
-					}
 
 
 					var id = dataSeries.dataPointIds[i];
@@ -5147,9 +5667,9 @@
 							var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 							markers.push(markerProps);
 
-							if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-								dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-							}
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
 
 							var markerColor = intToHexColorString(id);
 
@@ -5173,6 +5693,7 @@
 							dataPoint: dataPoints[i],
 							dataSeries: dataSeries,
 							point: { x: x, y: y },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							color: color
 						});
 
@@ -5194,6 +5715,9 @@
 			if (!startPoint)
 				return;
 
+			if (dataSeries.lineThickness > 0)
+				ctx.stroke();
+
 			if (plotUnit.axisY.minimum <= 0 && plotUnit.axisY.maximum >= 0) {
 				baseY = yZeroToPixel;
 			}
@@ -5205,7 +5729,10 @@
 			ctx.lineTo(x, baseY);
 			ctx.lineTo(startPoint.x, baseY);
 			ctx.closePath();
+
+			ctx.globalAlpha = dataSeries.fillOpacity;
 			ctx.fill();
+			ctx.globalAlpha = 1;
 
 			if (isCanvasSupported) {
 				ghostCtx.lineTo(x, baseY);
@@ -5314,6 +5841,8 @@
 				color = dataSeries._colorSet[0];
 				//ctx.strokeStyle = "red";
 				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
 
 				for (i = 0; i < allXValues.length; i++) {
 
@@ -5361,6 +5890,9 @@
 
 						if (i % 250 == 0) {
 
+							if (dataSeries.lineThickness > 0)
+								ctx.stroke();
+
 							while (currentBaseValues.length > 0) {
 								var point = currentBaseValues.pop();
 								ctx.lineTo(point.x, point.y);
@@ -5371,7 +5903,10 @@
 							}
 
 							ctx.closePath();
+
+							ctx.globalAlpha = dataSeries.fillOpacity;
 							ctx.fill();
+							ctx.globalAlpha = 1;
 
 							ctx.beginPath();
 							ctx.moveTo(x, y);
@@ -5401,9 +5936,9 @@
 							var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 							markers.push(markerProps);
 
-							if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-								dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-							}
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
 
 							markerColor = intToHexColorString(id);
 
@@ -5427,11 +5962,15 @@
 							dataPoint: dataPoint,
 							dataSeries: dataSeries,
 							point: { x: x, y: y },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							color: color
 						});
 
 					}
 				}
+
+				if (dataSeries.lineThickness > 0)
+					ctx.stroke();
 
 				while (currentBaseValues.length > 0) {
 					var point = currentBaseValues.pop();
@@ -5442,7 +5981,11 @@
 				}
 
 				ctx.closePath();
+
+				ctx.globalAlpha = dataSeries.fillOpacity;
 				ctx.fill();
+				ctx.globalAlpha = 1;
+
 				ctx.beginPath();
 				ctx.moveTo(x, y);
 
@@ -5490,7 +6033,7 @@
 		//var yZeroToPixel = (axisYProps.y2 - axisYProps.height / rangeY * Math.abs(0 - plotUnit.axisY.minimum) + .5) << 0;
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) * .9) << 0;
 
@@ -5564,6 +6107,8 @@
 				color = dataSeries._colorSet[i % dataSeries._colorSet.length];
 				//ctx.strokeStyle = "red";
 				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
 
 				var bevelEnabled = (barWidth > 5) ? false : false;
 
@@ -5621,6 +6166,9 @@
 
 						if (i % 250 == 0) {
 
+							if (dataSeries.lineThickness > 0)
+								ctx.stroke();
+
 							while (currentBaseValues.length > 0) {
 								var point = currentBaseValues.pop();
 								ctx.lineTo(point.x, point.y);
@@ -5630,7 +6178,11 @@
 							}
 
 							ctx.closePath();
+
+							ctx.globalAlpha = dataSeries.fillOpacity;
 							ctx.fill();
+							ctx.globalAlpha = 1;
+
 							ctx.beginPath();
 							ctx.moveTo(x, y);
 
@@ -5657,9 +6209,9 @@
 							var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
 							markers.push(markerProps);
 
-							if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-								dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-							}
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
 
 							markerColor = intToHexColorString(id);
 
@@ -5683,11 +6235,15 @@
 							dataPoint: dataPoint,
 							dataSeries: dataSeries,
 							point: { x: x, y: y },
+							direction: dataPoints[i].y >= 0 ? 1 : -1,
 							color: color
 						});
 
 					}
 				}
+
+				if (dataSeries.lineThickness > 0)
+					ctx.stroke();
 
 				while (currentBaseValues.length > 0) {
 					var point = currentBaseValues.pop();
@@ -5698,7 +6254,11 @@
 				}
 
 				ctx.closePath();
+
+				ctx.globalAlpha = dataSeries.fillOpacity;
 				ctx.fill();
+				ctx.globalAlpha = 1;
+
 				ctx.beginPath();
 				ctx.moveTo(x, y);
 
@@ -5737,7 +6297,7 @@
 
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / totalDataSeries * .9) << 0;
 
@@ -5830,33 +6390,17 @@
 
 					var z = dataPoints[i].z;
 
-					var area = minArea + (maxArea - minArea) / (maxZ - minZ) * (z - minZ);
+					var area = (maxZ === minZ) ? maxArea / 2 : minArea + (maxArea - minArea) / (maxZ - minZ) * (z - minZ);
 					var radius = Math.max(Math.sqrt(area / Math.PI) << 0, 1);
 
 					var markerSize = radius * 2;
 					var markerProps = dataSeries.getMarkerProperties(i, ctx);
 					markerProps.size = markerSize;
-					//markers.push(markerProps);
-
-					//color = dataSeries._colorSet[i % dataSeries._colorSet.length];
-
-					//var markerType = dataSeries.markerType ? dataSeries.markerType : "circle";
 
 
+					ctx.globalAlpha = dataSeries.fillOpacity;
 					RenderHelper.drawMarker(x, y, ctx, markerProps.type, markerProps.size, markerProps.color, markerProps.borderColor, markerProps.borderThickness);
-					//RenderHelper.drawMarker(x, y, ctx, "square", radius * 2, color);
-					//RenderHelper.drawMarker(x, y, ctx, "triangle", radius * 2, color, "#000000", 0);
-					//RenderHelper.drawMarker(x, y, ctx, "cross", radius * 2, color, "#000000", 2);
-
-					//ctx.moveTo(x, y);
-					//ctx.beginPath();
-					//ctx.arc(x, y, radius, 0, 360, false);
-					//ctx.fill();
-
-					if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-						dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-					}
-
+					ctx.globalAlpha = 1;
 
 					var id = dataSeries.dataPointIds[i];
 					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x, y1: y, size: markerSize };
@@ -5865,8 +6409,20 @@
 					if (isCanvasSupported)
 						RenderHelper.drawMarker(x, y, this._eventManager.ghostCtx, markerProps.type, markerProps.size, markerColor, markerColor, markerProps.borderThickness);
 
+
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: "bubble",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							point: { x: x, y: y },
+							direction: 1,
+							color: color
+						});
 				}
 			}
+		}
 		}
 
 		ctx.restore();
@@ -5891,7 +6447,7 @@
 
 		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
 
-		var maxBarWidth = this.width * .15;
+		var maxBarWidth = this.width * .15 << 0;
 		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
 		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / totalDataSeries * .9) << 0;
 
@@ -5950,17 +6506,22 @@
 					y = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
 
 					var markerProps = dataSeries.getMarkerProperties(i, x, y, ctx);
+
+					ctx.globalAlpha = dataSeries.fillOpacity;
 					RenderHelper.drawMarker(markerProps.x, markerProps.y, markerProps.ctx, markerProps.type, markerProps.size, markerProps.color, markerProps.color, markerProps.thickness);
+					ctx.globalAlpha = 1;
+
 
 					//if (Math.abs(prevDataPointX - x) < markerProps.size / 2 && Math.abs(prevDataPointY - y) < markerProps.size / 2) {
 					//    continue;
 					//}
 
-					if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
-						dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
-					}
+					//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+					//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+					//}
 
-					if (Math.sqrt((prevDataPointX - x) * (prevDataPointX - x) + (prevDataPointY - y) * (prevDataPointY - y)) < Math.min(markerProps.size, 5)) {
+					if ((Math.sqrt((prevDataPointX - x) * (prevDataPointX - x) + (prevDataPointY - y) * (prevDataPointY - y)) < Math.min(markerProps.size, 5))
+						&& dataPoints.length > (Math.min(this.plotArea.width, this.plotArea.height))) {
 						continue;
 					}
 
@@ -5981,6 +6542,18 @@
 					}
 					//markers.push();
 
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: "scatter",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							point: { x: x, y: y },
+							direction: 1,
+							color: color
+						});
+					}
+
 					prevDataPointX = x;
 					prevDataPointY = y;
 				}
@@ -5993,12 +6566,1000 @@
 			this._eventManager.ghostCtx.restore();
 	}
 
-	//#region pieChart
+	Chart.prototype.renderCandlestick = function (plotUnit) {
+		var ctx = this.plotArea.ctx;
+		var ghostCtx = this._eventManager.ghostCtx;
 
-	var drawSegment = function (ctx, center, radius, color, type, theta1, theta2) {
+		var totalDataSeries = plotUnit.dataSeriesIndexes.length;
+		if (totalDataSeries <= 0)
+			return;
 
+		var color = null;
+
+		var plotArea = this.plotArea;
+
+		var i = 0, x, y1, y2, y3, y4;
+		var dataPointX; //Used so that when dataPoint.x is a DateTime value, it doesn't get converted to number from dataTime everytime it is used.
+
+		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
+
+		//var maxBarWidth = (this.width * .15);
+		var maxBarWidth = (this.width * .015);
+		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
+		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) * .7) << 0;
+
+		if (barWidth > maxBarWidth)
+			barWidth = maxBarWidth;
+		else if (xMinDiff === Infinity) {
+			barWidth = maxBarWidth;
+		} else if (barWidth < 1)
+			barWidth = 1;
 
 		ctx.save();
+		if (isCanvasSupported)
+			ghostCtx.save();
+
+		ctx.beginPath();
+		ctx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+		ctx.clip();
+
+		if (isCanvasSupported) {
+			ghostCtx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+			ghostCtx.clip();
+		}
+		//ctx.beginPath();
+
+		for (var j = 0; j < plotUnit.dataSeriesIndexes.length; j++) {
+
+			var dataSeriesIndex = plotUnit.dataSeriesIndexes[j];
+
+			var dataSeries = this.data[dataSeriesIndex];
+			var dataPoints = dataSeries.dataPoints;
+			var isFirstDataPointInPlotArea = true;
+
+
+			// Reducing pixelPerUnit by 1 just to overcome any problems due to rounding off of pixels.
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+
+			//var offsetX = barWidth * plotUnit.index << 0;
+
+
+			if (dataPoints.length > 0) {
+				//var xy = this.getPixelCoordinatesOnPlotArea(dataPoints[0].x, dataPoints[0].y);
+
+				var bevelEnabled = (barWidth > 5) && dataSeries.bevelEnabled ? true : false;
+
+				for (i = 0; i < dataPoints.length; i++) {
+
+					dataPoints[i].getTime ? dataPointX = dataPoints[i].x.getTime() : dataPointX = dataPoints[i].x;
+
+					if (dataPointX < plotUnit.axisX.dataInfo.viewPortMin || dataPointX > plotUnit.axisX.dataInfo.viewPortMax) {
+						continue;
+					}
+
+					if (dataPoints[i].y === null || !dataPoints[i].y.length
+						|| typeof (dataPoints[i].y[0]) !== "number" || typeof (dataPoints[i].y[1]) !== "number"
+						|| typeof (dataPoints[i].y[2]) !== "number" || typeof (dataPoints[i].y[3]) !== "number")
+						continue;
+
+					x = (plotUnit.axisX.conversionParameters.reference + plotUnit.axisX.conversionParameters.pixelPerUnit * (dataPointX - plotUnit.axisX.conversionParameters.minimum) + .5) << 0;
+					y1 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[0] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+					y2 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[1] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+
+					y3 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[2] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+					y4 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[3] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+
+					var x1 = (x - barWidth / 2) << 0;
+					var x2 = (x1 + barWidth) << 0;
+
+
+					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[0];
+
+
+					//var borderThickness = Math.max(2, ((barWidth * .1) / 2 << 0) * 2); // Set only even numbers for border
+					var borderThickness = Math.round(Math.max(1, (barWidth * .15)));
+					//borderThickness = (borderThickness / 2 << 0) * 2;
+					//borderThickness = 2;
+					var offset = borderThickness % 2 === 0 ? 0 : .5;
+
+
+					var id = dataSeries.dataPointIds[i];
+					this._eventManager.objectMap[id] = {
+						id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x1, y1: y1, x2: x2, y2: y2,
+						x3: x, y3: y3, x4: x, y4: y4, borderThickness: borderThickness, color: color
+					};
+
+					ctx.strokeStyle = color;
+					ctx.beginPath();
+					ctx.lineWidth = borderThickness;
+					ghostCtx.lineWidth = Math.max(borderThickness, 4);
+
+					if (dataSeries.type === "candlestick") {
+
+						ctx.moveTo(x - offset, y2);
+						ctx.lineTo(x - offset, Math.min(y1, y4));
+						ctx.stroke();
+						ctx.moveTo(x - offset, Math.max(y1, y4));
+						ctx.lineTo(x - offset, y3);
+						ctx.stroke();
+
+						drawRect(ctx, x1, Math.min(y1, y4), x2, Math.max(y1, y4), dataPoints[i].y[0] <= dataPoints[i].y[3] ? dataSeries.risingColor : color, borderThickness, color, bevelEnabled, bevelEnabled, false, false, dataSeries.fillOpacity);
+
+
+						if (isCanvasSupported) {
+							color = intToHexColorString(id);
+							ghostCtx.strokeStyle = color;
+
+							ghostCtx.moveTo(x - offset, y2);
+							ghostCtx.lineTo(x - offset, Math.min(y1, y4));
+							ghostCtx.stroke();
+							ghostCtx.moveTo(x - offset, Math.max(y1, y4));
+							ghostCtx.lineTo(x - offset, y3);
+							ghostCtx.stroke();
+							drawRect(ghostCtx, x1, Math.min(y1, y4), x2, Math.max(y1, y4), color, 0, null, false, false, false, false);
+						}
+					}
+					else if (dataSeries.type === "ohlc") {
+
+						ctx.moveTo(x - offset, y2);
+						ctx.lineTo(x - offset, y3);
+						ctx.stroke();
+
+						ctx.beginPath();
+						ctx.moveTo(x, y1);
+						ctx.lineTo(x1, y1);
+						ctx.stroke();
+
+						ctx.beginPath();
+						ctx.moveTo(x, y4);
+						ctx.lineTo(x2, y4);
+						ctx.stroke();
+
+						if (isCanvasSupported) {
+
+							color = intToHexColorString(id);
+							ghostCtx.strokeStyle = color;
+
+							ghostCtx.moveTo(x - offset, y2);
+							ghostCtx.lineTo(x - offset, y3);
+							ghostCtx.stroke();
+
+							ghostCtx.beginPath();
+							ghostCtx.moveTo(x, y1);
+							ghostCtx.lineTo(x1, y1);
+							ghostCtx.stroke();
+
+							ghostCtx.beginPath();
+							ghostCtx.moveTo(x, y4);
+							ghostCtx.lineTo(x2, y4);
+							ghostCtx.stroke();
+						}
+					}
+
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: dataSeries.type,
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							point: { x: x1 + (x2 - x1) / 2, y: y2 },
+							direction: 1,
+							bounds: { x1: x1, y1: Math.min(y2, y3), x2: x2, y2: Math.max(y2, y3) },
+							color: color
+						});
+
+					}
+				}
+			}
+		}
+
+		ctx.restore();
+
+		if (isCanvasSupported)
+			ghostCtx.restore();
+	}
+
+	Chart.prototype.renderRangeColumn = function (plotUnit) {
+		var ctx = this.plotArea.ctx;
+		var totalDataSeries = plotUnit.dataSeriesIndexes.length;
+
+		if (totalDataSeries <= 0)
+			return;
+
+		var color = null;
+
+		var plotArea = this.plotArea;
+
+		var i = 0, x, y1, y2;
+		var dataPointX; //Used so that when dataPoint.x is a DateTime value, it doesn't get converted to number from dataTime everytime it is used.
+
+		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
+
+		var maxBarWidth = (this.width * .03);
+		//var maxBarWidth = (this.width * .015);
+		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
+		//var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) * .9) << 0;
+		var barWidth = (((plotArea.width / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.totalDataSeries * .9) << 0;
+
+		if (barWidth > maxBarWidth)
+			barWidth = maxBarWidth;
+		else if (xMinDiff === Infinity) {
+			barWidth = maxBarWidth;
+		} else if (barWidth < 1)
+			barWidth = 1;
+
+		ctx.save();
+		if (isCanvasSupported)
+			this._eventManager.ghostCtx.save();
+
+		ctx.beginPath();
+		ctx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+		ctx.clip();
+
+		if (isCanvasSupported) {
+			this._eventManager.ghostCtx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+			this._eventManager.ghostCtx.clip();
+		}
+		//ctx.beginPath();
+
+		for (var j = 0; j < plotUnit.dataSeriesIndexes.length; j++) {
+
+			var dataSeriesIndex = plotUnit.dataSeriesIndexes[j];
+
+			var dataSeries = this.data[dataSeriesIndex];
+			var dataPoints = dataSeries.dataPoints;
+			var isFirstDataPointInPlotArea = true;
+
+
+			// Reducing pixelPerUnit by 1 just to overcome any problems due to rounding off of pixels.
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+
+			//var offsetX = barWidth * plotUnit.index << 0;
+
+
+			if (dataPoints.length > 0) {
+				//var xy = this.getPixelCoordinatesOnPlotArea(dataPoints[0].x, dataPoints[0].y);
+
+				var bevelEnabled = (barWidth > 5) && dataSeries.bevelEnabled ? true : false;
+
+				for (i = 0; i < dataPoints.length; i++) {
+
+					dataPoints[i].getTime ? dataPointX = dataPoints[i].x.getTime() : dataPointX = dataPoints[i].x;
+
+					if (dataPointX < plotUnit.axisX.dataInfo.viewPortMin || dataPointX > plotUnit.axisX.dataInfo.viewPortMax) {
+						continue;
+					}
+
+					if (dataPoints[i].y === null || !dataPoints[i].y.length
+						|| typeof (dataPoints[i].y[0]) !== "number" || typeof (dataPoints[i].y[1]) !== "number")
+						continue;
+
+					x = (plotUnit.axisX.conversionParameters.reference + plotUnit.axisX.conversionParameters.pixelPerUnit * (dataPointX - plotUnit.axisX.conversionParameters.minimum) + .5) << 0;
+					y1 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[0] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+					y2 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[1] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+
+					//var x1 = x - barWidth / 2 << 0;
+					var x1 = x - (plotUnit.plotType.totalDataSeries * barWidth / 2) + ((plotUnit.previousDataSeriesCount + j) * barWidth) << 0;
+					var x2 = x1 + barWidth << 0;
+					var y1;
+					var y2;
+
+
+					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
+
+					if (y1 > y2) {
+						var temp = y1;
+						y1 = y2;
+						y2 = temp;
+					}
+
+					var id = dataSeries.dataPointIds[i];
+					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x1, y1: y1, x2: x2, y2: y2 };
+
+					//var borderThickness = Math.max(1, (barWidth * .1 << 0));
+					var borderThickness = 0;
+
+					drawRect(ctx, x1, y1, x2, y2, color, borderThickness, color, bevelEnabled, bevelEnabled, false, false, dataSeries.fillOpacity);
+					color = intToHexColorString(id);
+
+					if (isCanvasSupported)
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
+
+
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: "rangeColumn",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 0,
+							point: { x: x1 + (x2 - x1) / 2, y: dataPoints[i].y[1] >= dataPoints[i].y[0] ? y2 : y1 },
+							direction: dataPoints[i].y[1] >= dataPoints[i].y[0] ? -1 : 1,
+							bounds: { x1: x1, y1: Math.min(y1, y2), x2: x2, y2: Math.max(y1, y2) },
+							color: color
+						});
+
+						this._indexLabels.push({
+							chartType: "rangeColumn",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 1,
+							point: { x: x1 + (x2 - x1) / 2, y: dataPoints[i].y[1] >= dataPoints[i].y[0] ? y1 : y2 },
+							direction: dataPoints[i].y[1] >= dataPoints[i].y[0] ? 1 : -1,
+							bounds: { x1: x1, y1: Math.min(y1, y2), x2: x2, y2: Math.max(y1, y2) },
+							color: color
+						});
+
+					}
+				}
+			}
+		}
+
+		ctx.restore();
+
+		if (isCanvasSupported)
+			this._eventManager.ghostCtx.restore();
+	}
+
+	Chart.prototype.renderRangeBar = function (plotUnit) {
+		var ctx = this.plotArea.ctx;
+		var totalDataSeries = plotUnit.dataSeriesIndexes.length;
+
+		if (totalDataSeries <= 0)
+			return;
+
+		var color = null;
+
+		var plotArea = this.plotArea;
+
+		var i = 0, x1, x2, y;
+		var dataPointX; //Used so that when dataPoint.x is a DateTime value, it doesn't get converted to number from dataTime everytime it is used.
+
+		//In case of Bar Chart, yZeroToPixel is x co-ordinate!
+		var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum)) << 0;
+
+		//var maxBarWidth = this.height * .15;
+		var maxBarWidth = Math.min((this.height * .15), this.plotArea.height / plotUnit.plotType.totalDataSeries * .9) << 0;
+		var xMinDiff = plotUnit.axisX.dataInfo.minDiff;
+		//var barWidth = (((plotArea.height / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / totalDataSeries * .9) << 0;
+
+		var barWidth = (((plotArea.height / Math.abs(plotUnit.axisX.maximum - plotUnit.axisX.minimum)) * Math.abs(xMinDiff)) / plotUnit.plotType.totalDataSeries * .9) << 0;
+
+		if (barWidth > maxBarWidth)
+			barWidth = maxBarWidth;
+		else if (xMinDiff === Infinity) {
+			barWidth = maxBarWidth;
+		} else if (barWidth < 1)
+			barWidth = 1;
+
+		ctx.save();
+
+		if (isCanvasSupported)
+			this._eventManager.ghostCtx.save();
+
+		ctx.beginPath();
+		ctx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+		ctx.clip();
+
+		if (isCanvasSupported) {
+			this._eventManager.ghostCtx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+			this._eventManager.ghostCtx.clip();
+		}
+
+		for (var j = 0; j < plotUnit.dataSeriesIndexes.length; j++) {
+
+			var dataSeriesIndex = plotUnit.dataSeriesIndexes[j];
+
+			var dataSeries = this.data[dataSeriesIndex];
+			var dataPoints = dataSeries.dataPoints;
+			var isFirstDataPointInPlotArea = true;
+
+
+			//dataSeries.maxWidthInX = barWidth / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+
+
+			if (dataPoints.length > 0) {
+				//var xy = this.getPixelCoordinatesOnPlotArea(dataPoints[0].x, dataPoints[0].y);
+
+				var bevelEnabled = (barWidth > 5) && dataSeries.bevelEnabled ? true : false;
+
+				ctx.strokeStyle = "#4572A7 ";
+
+				for (i = 0; i < dataPoints.length; i++) {
+
+					dataPoints[i].getTime ? dataPointX = dataPoints[i].x.getTime() : dataPointX = dataPoints[i].x;
+
+					if (dataPointX < plotUnit.axisX.dataInfo.viewPortMin || dataPointX > plotUnit.axisX.dataInfo.viewPortMax) {
+						continue;
+					}
+
+					if (dataPoints[i].y === null || !dataPoints[i].y.length
+						|| typeof (dataPoints[i].y[0]) !== "number" || typeof (dataPoints[i].y[1]) !== "number")
+						continue;
+
+					//x and y are pixel co-ordinates of point and should not be confused with X and Y values
+					x1 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[0] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+					x2 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[1] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+
+					y = (plotUnit.axisX.conversionParameters.reference + plotUnit.axisX.conversionParameters.pixelPerUnit * (dataPointX - plotUnit.axisX.conversionParameters.minimum) + .5) << 0;
+
+
+					var y1 = (y - (plotUnit.plotType.totalDataSeries * barWidth / 2) + ((plotUnit.previousDataSeriesCount + j) * barWidth)) << 0;
+					var y2 = y1 + barWidth << 0;
+
+					if (x1 > x2) {
+						var temp = x1;
+						x1 = x2;
+						x2 = temp;
+					}
+
+					//drawRect(ctx, x1, y1, plotArea.x2, y2, "#EEEEEE", 0, null, false, false, false, false);
+					//drawRect(ctx, x1, y1, plotArea.x2, y2, "#BDCED3", 0, null, false, false, false, false);
+
+					color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
+					//color = "#1B4962";
+					drawRect(ctx, x1, y1, x2, y2, color, 0, null, bevelEnabled, false, false, false, dataSeries.fillOpacity);
+
+
+					var id = dataSeries.dataPointIds[i];
+					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x1, y1: y1, x2: x2, y2: y2 };
+					color = intToHexColorString(id);
+
+					if (isCanvasSupported)
+						drawRect(this._eventManager.ghostCtx, x1, y1, x2, y2, color, 0, null, false, false, false, false);
+
+
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: "rangeBar",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 0,
+							point: { x: dataPoints[i].y[1] >= dataPoints[i].y[0] ? x1 : x2, y: y1 + (y2 - y1) / 2 },
+							direction: dataPoints[i].y[1] >= dataPoints[i].y[0] ? -1 : 1,
+							bounds: { x1: Math.min(x1, x2), y1: y1, x2: Math.max(x1, x2), y2: y2 },
+							color: color
+						});
+
+						this._indexLabels.push({
+							chartType: "rangeBar",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 1,
+							point: { x: dataPoints[i].y[1] >= dataPoints[i].y[0] ? x2 : x1, y: y1 + (y2 - y1) / 2 },
+							direction: dataPoints[i].y[1] >= dataPoints[i].y[0] ? 1 : -1,
+							bounds: { x1: Math.min(x1, x2), y1: y1, x2: Math.max(x1, x2), y2: y2 },
+							color: color
+						});
+					}
+				}
+			}
+		}
+
+		ctx.restore();
+
+		if (isCanvasSupported)
+			this._eventManager.ghostCtx.restore();
+	}
+
+	Chart.prototype.renderRangeArea = function (plotUnit) {
+		var ctx = this.plotArea.ctx;
+		var totalDataSeries = plotUnit.dataSeriesIndexes.length;
+
+		if (totalDataSeries <= 0)
+			return;
+
+		var ghostCtx = this._eventManager.ghostCtx;
+
+		var axisXProps = plotUnit.axisX.lineCoordinates;
+		var axisYProps = plotUnit.axisY.lineCoordinates;
+		var markers = [];
+
+		var plotArea = this.plotArea;
+		ctx.save();
+
+		if (isCanvasSupported)
+			ghostCtx.save();
+
+		ctx.beginPath();
+		ctx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+		ctx.clip();
+
+		if (isCanvasSupported) {
+			ghostCtx.beginPath();
+			ghostCtx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+			ghostCtx.clip();
+		}
+
+		for (var j = 0; j < plotUnit.dataSeriesIndexes.length; j++) {
+
+			var closingPath = [];
+
+			var dataSeriesIndex = plotUnit.dataSeriesIndexes[j];
+
+			var dataSeries = this.data[dataSeriesIndex];
+
+			var dataPoints = dataSeries.dataPoints;
+
+			var seriesId = dataSeries.id;
+			this._eventManager.objectMap[seriesId] = { objectType: "dataSeries", dataSeriesIndex: dataSeriesIndex };
+
+			var hexColor = intToHexColorString(seriesId);
+			ghostCtx.fillStyle = hexColor;
+			//ghostCtx.lineWidth = dataSeries.lineThickness;
+			//ghostCtx.lineWidth = 20;
+
+			markers = [];
+
+			var isFirstDataPointInPlotArea = true;
+			var i = 0, x, y1, y2;
+			var dataPointX; //Used so that when dataPoint.x is a DateTime value, it doesn't get converted to number back and forth.
+
+			var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+			var baseY;
+
+			var startPoint = null;
+
+			if (dataPoints.length > 0) {
+				//ctx.strokeStyle = "#4572A7 ";                
+				var color = dataSeries._colorSet[i % dataSeries._colorSet.length];
+				//ctx.strokeStyle = "red";
+				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
+
+				var prevDataNull = true;
+				for (; i < dataPoints.length; i++) {
+
+					dataPointX = dataPoints[i].x.getTime ? dataPoints[i].x.getTime() : dataPoints[i].x;
+
+					if (dataPointX < plotUnit.axisX.dataInfo.viewPortMin || dataPointX > plotUnit.axisX.dataInfo.viewPortMax) {
+						continue;
+					}
+
+					if (dataPoints[i].y === null || !dataPoints[i].y.length
+						|| typeof (dataPoints[i].y[0]) !== "number" || typeof (dataPoints[i].y[1]) !== "number") {
+
+						closeArea();
+
+						prevDataNull = true;
+						continue;
+					}
+
+					x = (plotUnit.axisX.conversionParameters.reference + plotUnit.axisX.conversionParameters.pixelPerUnit * (dataPointX - plotUnit.axisX.conversionParameters.minimum) + .5) << 0;
+
+					y1 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[0] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+					y2 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[1] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+
+					if (isFirstDataPointInPlotArea || prevDataNull) {
+						ctx.beginPath();
+						ctx.moveTo(x, y1);
+						startPoint = { x: x, y: y1 };
+						closingPath = [];
+						closingPath.push({ x: x, y: y2 });
+
+						if (isCanvasSupported) {
+							ghostCtx.beginPath();
+							ghostCtx.moveTo(x, y1);
+						}
+
+						isFirstDataPointInPlotArea = false;
+						prevDataNull = false;
+					}
+					else {
+
+						ctx.lineTo(x, y1);
+						closingPath.push({ x: x, y: y2 });
+
+						if (isCanvasSupported)
+							ghostCtx.lineTo(x, y1);
+
+						if (i % 250 == 0) {
+							closeArea();
+						}
+					}
+
+
+					var id = dataSeries.dataPointIds[i];
+					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x, y1: y1, y2: y2 };
+
+					//Render Marker
+					if (dataPoints[i].markerSize !== 0) {
+						if (dataPoints[i].markerSize > 0 || dataSeries.markerSize > 0) {
+							var markerProps = dataSeries.getMarkerProperties(i, x, y2, ctx);
+							markers.push(markerProps);
+
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
+
+							var markerColor = intToHexColorString(id);
+
+							if (isCanvasSupported) {
+								markers.push({
+									x: x, y: y2, ctx: ghostCtx,
+									type: markerProps.type,
+									size: markerProps.size,
+									color: markerColor,
+									borderColor: markerColor,
+									borderThickness: markerProps.borderThickness
+								});
+							}
+
+							markerProps = dataSeries.getMarkerProperties(i, x, y1, ctx);
+							markers.push(markerProps);
+
+
+
+							var markerColor = intToHexColorString(id);
+
+							if (isCanvasSupported) {
+								markers.push({
+									x: x, y: y1, ctx: ghostCtx,
+									type: markerProps.type,
+									size: markerProps.size,
+									color: markerColor,
+									borderColor: markerColor,
+									borderThickness: markerProps.borderThickness
+								});
+							}
+						}
+					}
+
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: "rangeArea",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 0,
+							point: { x: x, y: y1 },
+							direction: dataPoints[i].y[0] <= dataPoints[i].y[1] ? -1 : 1,
+							color: color
+						});
+
+						this._indexLabels.push({
+							chartType: "rangeArea",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 1,
+							point: { x: x, y: y2 },
+							direction: dataPoints[i].y[0] <= dataPoints[i].y[1] ? 1 : -1,
+							color: color
+						});
+
+					}
+
+					//alert("hi");
+				}
+
+				closeArea();
+
+				//startPoint = { x: x, y: y };
+				RenderHelper.drawMarkers(markers);
+			}
+		}
+
+		ctx.restore();
+		if (isCanvasSupported)
+			this._eventManager.ghostCtx.restore();
+
+		function closeArea() {
+
+			if (!startPoint)
+				return;
+
+			var point = null;
+
+			if (dataSeries.lineThickness > 0)
+				ctx.stroke();
+
+			for (var i = closingPath.length - 1; i >= 0; i--) {
+				point = closingPath[i];
+				ctx.lineTo(point.x, point.y);
+				ghostCtx.lineTo(point.x, point.y);
+			}
+
+
+
+			ctx.closePath();
+			//ctx.lineTo(startPoint.x, startPoint.y);
+
+			ctx.globalAlpha = dataSeries.fillOpacity;
+			ctx.fill();
+			ctx.globalAlpha = 1;
+
+			ghostCtx.fill();
+
+			//if (isCanvasSupported) {
+			//	ghostCtx.lineTo(x, baseY);
+			//	ghostCtx.lineTo(startPoint.x, baseY);
+			//	ghostCtx.closePath();
+			//	ghostCtx.fill();
+			//}
+
+			if (dataSeries.lineThickness > 0) {
+				ctx.beginPath();
+				ctx.moveTo(point.x, point.y);
+				for (var i = 0; i < closingPath.length; i++) {
+					point = closingPath[i];
+					ctx.lineTo(point.x, point.y);
+				}
+
+				ctx.stroke();
+			}
+
+
+			ctx.beginPath();
+			ctx.moveTo(x, y1);
+			ghostCtx.beginPath();
+			ghostCtx.moveTo(x, y1);
+
+			startPoint = { x: x, y: y1 };
+			closingPath = [];
+			closingPath.push({ x: x, y: y2 });
+		}
+
+		//ctx.beginPath();
+	}
+
+
+	Chart.prototype.renderRangeSplineArea = function (plotUnit) {
+		var ctx = this.plotArea.ctx;
+		var totalDataSeries = plotUnit.dataSeriesIndexes.length;
+
+		if (totalDataSeries <= 0)
+			return;
+
+		var ghostCtx = this._eventManager.ghostCtx;
+
+		var axisXProps = plotUnit.axisX.lineCoordinates;
+		var axisYProps = plotUnit.axisY.lineCoordinates;
+		var markers = [];
+
+		var plotArea = this.plotArea;
+		ctx.save();
+
+		if (isCanvasSupported)
+			ghostCtx.save();
+
+		ctx.beginPath();
+		ctx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+		ctx.clip();
+
+		if (isCanvasSupported) {
+			ghostCtx.beginPath();
+			ghostCtx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+			ghostCtx.clip();
+		}
+
+		for (var j = 0; j < plotUnit.dataSeriesIndexes.length; j++) {
+
+			var dataSeriesIndex = plotUnit.dataSeriesIndexes[j];
+
+			var dataSeries = this.data[dataSeriesIndex];
+
+			var dataPoints = dataSeries.dataPoints;
+
+			var seriesId = dataSeries.id;
+			this._eventManager.objectMap[seriesId] = { objectType: "dataSeries", dataSeriesIndex: dataSeriesIndex };
+
+			var hexColor = intToHexColorString(seriesId);
+			ghostCtx.fillStyle = hexColor;
+			//ghostCtx.lineWidth = dataSeries.lineThickness;
+			//ghostCtx.lineWidth = 20;
+
+			markers = [];
+
+			var isFirstDataPointInPlotArea = true;
+			var i = 0, x, y1, y2;
+			var dataPointX; //Used so that when dataPoint.x is a DateTime value, it doesn't get converted to number back and forth.
+
+			var yZeroToPixel = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (0 - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+			var baseY;
+
+			var startPoint = null;
+
+			var pixelsY1 = [];
+			var pixelsY2 = [];
+
+			if (dataPoints.length > 0) {
+				//ctx.strokeStyle = "#4572A7 ";                
+				color = dataSeries._colorSet[i % dataSeries._colorSet.length];
+				//ctx.strokeStyle = "red";
+				ctx.fillStyle = color;
+				ctx.strokeStyle = color;
+				ctx.lineWidth = dataSeries.lineThickness;
+
+				for (; i < dataPoints.length; i++) {
+
+					dataPointX = dataPoints[i].x.getTime ? dataPoints[i].x.getTime() : dataPoints[i].x;
+
+					if (dataPointX < plotUnit.axisX.dataInfo.viewPortMin || dataPointX > plotUnit.axisX.dataInfo.viewPortMax) {
+						continue;
+					}
+
+					if (dataPoints[i].y === null || !dataPoints[i].y.length || typeof (dataPoints[i].y[0]) !== "number" || typeof (dataPoints[i].y[1]) !== "number") {
+						if (i > 0) {
+							renderBezierArea();
+							pixelsY1 = [];
+							pixelsY2 = [];
+						}
+						continue;
+					}
+
+					x = (plotUnit.axisX.conversionParameters.reference + plotUnit.axisX.conversionParameters.pixelPerUnit * (dataPointX - plotUnit.axisX.conversionParameters.minimum) + .5) << 0;
+					y1 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[0] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+					y2 = (plotUnit.axisY.conversionParameters.reference + plotUnit.axisY.conversionParameters.pixelPerUnit * (dataPoints[i].y[1] - plotUnit.axisY.conversionParameters.minimum) + .5) << 0;
+
+
+					var id = dataSeries.dataPointIds[i];
+					this._eventManager.objectMap[id] = { id: id, objectType: "dataPoint", dataSeriesIndex: dataSeriesIndex, dataPointIndex: i, x1: x, y1: y1, y2: y2 };
+
+					pixelsY1[pixelsY1.length] = { x: x, y: y1 };
+					pixelsY2[pixelsY2.length] = { x: x, y: y2 };
+
+					//Render Marker
+					if (dataPoints[i].markerSize !== 0) {
+						if (dataPoints[i].markerSize > 0 || dataSeries.markerSize > 0) {
+							var markerProps = dataSeries.getMarkerProperties(i, x, y1, ctx);
+							markers.push(markerProps);
+
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
+
+							var markerColor = intToHexColorString(id);
+
+							if (isCanvasSupported) {
+								markers.push({
+									x: x, y: y1, ctx: ghostCtx,
+									type: markerProps.type,
+									size: markerProps.size,
+									color: markerColor,
+									borderColor: markerColor,
+									borderThickness: markerProps.borderThickness
+								});
+							}
+
+							var markerProps = dataSeries.getMarkerProperties(i, x, y2, ctx);
+							markers.push(markerProps);
+
+							//if (!dataSeries.maxWidthInX || markerProps.size > dataSeries.maxWidthInX) {
+							//	dataSeries.maxWidthInX = markerProps.size / (plotUnit.axisX.conversionParameters.pixelPerUnit > 1 ? plotUnit.axisX.conversionParameters.pixelPerUnit - 1 : plotUnit.axisX.conversionParameters.pixelPerUnit);
+							//}
+
+							var markerColor = intToHexColorString(id);
+
+							if (isCanvasSupported) {
+								markers.push({
+									x: x, y: y2, ctx: ghostCtx,
+									type: markerProps.type,
+									size: markerProps.size,
+									color: markerColor,
+									borderColor: markerColor,
+									borderThickness: markerProps.borderThickness
+								});
+							}
+						}
+					}
+
+
+					//Render Index Labels
+					if (dataPoints[i].indexLabel || dataSeries.indexLabel) {
+
+						this._indexLabels.push({
+							chartType: "splineArea",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 0,
+							point: { x: x, y: y1 },
+							direction: dataPoints[i].y[0] <= dataPoints[i].y[1] ? -1 : 1,
+							color: color
+						});
+
+						this._indexLabels.push({
+							chartType: "splineArea",
+							dataPoint: dataPoints[i],
+							dataSeries: dataSeries,
+							indexKeyword: 1,
+							point: { x: x, y: y2 },
+							direction: dataPoints[i].y[0] <= dataPoints[i].y[1] ? 1 : -1,
+							color: color
+						});
+
+					}
+				}
+
+				renderBezierArea();
+
+				RenderHelper.drawMarkers(markers);
+			}
+		}
+
+		ctx.restore();
+
+		if (isCanvasSupported)
+			this._eventManager.ghostCtx.restore();
+
+		function renderBezierArea() {
+			var bp = getBezierPoints(pixelsY1, 2);
+
+			if (bp.length > 0) {
+				ctx.beginPath();
+				ctx.moveTo(bp[0].x, bp[0].y);
+
+				if (isCanvasSupported) {
+					ghostCtx.beginPath();
+					ghostCtx.moveTo(bp[0].x, bp[0].y);
+				}
+
+
+				for (var i = 0; i < bp.length - 3; i += 3) {
+
+					ctx.bezierCurveTo(bp[i + 1].x, bp[i + 1].y, bp[i + 2].x, bp[i + 2].y, bp[i + 3].x, bp[i + 3].y);
+
+					if (isCanvasSupported)
+						ghostCtx.bezierCurveTo(bp[i + 1].x, bp[i + 1].y, bp[i + 2].x, bp[i + 2].y, bp[i + 3].x, bp[i + 3].y);
+				}
+
+				if (dataSeries.lineThickness > 0)
+					ctx.stroke();
+
+				bp = getBezierPoints(pixelsY2, 2);
+
+				ctx.lineTo(pixelsY2[pixelsY2.length - 1].x, pixelsY2[pixelsY2.length - 1].y);
+
+				for (var i = bp.length - 1; i > 2; i -= 3) {
+
+					ctx.bezierCurveTo(bp[i - 1].x, bp[i - 1].y, bp[i - 2].x, bp[i - 2].y, bp[i - 3].x, bp[i - 3].y);
+
+					if (isCanvasSupported)
+						ghostCtx.bezierCurveTo(bp[i - 1].x, bp[i - 1].y, bp[i - 2].x, bp[i - 2].y, bp[i - 3].x, bp[i - 3].y);
+				}
+
+				ctx.closePath();
+
+				ctx.globalAlpha = dataSeries.fillOpacity;
+				ctx.fill();
+				ctx.globalAlpha = 1;
+
+
+				if (dataSeries.lineThickness > 0) {
+					ctx.beginPath();
+					ctx.moveTo(pixelsY2[pixelsY2.length - 1].x, pixelsY2[pixelsY2.length - 1].y);
+
+					for (var i = bp.length - 1; i > 2; i -= 3) {
+
+						ctx.bezierCurveTo(bp[i - 1].x, bp[i - 1].y, bp[i - 2].x, bp[i - 2].y, bp[i - 3].x, bp[i - 3].y);
+
+						if (isCanvasSupported)
+							ghostCtx.bezierCurveTo(bp[i - 1].x, bp[i - 1].y, bp[i - 2].x, bp[i - 2].y, bp[i - 3].x, bp[i - 3].y);
+					}
+					ctx.stroke();
+				}
+
+				ctx.beginPath();
+
+
+				if (isCanvasSupported) {
+					ghostCtx.closePath();
+					ghostCtx.fill();
+				}
+			}
+		}
+	}
+	//#region pieChart
+
+	var drawSegment = function (ctx, center, radius, color, type, theta1, theta2, fillOpacity) {
+
+		if (typeof (fillOpacity) === "undefined")
+			fillOpacity = 1;
+
+		ctx.save();
+
+		ctx.globalAlpha = fillOpacity;
 
 		if (type === "pie") {
 			ctx.beginPath();
@@ -6012,7 +7573,7 @@
 			//     ctx.shadowBlur = 2;
 			//    ctx.shadowColor = '#BFBFBF';
 			ctx.closePath();
-			ctx.stroke();
+			//ctx.stroke();
 			ctx.fill();
 		}
 		else if (type === "doughnut") {
@@ -6029,9 +7590,11 @@
 			//    ctx.shadowOffsetY = 1;
 			//     ctx.shadowBlur = 1;
 			//    ctx.shadowColor = '#BFBFBF';  //grey shadow
-			ctx.stroke();
+			//ctx.stroke();
 			ctx.fill();
 		}
+
+		ctx.globalAlpha = 1;
 
 		ctx.restore();
 	};
@@ -6285,6 +7848,8 @@
 					animationParameter.prevMaxAngle = dataPointEOs[0].startAngle;
 
 				ctx.clearRect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+				ctx.fillStyle = _this.backgroundColor;
+				ctx.fillRect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
 
 				var maxAngle = animationParameter.prevMaxAngle + (2 * Math.PI / animationParameter.maxFrames);
 
@@ -6303,7 +7868,7 @@
 					var color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
 
 					if (endAngle > startAngle)
-						drawSegment(_this.plotArea.ctx, dataPointEOs[i].center, dataPointEOs[i].radius, color, dataSeries.type, startAngle, endAngle);
+						drawSegment(_this.plotArea.ctx, dataPointEOs[i].center, dataPointEOs[i].radius, color, dataSeries.type, startAngle, endAngle, dataSeries.fillOpacity);
 
 					if (shouldBreak)
 						break;
@@ -6313,7 +7878,7 @@
 				animationParameter.prevMaxAngle = maxAngle;
 
 				if (animationParameter.frame < animationParameter.maxFrames) {
-					_this.requestAnimFrame.call(window, animate);
+					_this.animationRequestId = _this.requestAnimFrame.call(window, animate);
 				} else {
 					//renderLabels();
 					resetAnimationFrame(isCanvasSupported ? 15 : 4);
@@ -6333,6 +7898,8 @@
 			if (animationParameter !== null && animationParameter.frame < animationParameter.maxFrames) {
 
 				ctx.clearRect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
+				ctx.fillStyle = _this.backgroundColor;
+				ctx.fillRect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
 
 				//var maxAngle = animationParameter.prevMaxAngle + (2 * Math.PI / animationParameter.maxFrames);
 
@@ -6371,7 +7938,7 @@
 
 						var color = dataPoints[i].color ? dataPoints[i].color : dataSeries._colorSet[i % dataSeries._colorSet.length];
 
-						drawSegment(_this.plotArea.ctx, dataPointEOs[i].center, dataPointEOs[i].radius, color, dataSeries.type, startAngle, endAngle);
+						drawSegment(_this.plotArea.ctx, dataPointEOs[i].center, dataPointEOs[i].radius, color, dataSeries.type, startAngle, endAngle, dataSeries.fillOpacity);
 					}
 				}
 
@@ -6383,13 +7950,24 @@
 				//ctx.lineWidth = 4;
 
 				if (animationParameter.frame < animationParameter.maxFrames) {
-					_this.requestAnimFrame.call(window, explodeToggle);
+					_this.animationRequestId = _this.requestAnimFrame.call(window, explodeToggle);
 				}
 
 
 				//console.log(animationParameter.frame);
 
 			}
+		}
+
+		function areDataPointsTooClose(first, second) {
+
+			var label1 = { x1: first.indexLabelTextBlock.x, y1: first.indexLabelTextBlock.y - first.indexLabelTextBlock.height / 2, x2: first.indexLabelTextBlock.x + first.indexLabelTextBlock.width, y2: first.indexLabelTextBlock.y + first.indexLabelTextBlock.height / 2 };
+			var label2 = { x1: second.indexLabelTextBlock.x, y1: second.indexLabelTextBlock.y - second.indexLabelTextBlock.height / 2, x2: second.indexLabelTextBlock.x + second.indexLabelTextBlock.width, y2: second.indexLabelTextBlock.y + second.indexLabelTextBlock.height / 2 };
+
+			if (label1.x2 < label2.x1 - indexLabelLineEdgeLength || label1.x1 > label2.x2 + indexLabelLineEdgeLength || label1.y1 > label2.y2 + indexLabelLineEdgeLength || label1.y2 < label2.y1 - indexLabelLineEdgeLength)
+				return false;
+
+			return true;
 		}
 
 		function getVerticalDistanceBetweenLabels(first, second) {
@@ -6861,6 +8439,10 @@
 
 					var size = dataPointEO.indexLabelTextBlock.measureText();
 
+					// To make sure that null text or empty strings don't affect the radius. Required when user is not showing any labels
+					if (size.height === 0 || size.width === 0)
+						continue;
+
 					var xOverFlow = 0;
 					var xdr = 0;
 
@@ -6980,7 +8562,7 @@
 
 					distanceFromNextLabel = getVerticalDistanceBetweenLabels(currentDataPoint, nextDataPoint);
 
-					if (distanceFromNextLabel < 0) {
+					if (distanceFromNextLabel < 0 && areDataPointsTooClose(currentDataPoint, nextDataPoint)) {
 
 						if (overlapStartIndex < 0)
 							overlapStartIndex = k;
@@ -7075,7 +8657,9 @@
 
 	//#endregion pieChart
 
+
 	//#endregion Render Methods
+	Chart.prototype.animationRequestId = null;
 
 	Chart.prototype.requestAnimFrame = (function () {
 		return window.requestAnimationFrame ||
@@ -7086,6 +8670,15 @@
 				function (callback) {
 					window.setTimeout(callback, 1000 / 60);
 				};
+	})();
+
+	Chart.prototype.cancelRequestAnimFrame = (function () {
+		return window.cancelAnimationFrame ||
+			window.webkitCancelRequestAnimationFrame ||
+			window.mozCancelRequestAnimationFrame ||
+			window.oCancelRequestAnimationFrame ||
+			window.msCancelRequestAnimationFrame ||
+			clearTimeout
 	})();
 
 	//#endregion Class Chart
@@ -7544,7 +9137,7 @@
 			var markerSize = (!dataSeries.markerSize && (dataSeries.type === "line" || dataSeries.type === "stepLine" || dataSeries.type === "spline")) ? 0 : this.lineHeight * .6;
 			var lineColor = dataSeries._colorSet[0];
 
-			if (dataSeries.type !== "pie" && dataSeries.type !== "doughnut") {
+			if (dataSeries.type !== "pie" && dataSeries.type !== "doughnut" && dataSeries.type !== "funnel") {
 				var item = {
 					markerType: markerType, markerColor: markerColor, text: legendText, textBlock: null, chartType: dataSeries.type, markerSize: markerSize, lineColor: dataSeries._colorSet[0],
 					dataSeriesIndex: i, dataPointIndex: null
@@ -7788,13 +9381,21 @@
 		this._ctx = chart.canvas.ctx;
 		this.index = index;
 		this.noDataPointsInPlotArea = 0;
-		this.maxWidthInX = 0;
+		//this.maxWidthInX = 0;
 		this.id = id;
 		this.chart._eventManager.objectMap[id] = { id: id, objectType: "dataSeries", dataSeriesIndex: index }
 		this.dataPointIds = [];
 
 		this.axisX = null;
 		this.axisY = null;
+
+		if (this.fillOpacity === null) {
+			if (this.type.match(/area/i))
+				this.fillOpacity = .7;
+			else
+				this.fillOpacity = 1;
+		}
+
 
 		this.axisPlacement = this.getDefaultAxisPlacement();
 
@@ -7815,14 +9416,15 @@
 		var type = this.type;
 
 		if (type === "column" || type === "line" || type === "stepLine" || type === "spline" || type === "area" || type === "stepArea" || type === "splineArea" || type === "stackedColumn" || type === "stackedLine" || type === "bubble" || type === "scatter"
-			|| type === "stackedArea" || type === "stackedColumn100" || type === "stackedLine100" || type === "stackedArea100") {
+			|| type === "stackedArea" || type === "stackedColumn100" || type === "stackedLine100" || type === "stackedArea100"
+			|| type === "candlestick" || type === "ohlc" || type === "rangeColumn" || type === "rangeArea" || type === "rangeSplineArea") {
 			return "normal";
 		}
-		else if (type === "bar" || type === "stackedBar" || type === "stackedBar100") {
+		else if (type === "bar" || type === "stackedBar" || type === "stackedBar100" || type === "rangeBar") {
 
 			return "xySwapped";
 		}
-		else if (type === "pie" || type === "doughnut") {
+		else if (type === "pie" || type === "doughnut" || type === "funnel") {
 			return "none";
 		} else {
 			window.console.log("Unknown Chart Type: " + type);
@@ -7836,10 +9438,11 @@
 
 		if (type === "column" || type === "stackedColumn" || type === "stackedLine" || type === "bar" || type === "stackedBar" || type === "stackedBar100"
 			|| type === "bubble" || type === "scatter"
-			|| type === "stackedColumn100" || type === "stackedLine100" || type === "stepArea") {
+			|| type === "stackedColumn100" || type === "stackedLine100" || type === "stepArea"
+			|| type === "candlestick" || type === "ohlc" || type === "rangeColumn" || type === "rangeBar" || type === "rangeArea" || type === "rangeSplineArea") {
 			return "square";
 		}
-		else if (type === "line" || type === "stepLine" || type === "spline" || type === "pie" || type === "doughnut") {
+		else if (type === "line" || type === "stepLine" || type === "spline" || type === "pie" || type === "doughnut" || type === "funnel") {
 			return "circle";
 		} else if (type === "area" || type === "splineArea" || type === "stackedArea" || type === "stackedArea100") {
 			return "triangle"
@@ -7868,10 +9471,18 @@
 		var searchStartIndex = 0;
 
 		if (this.chart.plotInfo.axisPlacement !== "none") {
+
+			//var xRange = (this.dataPoints[this.dataPoints.length - 1].x - this.dataPoints[0].x);
+
+			//if (xRange > 0)
+			//	searchStartIndex = ((this.dataPoints.length - 1) / xRange * (x - this.dataPoints[0].x)) >> 0;
+			//else
+			//	searchStartIndex = 0;
+
 			var xRange = (this.dataPoints[this.dataPoints.length - 1].x - this.dataPoints[0].x);
 
 			if (xRange > 0)
-				searchStartIndex = ((this.dataPoints.length - 1) / xRange * (x - this.dataPoints[0].x)) >> 0;
+				searchStartIndex = Math.min(Math.max(((this.dataPoints.length - 1) / xRange * (x - this.dataPoints[0].x)) >> 0, 0), this.dataPoints.length);
 			else
 				searchStartIndex = 0;
 
@@ -7944,12 +9555,20 @@
 
 		if (this.chart.plotInfo.axisPlacement !== "none") {
 			var xval = this.chart.axisX.getXValueAt({ x: x, y: y });
+
 			var xRange = (this.dataPoints[this.dataPoints.length - 1].x - this.dataPoints[0].x);
 
 			if (xRange > 0)
-				searchStartIndex = ((this.dataPoints.length - 1) / xRange * (xval - this.dataPoints[0].x)) >> 0;
+				searchStartIndex = Math.min(Math.max(((this.dataPoints.length - 1) / xRange * (xval - this.dataPoints[0].x)) >> 0, 0), this.dataPoints.length);
 			else
 				searchStartIndex = 0;
+
+			//var xRange = (this.axisX._absoluteMaximum - this.axisX._absoluteMinimum);
+
+			//if (xRange > 0)
+			//	searchStartIndex = Math.min(Math.max(((this.dataPoints.length - 1) / xRange * (xval - this.axisX._absoluteMinimum)) >> 0, 0), this.dataPoints.length);
+			//else
+			//	searchStartIndex = 0;
 		}
 
 		while (true) {
@@ -7962,6 +9581,7 @@
 				var id = this.dataPointIds[i];
 				var visualInfo = this.chart._eventManager.objectMap[id];
 				var dataPoint = this.dataPoints[i];
+				var distance = null;
 
 				if (visualInfo) {
 
@@ -7973,6 +9593,9 @@
 						case "bar":
 						case "stackedBar":
 						case "stackedBar100":
+						case "rangeColumn":
+						case "rangeBar":
+
 							if (x >= visualInfo.x1 && x <= visualInfo.x2 && y >= visualInfo.y1 && y <= visualInfo.y2) {
 								results.push({
 									dataPoint: dataPoint,
@@ -7998,7 +9621,39 @@
 							var markerSize = getProperty("markerSize", dataPoint, this) || 4;
 							var snapDistance = getClosest ? 20 : markerSize;
 
-							var distance = Math.sqrt(Math.pow(visualInfo.x1 - x, 2) + Math.pow(visualInfo.y1 - y, 2));
+							distance = Math.sqrt(Math.pow(visualInfo.x1 - x, 2) + Math.pow(visualInfo.y1 - y, 2));
+							if (distance <= snapDistance) {
+								results.push({
+									dataPoint: dataPoint,
+									dataPointIndex: i,
+									dataSeries: this,
+									distance: distance
+								});
+							}
+
+							var xDistance = Math.abs(visualInfo.x1 - x);
+							if (xDistance <= minimumXDistance)
+								minimumXDistance = xDistance;
+							else {
+								if (direction > 0)
+									forwardMissCount++;
+								else
+									backwardMissCount++;
+							}
+
+							if (distance <= markerSize / 2) {
+								foundDataPoint = true;
+							}
+
+							break;
+
+						case "rangeArea":
+						case "rangeSplineArea":
+
+							var markerSize = getProperty("markerSize", dataPoint, this) || 4;
+							var snapDistance = getClosest ? 20 : markerSize;
+
+							distance = Math.min(Math.sqrt(Math.pow(visualInfo.x1 - x, 2) + Math.pow(visualInfo.y1 - y, 2)), Math.sqrt(Math.pow(visualInfo.x1 - x, 2) + Math.pow(visualInfo.y2 - y, 2)));
 							if (distance <= snapDistance) {
 								results.push({
 									dataPoint: dataPoint,
@@ -8026,7 +9681,7 @@
 
 						case "bubble":
 							var markerSize = visualInfo.size;
-							var distance = Math.sqrt(Math.pow(visualInfo.x1 - x, 2) + Math.pow(visualInfo.y1 - y, 2));
+							distance = Math.sqrt(Math.pow(visualInfo.x1 - x, 2) + Math.pow(visualInfo.y1 - y, 2));
 							if (distance <= markerSize / 2) {
 								results.push({
 									dataPoint: dataPoint,
@@ -8044,7 +9699,7 @@
 							var center = visualInfo.center;
 							var innerRadius = this.type === "doughnut" ? .6 * visualInfo.radius : 0;
 
-							var distance = Math.sqrt(Math.pow(center.x - x, 2) + Math.pow(center.y - y, 2));
+							distance = Math.sqrt(Math.pow(center.x - x, 2) + Math.pow(center.y - y, 2));
 							if (distance < visualInfo.radius && distance > innerRadius) {
 
 								var deltaY = y - center.y;
@@ -8085,6 +9740,44 @@
 
 							break;
 
+						case "candlestick":
+							if (((x >= (visualInfo.x1 - visualInfo.borderThickness / 2)) && (x <= (visualInfo.x2 + visualInfo.borderThickness / 2))
+								&& (y >= visualInfo.y2 - visualInfo.borderThickness / 2) && (y <= visualInfo.y3 + visualInfo.borderThickness / 2))
+								|| (Math.abs(visualInfo.x2 - x + visualInfo.x1 - x) < visualInfo.borderThickness && (y >= visualInfo.y1 && y <= visualInfo.y4))) {
+								results.push({
+									dataPoint: dataPoint,
+									dataPointIndex: i,
+									dataSeries: this,
+									distance: Math.min(Math.abs(visualInfo.x1 - x), Math.abs(visualInfo.x2 - x), Math.abs(visualInfo.y2 - y), Math.abs(visualInfo.y3 - y))
+									//distance:0
+								});
+
+								foundDataPoint = true;
+					}
+							break;
+
+						case "ohlc":
+
+							if ((Math.abs(visualInfo.x2 - x + visualInfo.x1 - x) < visualInfo.borderThickness && (y >= visualInfo.y2 && y <= visualInfo.y3))
+
+								|| (x >= visualInfo.x1 && (x <= (visualInfo.x2 + visualInfo.x1) / 2)
+									&& (y >= visualInfo.y1 - visualInfo.borderThickness / 2) && (y <= visualInfo.y1 + visualInfo.borderThickness / 2))
+
+								|| ((x >= (visualInfo.x1 + visualInfo.x2) / 2) && (x <= visualInfo.x2)
+									&& (y >= visualInfo.y4 - visualInfo.borderThickness / 2) && (y <= visualInfo.y4 + visualInfo.borderThickness / 2))) {
+
+								results.push({
+									dataPoint: dataPoint,
+									dataPointIndex: i,
+									dataSeries: this,
+									distance: Math.min(Math.abs(visualInfo.x1 - x), Math.abs(visualInfo.x2 - x), Math.abs(visualInfo.y2 - y), Math.abs(visualInfo.y3 - y))
+									//distance:0
+								});
+
+								foundDataPoint = true;
+							}
+							break;
+
 					}
 
 					if (foundDataPoint || (forwardMissCount > maxMissCount && backwardMissCount > maxMissCount))
@@ -8113,6 +9806,9 @@
 				closestResult = results[m];
 			}
 		}
+
+		//if (window.console)
+		//	window.console.log("forwardMissCount: " + forwardMissCount + "; backwardMissCount: " + backwardMissCount + "; getClosest: " + getClosest);
 
 		//if (window.console && closestResult)
 		//    window.console.log(j + ": distance = " + closestResult.distance);
@@ -8423,13 +10119,17 @@
 			}
 		}
 
-		//if (isDebugMode && window.console) {
-		//    window.console.log(this.type + " --- axisWidth : " + (maxLabelEffectiveWidth + this.tickLength));
-		//}
+
 
 		var titleHeight = this.title ? getFontHeightInPixels(this.titleFontFamily, this.titleFontSize, this.titleFontWeight) + 2 : 0;
 
-		return titleHeight + maxLabelEffectiveWidth + this.tickLength + 5;
+		var axisWidth = titleHeight + maxLabelEffectiveWidth + this.tickLength + 5;
+
+		//if (isDebugMode && window.console) {
+		//	window.console.log(this.type + "--- axisWidth: " + axisWidth);
+		//}
+
+		return axisWidth;
 	}
 
 	Axis.prototype.createLabelsAndCalculateHeight = function () {
@@ -8536,8 +10236,10 @@
 
 			axisX.boundingRect = { x1: x1, y1: y1, x2: x2, y2: y2, width: x2 - x1, height: y2 - y1 };
 
-			//axisX.ctx.rect(axisX.boundingRect.x1, axisX.boundingRect.y1, axisX.boundingRect.width, axisX.boundingRect.height);
-			//axisX.ctx.stroke();
+			//if (isDebugMode) {
+			//	axisX.ctx.rect(axisX.boundingRect.x1, axisX.boundingRect.y1, axisX.boundingRect.width, axisX.boundingRect.height);
+			//	axisX.ctx.stroke();
+			//}
 
 			// Position axisY based on the available free space, Margin and its height
 			if (axisY) {
@@ -8552,8 +10254,10 @@
 				axisY.boundingRect = { x1: x1, y1: y1, x2: x2, y2: y2, width: x2 - x1, height: y2 - y1 };
 			}
 
-			//axisY.ctx.rect(axisY.boundingRect.x1, axisY.boundingRect.y1, axisY.boundingRect.width, axisY.boundingRect.height);
-			//axisY.ctx.stroke();
+			//if (isDebugMode && axisY) {
+			//	axisY.ctx.rect(axisY.boundingRect.x1, axisY.boundingRect.y1, axisY.boundingRect.width, axisY.boundingRect.height);
+			//	axisY.ctx.stroke();
+			//}
 
 			// Position axisY2 based on the available free space, Margin and its height
 			if (axisY2) {
@@ -8579,7 +10283,7 @@
 
 
 			ctx.save();
-			ctx.rect(axisX.boundingRect.x1 - 40, axisX.boundingRect.y1, axisX.boundingRect.width + 80, axisX.boundingRect.height);
+			ctx.rect(5, axisX.boundingRect.y1, axisX.chart.width - 10, axisX.boundingRect.height);
 			ctx.clip();
 
 			axisX.renderLabelsTicksAndTitle();
@@ -8908,7 +10612,7 @@
 
 				this._titleTextBlock = new TextBlock(this.ctx, {
 					x: this.lineCoordinates.x1,// This is recalculated again
-					y: this.boundingRect.y2 - this.titleFontSize - 5,
+					y: this.boundingRect.y2 - this.titleFontSize - 5,// This is recalculated again
 					maxWidth: this.lineCoordinates.width,
 					maxHeight: this.titleFontSize * 1.5,
 					angle: 0,
@@ -8924,7 +10628,7 @@
 
 				this._titleTextBlock.measureText();
 				this._titleTextBlock.x = this.lineCoordinates.x1 + this.lineCoordinates.width / 2 - this._titleTextBlock.width / 2;
-				this._titleTextBlock.y = this.boundingRect.y2 - this._titleTextBlock.height - 2;
+				this._titleTextBlock.y = this.boundingRect.y2 - this._titleTextBlock.height - 3;
 				this._titleTextBlock.render(true);
 			}
 		}
@@ -8985,7 +10689,7 @@
 
 				this._titleTextBlock = new TextBlock(this.ctx, {
 					x: this.lineCoordinates.x1,// This is recalculated again
-					y: this.boundingRect.y1,
+					y: this.boundingRect.y1 + 1,
 					maxWidth: this.lineCoordinates.width,
 					maxHeight: this.titleFontSize * 1.5,
 					angle: 0,
@@ -9052,7 +10756,7 @@
 			if (this.title) {
 
 				this._titleTextBlock = new TextBlock(this.ctx, {
-					x: this.boundingRect.x1 + 5,
+					x: this.boundingRect.x1 + 1,
 					y: this.lineCoordinates.y2,
 					maxWidth: this.lineCoordinates.height,
 					maxHeight: this.titleFontSize * 1.5,
@@ -9067,9 +10771,21 @@
 					textBaseline: "top"
 				});
 
-				this._titleTextBlock.measureText();
+				var size = this._titleTextBlock.measureText();
+
+				//this._titleTextBlock.x -= 4;
+
 				this._titleTextBlock.y = (this.lineCoordinates.height / 2 + this._titleTextBlock.width / 2 + this.lineCoordinates.y1);
 				this._titleTextBlock.render(true);
+
+				//if (isDebugMode) {
+				//	window.console.log("titleFontSize: " + this.titleFontSize + "; width: " + size.width + "; height: " + size.height);
+				//	window.console.log("this.boundingRect.x1: " + this.boundingRect.x1);
+
+				//	//this.ctx.rect(this._titleTextBlock.x, this._titleTextBlock.y, this._titleTextBlock.height, -this._titleTextBlock.width);
+				//	//this.ctx.stroke();
+
+				//}
 
 			}
 		}
@@ -9124,7 +10840,7 @@
 			if (this.title) {
 
 				this._titleTextBlock = new TextBlock(this.ctx, {
-					x: this.boundingRect.x2 - 5,
+					x: this.boundingRect.x2 - 1,
 					y: this.lineCoordinates.y2,
 					maxWidth: this.lineCoordinates.height,
 					maxHeight: this.titleFontSize * 1.5,
@@ -9233,6 +10949,10 @@
 
 			var xy = this.getPixelCoordinatesOnAxis(stripLine.value);
 
+			var lineWidth = Math.abs(thicknessType === "pixel" ? stripLine.thickness : this.conversionParameters.pixelPerUnit * stripLine.thickness);
+
+			if (lineWidth <= 0)
+				continue;
 
 			ctx.strokeStyle = stripLine.color;
 			ctx.beginPath();
@@ -9243,7 +10963,9 @@
 			var x1, x2, y1, y2;
 
 			//ghostCtx.lineWidth = ctx.lineWidth = Math.abs(thicknessType === "pixel" ? stripLine.thickness : this.conversionParameters.pixelPerUnit * stripLine.thickness);
-			ctx.lineWidth = Math.abs(thicknessType === "pixel" ? stripLine.thickness : this.conversionParameters.pixelPerUnit * stripLine.thickness);
+
+
+			ctx.lineWidth = lineWidth
 
 			if (this._position === "bottom" || this._position === "top") {
 
@@ -9470,6 +11192,9 @@
 
 			if (this.dataInfo.minDiff !== Infinity)
 				minDiff = this.dataInfo.minDiff;
+			else if (max - min > 1) {
+				minDiff = Math.abs(max - min) * .5;
+			}
 			else
 				minDiff = 1;
 
@@ -9936,7 +11661,15 @@
 			toolTipHtml += "text-indent: 0px;";
 			toolTipHtml += "white-space: nowrap;";
 			//toolTipHtml += "pointer-events:none;";
-			toolTipHtml += "border-radius: 10px;";
+			toolTipHtml += "border-radius: 5px;";
+
+			//Disable Text Selection
+			toolTipHtml += "-moz-user-select:none;";
+			toolTipHtml += "-khtml-user-select: none;";
+			toolTipHtml += "-webkit-user-select: none;";
+			toolTipHtml += "-ms-user-select: none;";
+			toolTipHtml += "user-select: none;";
+
 			//toolTipHtml += "opacity: 0;";
 			//toolTipHtml += "filter: progid: DXImageTransform.Microsoft.gradient(GradientType = 0, startColorstr = '#4cffffff', endColorstr = '#4cffffff');";
 
@@ -10075,7 +11808,10 @@
 					entry.dataPoint = dataPoint;
 					entry.index = this.currentDataPointIndex;
 					entry.distance = Math.abs(dataPoint.x - x);
-				} else if (dataSeries.type === "line" || dataSeries.type === "stepLine" || dataSeries.type === "spline" || dataSeries.type === "area" || dataSeries.type === "stepArea" || dataSeries.type === "splineArea" || dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100") {
+				} else if (dataSeries.type === "line" || dataSeries.type === "stepLine" || dataSeries.type === "spline" || dataSeries.type === "area" || dataSeries.type === "stepArea"
+						|| dataSeries.type === "splineArea" || dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100"
+						|| dataSeries.type === "rangeArea" || dataSeries.type === "rangeSplineArea"
+						|| dataSeries.type === "candlestick" || dataSeries.type === "ohlc") {
 					var x = (this.chart.axisX.maximum - this.chart.axisX.minimum) / this.chart.axisX.lineCoordinates.width * (mouseX - this.chart.axisX.lineCoordinates.x1) + this.chart.axisX.minimum.valueOf();
 
 					entry = dataSeries.getDataPointAtX(x, true);
@@ -10119,7 +11855,7 @@
 			//var toolTipContent = dataSeries.toolTipContent ? dataSeries.toolTipContent : dataPoint.toolTipContent ? dataPoint.toolTipContent : "<strong>{x}</strong><br/><strong style='\"'color:{color};'\"'>{name}</strong>,&nbsp;&nbsp;<strong>y</strong>:{y}";
 
 			//var toolTipInnerHtml = " x: " + (this.chart.plotInfo.axisXValueType === "dateTime" ? dateFormat(searchResult.dataPoint.x, this.chart.axisX.valueFormatString) : numberFormat(searchResult.dataPoint.x, this.chart.axisX.valueFormatString)) + ", y: " + numberFormat(searchResult.dataPoint.y, "#,###0.##");
-			if (entries[0].dataSeries.type === "pie" || entries[0].dataSeries.type === "doughnut" || entries[0].dataSeries.type === "bar" || entries[0].dataSeries.type === "stackedBar" || entries[0].dataSeries.type === "stackedBar100") {
+			if (entries[0].dataSeries.type === "pie" || entries[0].dataSeries.type === "doughnut" || entries[0].dataSeries.type === "funnel" || entries[0].dataSeries.type === "bar" || entries[0].dataSeries.type === "rangeBar" || entries[0].dataSeries.type === "stackedBar" || entries[0].dataSeries.type === "stackedBar100") {
 				//toolTipRight = mouseX - 10;
 				toolTipLeft = mouseX - 10 - this.container.clientWidth;
 			} else {
@@ -10135,7 +11871,7 @@
 
 			if (entries.length === 1 && !this.shared && (entries[0].dataSeries.type === "line" || entries[0].dataSeries.type === "stepLine" || entries[0].dataSeries.type === "spline" || entries[0].dataSeries.type === "area" || entries[0].dataSeries.type === "stepArea" || entries[0].dataSeries.type === "splineArea" || entries[0].dataSeries.type === "stackedArea" || entries[0].dataSeries.type === "stackedArea100")) {
 				toolTipBottom = (entries[0].dataSeries.axisY.lineCoordinates.y2 - entries[0].dataSeries.axisY.lineCoordinates.height / Math.abs(entries[0].dataSeries.axisY.maximum - entries[0].dataSeries.axisY.minimum) * Math.abs(entries[0].dataPoint.y - entries[0].dataSeries.axisY.minimum) + .5) << 0;
-			} else if (entries[0].dataSeries.type === "bar" || entries[0].dataSeries.type === "stackedBar" || entries[0].dataSeries.type === "stackedBar100") {
+			} else if (entries[0].dataSeries.type === "bar" || entries[0].dataSeries.type === "rangeBar" || entries[0].dataSeries.type === "stackedBar" || entries[0].dataSeries.type === "stackedBar100") {
 				toolTipBottom = (entries[0].dataSeries.axisX.lineCoordinates.y2 - entries[0].dataSeries.axisX.lineCoordinates.height / Math.abs(entries[0].dataSeries.axisX.maximum - entries[0].dataSeries.axisX.minimum) * Math.abs(entries[0].dataPoint.x - entries[0].dataSeries.axisX.minimum) + .5) << 0;
 			}
 			else {
@@ -10182,6 +11918,7 @@
 		overlaidCanvasCtx.rect(plotArea.x1, plotArea.y1, plotArea.width, plotArea.height);
 		overlaidCanvasCtx.clip();
 		overlaidCanvasCtx.beginPath();
+		var offset = 0;
 
 
 		for (var i = 0; i < entries.length; i++) {
@@ -10198,7 +11935,9 @@
 			var index = eventObject.dataPointIndex;
 
 			if (dataSeries.type === "line" || dataSeries.type === "stepLine" || dataSeries.type === "spline" || dataSeries.type === "scatter"
-				|| dataSeries.type === "area" || dataSeries.type === "stepArea" || dataSeries.type === "splineArea" || dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100") {
+				|| dataSeries.type === "area" || dataSeries.type === "stepArea" || dataSeries.type === "splineArea"
+				|| dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100"
+				|| dataSeries.type === "rangeArea" || dataSeries.type === "rangeSplineArea") {
 				var markerProps = dataSeries.getMarkerProperties(index, eventObject.x1, eventObject.y1, this.chart.overlaidCanvasCtx);
 				markerProps.size = Math.max(markerProps.size * 1.5 << 0, 10);
 
@@ -10208,6 +11947,19 @@
 				//overlaidCanvasCtx.globalAlpha = .8;
 				RenderHelper.drawMarkers([markerProps]);
 				//overlaidCanvasCtx.globalAlpha = .8;
+
+				if (typeof (eventObject.y2) !== "undefined") {
+
+					var markerProps = dataSeries.getMarkerProperties(index, eventObject.x1, eventObject.y2, this.chart.overlaidCanvasCtx);
+					markerProps.size = Math.max(markerProps.size * 1.5 << 0, 10);
+
+					markerProps.borderColor = markerProps.borderColor || "#FFFFFF";
+					markerProps.borderThickness = markerProps.borderThickness || Math.ceil(markerProps.size * .1);
+
+					//overlaidCanvasCtx.globalAlpha = .8;
+					RenderHelper.drawMarkers([markerProps]);
+					//overlaidCanvasCtx.globalAlpha = .8;
+				}
 			} else if (dataSeries.type === "bubble") {
 				var markerProps = dataSeries.getMarkerProperties(index, eventObject.x1, eventObject.y1, this.chart.overlaidCanvasCtx);
 				markerProps.size = eventObject.size;
@@ -10218,17 +11970,57 @@
 				RenderHelper.drawMarkers([markerProps]);
 				overlaidCanvasCtx.globalAlpha = 1;
 			} else if (dataSeries.type === "column" || dataSeries.type === "stackedColumn" || dataSeries.type === "stackedColumn100"
-				|| dataSeries.type === "bar" || dataSeries.type === "stackedBar" || dataSeries.type === "stackedBar100") {
-				overlaidCanvasCtx.globalAlpha = .3;
-				drawRect(overlaidCanvasCtx, eventObject.x1, eventObject.y1, eventObject.x2, eventObject.y2, "white", false, false, false, false);
-				overlaidCanvasCtx.globalAlpha = 1;
+				|| dataSeries.type === "bar" || dataSeries.type === "rangeBar" || dataSeries.type === "stackedBar" || dataSeries.type === "stackedBar100"
+				|| dataSeries.type === "rangeColumn") {
+				drawRect(overlaidCanvasCtx, eventObject.x1, eventObject.y1, eventObject.x2, eventObject.y2, "white", 0, null, false, false, false, false, .3);
 			}
 			else if (dataSeries.type === "pie" || dataSeries.type === "doughnut") {
-				overlaidCanvasCtx.globalAlpha = .3;
-				drawSegment(overlaidCanvasCtx, eventObject.center, eventObject.radius, "white", dataSeries.type, eventObject.startAngle, eventObject.endAngle);
+				drawSegment(overlaidCanvasCtx, eventObject.center, eventObject.radius, "white", dataSeries.type, eventObject.startAngle, eventObject.endAngle, .3);
+			} else if (dataSeries.type === "candlestick") {
+
+				overlaidCanvasCtx.globalAlpha = 1;
+				overlaidCanvasCtx.strokeStyle = eventObject.color;
+				overlaidCanvasCtx.lineWidth = eventObject.borderThickness * 2;
+				offset = (overlaidCanvasCtx.lineWidth) % 2 === 0 ? 0 : .5;
+
+				overlaidCanvasCtx.beginPath();
+				overlaidCanvasCtx.moveTo(eventObject.x3 - offset, eventObject.y2);
+				overlaidCanvasCtx.lineTo(eventObject.x3 - offset, Math.min(eventObject.y1, eventObject.y4));
+				overlaidCanvasCtx.stroke();
+
+				overlaidCanvasCtx.beginPath();
+				overlaidCanvasCtx.moveTo(eventObject.x3 - offset, Math.max(eventObject.y1, eventObject.y4));
+				overlaidCanvasCtx.lineTo(eventObject.x3 - offset, eventObject.y3);
+				overlaidCanvasCtx.stroke();
+
+				drawRect(overlaidCanvasCtx, eventObject.x1, Math.min(eventObject.y1, eventObject.y4), eventObject.x2, Math.max(eventObject.y1, eventObject.y4), "transparent", eventObject.borderThickness * 2, eventObject.color, false, false, false, false);
+				overlaidCanvasCtx.globalAlpha = 1;
+
+			} else if (dataSeries.type === "ohlc") {
+				overlaidCanvasCtx.globalAlpha = 1;
+
+				overlaidCanvasCtx.strokeStyle = eventObject.color;
+				overlaidCanvasCtx.lineWidth = eventObject.borderThickness * 2;
+
+				offset = (overlaidCanvasCtx.lineWidth) % 2 === 0 ? 0 : .5;
+
+				overlaidCanvasCtx.beginPath();
+				overlaidCanvasCtx.moveTo(eventObject.x3 - offset, eventObject.y2);
+				overlaidCanvasCtx.lineTo(eventObject.x3 - offset, eventObject.y3);
+				overlaidCanvasCtx.stroke();
+
+				overlaidCanvasCtx.beginPath();
+				overlaidCanvasCtx.moveTo(eventObject.x3, eventObject.y1);
+				overlaidCanvasCtx.lineTo(eventObject.x1, eventObject.y1);
+				overlaidCanvasCtx.stroke();
+
+				overlaidCanvasCtx.beginPath();
+				overlaidCanvasCtx.moveTo(eventObject.x3, eventObject.y4);
+				overlaidCanvasCtx.lineTo(eventObject.x2, eventObject.y4);
+				overlaidCanvasCtx.stroke();
+
 				overlaidCanvasCtx.globalAlpha = 1;
 			}
-			continue;
 		}
 
 		overlaidCanvasCtx.globalAlpha = 1;
@@ -10278,10 +12070,19 @@
 					|| dataSeries.type === "stackedColumn" || dataSeries.type === "stackedColumn100" || dataSeries.type === "stackedBar" || dataSeries.type === "stackedBar100"
 					|| dataSeries.type === "stackedArea" || dataSeries.type === "stackedArea100") {
 						toolTipContent += dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>{name}:</span>&nbsp;&nbsp;{y}";
-					} else if (dataSeries.type === "bubble") {
+					}
+					else if (dataSeries.type === "bubble") {
 						toolTipContent += dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>{name}:</span>&nbsp;&nbsp;{y}, &nbsp;&nbsp;{z}";
-					} else if (dataSeries.type === "pie" || dataSeries.type === "doughnut") {
+					} else if (dataSeries.type === "pie" || dataSeries.type === "doughnut" || dataSeries.type === "funnel") {
 						toolTipContent += dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "&nbsp;&nbsp;{y}";
+					} else if (dataSeries.type === "rangeColumn" || dataSeries.type === "rangeBar" || dataSeries.type === "rangeArea" || dataSeries.type === "rangeSplineArea") {
+						toolTipContent += dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>{name}:</span>&nbsp;&nbsp;{y[0]},&nbsp;{y[1]}";
+					} else if (dataSeries.type === "candlestick" || dataSeries.type === "ohlc") {
+						toolTipContent += dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>{name}:</span>"
+										+ "<br/>Open: &nbsp;&nbsp;{y[0]}"
+										+ "<br/>High: &nbsp;&nbsp;&nbsp;{y[1]}"
+										+ "<br/>Low:&nbsp;&nbsp;&nbsp;{y[2]}"
+										+ "<br/>Close: &nbsp;&nbsp;{y[3]}";
 					}
 
 					toolTipInnerHtml += this.chart.replaceKeywordsWithValue(toolTipContent, dataPoint, dataSeries, index);
@@ -10303,8 +12104,16 @@
 					toolTipContent = dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>" + (dataPoint.label ? "{label}" : "{x}") + " :</span>&nbsp;&nbsp;{y}";
 				} else if (dataSeries.type === "bubble") {
 					toolTipContent = dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>" + (dataPoint.label ? "{label}" : "{x}") + ":</span>&nbsp;&nbsp;{y}, &nbsp;&nbsp;{z}";
-				} else if (dataSeries.type === "pie" || dataSeries.type === "doughnut") {
+				} else if (dataSeries.type === "pie" || dataSeries.type === "doughnut" || dataSeries.type === "funnel") {
 					toolTipContent = dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : (dataPoint.name ? "{name}:&nbsp;&nbsp;" : dataPoint.label ? "{label}:&nbsp;&nbsp;" : "") + "{y}";
+				} else if (dataSeries.type === "rangeColumn" || dataSeries.type === "rangeBar" || dataSeries.type === "rangeArea" || dataSeries.type === "rangeSplineArea") {
+					toolTipContent = dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>" + (dataPoint.label ? "{label}" : "{x}") + " :</span>&nbsp;&nbsp;{y[0]}, &nbsp;{y[1]}";
+				} else if (dataSeries.type === "candlestick" || dataSeries.type === "ohlc") {
+					toolTipContent = dataPoint.toolTipContent ? dataPoint.toolTipContent : dataSeries.toolTipContent ? dataSeries.toolTipContent : this.content && typeof (this.content) !== "function" ? this.content : "<span style='\"'color:{color};'\"'>" + (dataPoint.label ? "{label}" : "{x}") + "</span>"
+						+ "<br/>Open: &nbsp;&nbsp;{y[0]}"
+						+ "<br/>High: &nbsp;&nbsp;&nbsp;{y[1]}"
+						+ "<br/>Low: &nbsp;&nbsp;&nbsp;&nbsp;{y[2]}"
+						+ "<br/>Close: &nbsp;&nbsp;{y[3]}";
 				}
 
 				toolTipInnerHtml += this.chart.replaceKeywordsWithValue(toolTipContent, dataPoint, dataSeries, index);
@@ -10318,10 +12127,6 @@
 		if (this.container.style.WebkitTransition)
 			return;
 
-		//this.container.style.WebkitTransition = "right .2s ease-out, bottom .2s ease-out";
-		//this.container.style.MozTransition = "right .2s ease-out, bottom .2s ease-out";
-		//this.container.style.MsTransition = "right .2s ease-out, bottom .2s ease-out";
-		//this.container.style.transition = "right .2s ease-out, bottom .2s ease-out";
 		this.container.style.WebkitTransition = "left .2s ease-out, bottom .2s ease-out";
 		this.container.style.MozTransition = "left .2s ease-out, bottom .2s ease-out";
 		this.container.style.MsTransition = "left .2s ease-out, bottom .2s ease-out";
@@ -10350,19 +12155,33 @@
 		this.chart.resetOverlayedCanvas();
 	}
 
-	Chart.prototype.replaceKeywordsWithValue = function (str, dp, ds, index) {
-		var regex = /\{\s*[a-zA-Z]+\s*\}|"[^"]*"|'[^']*'/g;
+	Chart.prototype.replaceKeywordsWithValue = function (str, dp, ds, dpIndex, indexKeywordValue) {
+		//var regex = /\{\s*[a-zA-Z]+\s*\}|"[^"]*"|'[^']*'/g;
+		var regex = /\{.*?\}|"[^"]*"|'[^']*'/g;
 		var chart = this;
+		indexKeywordValue = typeof (indexKeywordValue) === "undefined" ? 0 : indexKeywordValue;
 
 		var fcn = function ($0) {
 			if (($0[0] === "\"" && $0[$0.length - 1] === "\"") || ($0[0] === "\'" && $0[$0.length - 1] === "\'"))
 				return $0.slice(1, $0.length - 1);
 
 			var key = trimString($0.slice(1, $0.length - 1));
+			key = key.replace("#index", indexKeywordValue);
+			var index = null;
+
+			try {
+				var match = key.match(/(.*?)\s*\[\s*(.*?)\s*\]/);
+				if (match && match.length > 0) {
+					index = trimString(match[2]);
+					key = trimString(match[1]);
+				}
+			} catch (e) { };
+
+
 			var obj = null;
 
 			if (key === "color") {
-				return dp.color ? dp.color : ds.color ? ds.color : ds._colorSet[index % ds._colorSet.length];
+				return dp.color ? dp.color : ds.color ? ds.color : ds._colorSet[dpIndex % ds._colorSet.length];
 			}
 
 			if (dp.hasOwnProperty(key))
@@ -10371,15 +12190,19 @@
 				obj = ds;
 			else return "";
 
+			var value = obj[key];
+			if (index !== null)
+				value = value[index];
+
 			if (key === "x") {
 				if (chart.axisX && chart.plotInfo.axisXValueType === "dateTime")
-					return dateFormat(obj[key], dp.xValueFormatString ? dp.xValueFormatString : ds.xValueFormatString ? ds.xValueFormatString : chart.axisX && chart.axisX.valueFormatString ? chart.axisX.valueFormatString : "DD MMM YY", chart._cultureInfo);
+					return dateFormat(value, dp.xValueFormatString ? dp.xValueFormatString : ds.xValueFormatString ? ds.xValueFormatString : chart.axisX && chart.axisX.valueFormatString ? chart.axisX.valueFormatString : "DD MMM YY", chart._cultureInfo);
 				else
-					return numberFormat(obj[key], dp.xValueFormatString ? dp.xValueFormatString : ds.xValueFormatString ? ds.xValueFormatString : "#,##0.########", chart._cultureInfo);
+					return numberFormat(value, dp.xValueFormatString ? dp.xValueFormatString : ds.xValueFormatString ? ds.xValueFormatString : "#,##0.########", chart._cultureInfo);
 			} else if (key === "y")
-				return numberFormat(obj[key], dp.yValueFormatString ? dp.yValueFormatString : ds.yValueFormatString ? ds.yValueFormatString : "#,##0.########", chart._cultureInfo);
+				return numberFormat(value, dp.yValueFormatString ? dp.yValueFormatString : ds.yValueFormatString ? ds.yValueFormatString : "#,##0.########", chart._cultureInfo);
 			else
-				return obj[key];
+				return value;
 		}
 
 		return str.replace(regex, fcn);
@@ -10725,7 +12548,7 @@
 		Chart: function (containerId, options) {
 			var _chart = new Chart(containerId, options, this);
 
-			this.render = function () { _chart.render() };
+			this.render = function () { _chart.render(this.options) };
 			//console.log(_chart);
 			this.options = _chart._options;
 		},
@@ -10737,7 +12560,7 @@
 		}
 	}
 
-	CanvasJS.Chart.version = "v1.4.0 Beta 2";
+	CanvasJS.Chart.version = "v1.5.0 Beta 1";
 	window.CanvasJS = CanvasJS;
 	//#endregion Public API
 

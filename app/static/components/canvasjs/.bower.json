@@ -1,11 +1,26 @@
 {
   "name": "canvasjs",
-  "_cacheHeaders": {
-    "Content-Length": "106457",
-    "Content-Type": "application/zip",
-    "Content-Disposition": "attachment;filename=\"canvasjs-1.4.0-beta.zip\""
+  "homepage": "http://canvasjs.com/",
+  "authors": [
+    "Al Johri <al.johri@gmail.com>"
+  ],
+  "description": "canvasjs on github for bower",
+  "main": "canvasjs.min.js",
+  "keywords": [
+    "canvasjs",
+    "canvas",
+    "chart",
+    "graph",
+    "plot"
+  ],
+  "license": "Dual Licensing Model, Free for Non-Commercial Use (Creative Commons Attribution-NonCommercial 3.0), Commercial License (http://canvasjs.com/license-canvasjs/)",
+  "_release": "687990f1ee",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "687990f1ee9775249cb54df853ce070cdf37f7c3"
   },
-  "_source": "http://canvasjs.com/\\?wpdmdl=1",
-  "_target": "*",
-  "_originalSource": "http://canvasjs.com/\\?wpdmdl=1"
+  "_source": "git://github.com/AlJohri/bower-canvasjs.git",
+  "_target": "master",
+  "_originalSource": "git://github.com/AlJohri/bower-canvasjs"
 }

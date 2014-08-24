@@ -6,7 +6,6 @@ include
 *.log
 database.db
 node_modules
-dist
 .webassets-cache
 *.pem
 app/static/dist
