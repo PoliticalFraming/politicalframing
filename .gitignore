@@ -7,11 +7,9 @@ include
 database.db
 node_modules
 dist
-.tmp
 .webassets-cache
 *.pem
 app/static/dist
-app/static/.tmp
 .sass-cache
 .bundle
 .vagrant
