@@ -35,7 +35,8 @@ def getWords(synset):
     words = set() # words to include in frame
 
     for subsynset in (wordnettools.gethypernymsrecursive(synset)
-        + wordnettools.getlemmasgetrelatedforms(synset)(synset)
+        + wordnettools.getlemmas(synset)
+        + getrelatedforms(synset)
         + wordnettools.getrelatedforms(synset)
         + wordnettools.gethyponymsrecursive(synset)
         + wordnettools.getdomainterms(synset)):
