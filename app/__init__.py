@@ -15,11 +15,15 @@ from werkzeug.wsgi import SharedDataMiddleware
 
 from celery import Celery
 from celery.signals import task_prerun
+from celery.signals import setup_logging
 import sys
 
 import environment
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../lib')
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
 
 
 class Api(restful.Api):
@@ -29,6 +33,14 @@ class Api(restful.Api):
 @task_prerun.connect
 def on_task_init(*args, **kwargs):
     db.database.close()
+
+@setup_logging.connect
+def app_setup_logging(loglevel, logfile, format, colorize, **kwargs):
+    # stream_handler.setFormatter(logging.Formatter(format))
+    logger = logging.getLogger('celery')
+    logger.addHandler(stream_handler)
+    logger.setLevel(logging.DEBUG)
+    return logger
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL'])
@@ -44,8 +56,12 @@ def make_celery(app):
 
 # heroku addons:add heroku-postgresql:dev
 # heroku config:set HEROKU=1
+DEBUG = False
+
+if 'REDIS_URL' not in os.environ:
+    os.environ['REDIS_URL'] = 'redis://localhost:6379'
+
 if 'HEROKU' in os.environ:
-    DEBUG = True
     urlparse.uses_netloc.append('postgres')
     url = urlparse.urlparse(os.environ['DATABASE_URL'])
     DATABASE = {
@@ -56,11 +72,7 @@ if 'HEROKU' in os.environ:
         'host': url.hostname,
         'port': url.port,
     }
-    CELERY_BROKER_URL = os.environ['REDIS_URL']
-    CELERY_RESULT_BACKEND = os.environ['REDIS_URL'] + '/0'
-
 else:
-    DEBUG = True
     DATABASE = {
         'engine': 'peewee.PostgresqlDatabase',
         'name': 'framingappdb',
@@ -70,47 +82,38 @@ else:
         'port': 5432 ,
         'threadlocals': True
     }
-    #  http://docs.celeryproject.org/en/latest/configuration.html#logging
-    CELERY_BROKER_URL = 'redis://localhost:6379'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-    CELERY_REDIRECT_STDOUTS = True
-    CELERY_REDIRECT_STDOUTS_LEVEL = 'DEBUG'
-    CELERY_TRACK_STARTED = True
-    # CELERY_TASK_SERIALIZER = 'pickle' # change this to json
-    # Can be pickle (default), json, yaml, msgpack
 
 solr_url = "http://politicalframing.com:8983/solr" # "http://localhost:8983/solr/"
 h = httplib2.Http(cache="/var/tmp/solr_cache")
 si = SolrInterface(url = solr_url, http_connection = h)
 
-# Instantiate Flask
-
 SECRET_KEY='poop'
+CELERY_BROKER_URL = os.environ['REDIS_URL']
+CELERY_RESULT_BACKEND = os.environ['REDIS_URL'] + '/0'
+# CELERY_REDIRECT_STDOUTS = True
+# CELERY_REDIRECT_STDOUTS_LEVEL = 'DEBUG'
+# CELERYD_HIJACK_ROOT_LOGGER = False
+CELERY_TRACK_STARTED = True
+CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+
+# Instantiate Flask
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.logger.addHandler(stream_handler)
 celery = make_celery(app)
 
 app.wsgi_app = SharedDataMiddleware(app.wsgi_app, { '/': os.path.join(os.path.dirname(__file__), 'static') })
 app.wsgi_app = SharedDataMiddleware(app.wsgi_app, { '/': os.path.join(os.path.dirname(__file__), 'static/.tmp') })
 
-# Compile Assets
-
-# assets = Environment(app)
-# assets.url = app.static_url_path
-
-# css_bundle = Bundle('css/home.css.sass', filters='sass', output='all.css')
-# assets.register('css_all', css_bundle)
-
-# js_bundle = Bundle('js/test.js.coffee', filters='coffeescript', output='all.js')
-# assets.register('js_all', js_bundle)
-
-# Instantaite Flask Peewee Database ORM
+# Instantiate Flask Peewee Database ORM
 db = Database(app)
 db.database.get_conn().set_client_encoding('UTF8')
 
-# Instatiate Flask Peewee REST API
+# Instantiate Flask Peewee REST API
 # api = RestAPI(app)
 api = Api(app)
 
@@ -142,68 +145,28 @@ from app.controllers import speech
 from app.controllers import analysis
 from app.controllers import wordnetsocket
 
-# # Set up Cross Origin Requests
-# @app.after_request
-# @origin("*") #allow all origins all methods everywhere in the app
-# def after(response): return response
-
-# Set Root Route
-
-# @app.route("/")
-# def index():
-#     if not app.debug:
-#       return send_file('app/templates/index.html') # production (cached response sent)
-#     else:
-#       return make_response(open('app/templates/index.html').read()) # development (no cached response)
-
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    print path
     return render_template('index.html')
 
 # Set up Logging
 
-from logging import Formatter, FileHandler
-from logging.handlers import TimedRotatingFileHandler
-from logging.handlers import SysLogHandler
+# from logging import Formatter, FileHandler
+# from logging.handlers import TimedRotatingFileHandler
+# from logging.handlers import SysLogHandler
 
-root = os.path.dirname(os.path.realpath(__file__))
+# root = os.path.dirname(os.path.realpath(__file__))
+# if os.environ.get('HEROKU') is None:
+#     from logging.handlers import RotatingFileHandler
+#     LOG_FILENAME = root + '/../logs/framingapp.log'
+#     with open(LOG_FILENAME,'a') as file:
+#         # file_handler = FileHandler(LOG_FILENAME)
+#         # file_handler = RotatingFileHandler(LOG_FILENAME, 'a', 1 * 1024 * 1024, 10)
+#         file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False)
+#     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+#     file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
+#     file_handler.setLevel(logging.DEBUG)
+#     app.logger.addHandler(file_handler)
 
-if os.environ.get('HEROKU') is None:
-    from logging.handlers import RotatingFileHandler
-    LOG_FILENAME = root + '/../logs/framingapp.log'
-
-    with open(LOG_FILENAME,'a') as file:
-        # file_handler = FileHandler(LOG_FILENAME)
-        # file_handler = RotatingFileHandler(LOG_FILENAME, 'a', 1 * 1024 * 1024, 10)
-        file_handler = TimedRotatingFileHandler(LOG_FILENAME, when='D', interval=1, delay=False, utc=False)
-
-    # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    file_handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
-
-    ##########################################
-    if not app.debug:
-        app.logger.setLevel(logging.INFO)
-        file_handler.setLevel(logging.INFO)
-    else:
-        app.logger.setLevel(logging.DEBUG)
-        file_handler.setLevel(logging.DEBUG)
-    ##########################################
-
-    app.logger.addHandler(file_handler)
-else:
-    stream_handler = logging.StreamHandler()
-
-    ##########################################
-    if not app.debug:
-        app.logger.setLevel(logging.INFO)
-        stream_handler.setLevel(logging.INFO)
-    else:
-        app.logger.setLevel(logging.DEBUG)
-        stream_handler.setLevel(logging.DEBUG)
-    ##########################################
-
-    app.logger.addHandler(stream_handler)
-
-# app.logger.info('PoliticalFraming Startup')
+app.logger.info('PoliticalFraming Startup')

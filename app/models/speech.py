@@ -149,7 +149,7 @@ class Speech(object):
 
     params = zip(dict_params.keys(), dict_params.values())
 
-    print params
+    # print params
 
     response = si.schema.parse_response(si.conn.select(params))
 

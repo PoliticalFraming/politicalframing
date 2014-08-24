@@ -63,7 +63,10 @@ class AnalysisListController(Resource):
 		if not args['page']: args['page'] = 1
 		query = Analysis.select().order_by(Analysis.id)
 		count=query.count()
-		analyses = map(lambda x: get_dictionary_from_model(x), query) #query.paginate(args['page'],20)
+		if count > 0:
+			analyses = map(lambda x: get_dictionary_from_model(x), query) #query.paginate(args['page'],20)
+		else:
+			analyses = []
 
 		return { 'meta': {'count':count}, 'data': analyses }
 

@@ -13,8 +13,8 @@ from app.models.subgroup import Subgroup
 
 from dateutil import parser as dateparser
 
-# from celery.utils.log import get_task_logger
-# logger = get_task_logger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 import inspect
 import math
@@ -117,7 +117,7 @@ class Analysis(db.Model):
 
         app.logger.debug("Computed Analysis %d for phrase=%s and frame=%d", analysis_obj.id, phrase, frame)
 
-        print analysis_obj
+        # print analysis_obj
 
         return analysis_obj
 
@@ -126,40 +126,36 @@ class Analysis(db.Model):
     @staticmethod
     @celery.task(bind=True)
     def analyze_task(self, analysis_obj):
-        celery_id = self.request.id
         celery_obj = self
-        phrase = analysis_obj.phrase
-
-        query_params = analysis_obj.build_query_params(order='date')
-        app.logger.debug(str(query_params))
-
+        query_params = analysis_obj.build_query_params()
         frame = Frame.get(Frame.id == analysis_obj.frame)
-        # query_params_without_frame = { key: query_params[key] for key in query_params.keys() if ["frame", "order"] not in key }
-        # numFound = Speech.get(0, 0, **query_params_without_frame)['count']
+        query_params_without_frame = { key: query_params[key] for key in query_params.keys() if key not in ["frame", "order"] }
+        logger.debug("Querying solr to find number of pages.")
+        numFound = Speech.get(0, 0, **query_params_without_frame)['count']
         speeches = []
-        pages = 1000 #int(math.ceil(numFound/1000))
+        pages = int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
         # get speeches by page from api and convert to speech objects
         for i in range(0, pages):
+            logger.debug("Downloading page %i of %i." % (i,pages))
             speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
             speeches = speeches + map(lambda x: Speech(**x), speech_dicts)
-            # update_progress((i+1)/pages)
             celery_obj.update_state(state='PROGRESS', meta={'stage': "fetch", 'current': i, 'total': pages})
 
         # order speeches by date
-        # app.logger.debug("started sorting")
+        # logger.debug("started sorting")
         # speeches = sorted(speeches, key=lambda speech: speech.date)
-        # app.logger.debug("ended sorting")
+        # logger.debug("ended sorting")
 
-        app.logger.debug("first %s and last %s speech" % (str(speeches[0].date), str(speeches[-1].date)))
+        logger.debug("first %s and last %s speech" % (str(speeches[0].date), str(speeches[-1].date)))
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
-        app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
-        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
-        analysis_obj.wordcount_plot = analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, phrase, celery_obj)
+        logger.debug(str(len(speeches)) + " speeches are being analyzed")
+        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, analysis_obj.phrase, 100, celery_obj)
+        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, analysis_obj.phrase, celery_obj)
+        analysis_obj.wordcount_plot = analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, analysis_obj.phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
@@ -191,7 +187,7 @@ class Analysis(db.Model):
 
         # when recomputing an analysis, this prevents the old celery_id from overwriting the new celery_id
         # this can be done less hackily later
-        analysis_obj.celery_id = celery_id
+        analysis_obj.celery_id = celery_obj.request.id
 
         # rdb.set_trace()
 
@@ -220,7 +216,7 @@ class Analysis(db.Model):
             else:
                 invalid_speeches.append(speech)
 
-        app.logger.debug("%d valid speeches, %d invalid speeches" % (len(valid_speeches), len(invalid_speeches)))
+        logger.debug("%d valid speeches, %d invalid speeches" % (len(valid_speeches), len(invalid_speeches)))
 
         return valid_speeches
 
@@ -245,7 +241,7 @@ class Analysis(db.Model):
 
         *** needs to be modified
         """
-        app.logger.debug("plot_topic_usage")
+        logger.debug("plot_topic_usage")
 
         speeches = deque(ordered_speeches)
         subgroup_a_counts = []
@@ -256,8 +252,8 @@ class Analysis(db.Model):
         first_speech_time = speeches[0].date
         last_speech_time = speeches[-1].date
 
-        print "first_speech_time " + str(first_speech_time)
-        print "last_speech_time " + str(last_speech_time)
+        # print "first_speech_time " + str(first_speech_time)
+        # print "last_speech_time " + str(last_speech_time)
 
         timedelta_total = last_speech_time - first_speech_time
         window_timedelta = timedelta_total // n
@@ -265,8 +261,8 @@ class Analysis(db.Model):
         window_start = first_speech_time
         window_end = first_speech_time + window_timedelta
 
-        print "window_start " + str(window_start)
-        print "window_end " + str(window_end)
+        # print "window_start " + str(window_start)
+        # print "window_end " + str(window_end)
 
         while speeches:
             # clear current window
@@ -274,11 +270,11 @@ class Analysis(db.Model):
             subgroup_a_count = 0
             subgroup_b_count = 0
 
-            print  "speeches[0].date " + str(speeches[0].date)
-            print "speeches[-1].date " + str(speeches[-1].date)
+            # print  "speeches[0].date " + str(speeches[0].date)
+            # print "speeches[-1].date " + str(speeches[-1].date)
 
-            print window_start
-            print window_end
+            # print window_start
+            # print window_end
 
             # get speeches in current window
             while(speeches and (speeches[0].date >= window_start) and (speeches[0].date <= window_end)):
@@ -341,12 +337,12 @@ class Analysis(db.Model):
             for _ in range(window_size):
                 current_window.append(speeches.popleft())
         except:
-            app.logger.error('window_size smaller than number of speeches! waaaaay to small')
+            logger.error('window_size smaller than number of speeches! waaaaay to small')
             raise
 
 
         # declare return variables
-        app.logger.debug("Create empty return variables")
+        logger.debug("Create empty return variables")
         start_dates = []
         end_dates = []
 
@@ -361,11 +357,11 @@ class Analysis(db.Model):
             end_dates.append(current_window[-1].date)
 
             # create_classifier
-            app.logger.debug("Create Classifier")
+            logger.debug("Create Classifier")
             naive_bayes = Classifier(vocab=frame.word_string.split())
 
             # Learn Vocabulary
-            app.logger.debug("Learn Vocabulary")
+            logger.debug("Learn Vocabulary")
             naive_bayes.learn_vocabulary(map(lambda speech: " ".join(speech.speaking),current_window))
 
             # Build Training Set
@@ -377,28 +373,28 @@ class Analysis(db.Model):
                 else:
                     raise Exception("Speech must belong to subgroup a or b: " + str(speech.id))
 
-            app.logger.debug("Building Training Set")
+            logger.debug("Building Training Set")
             training_set = Classifier.bunch_with_targets(current_window, target_function)
 
             # train classifier on speeches in current window
-            app.logger.debug("Training Classifier")
+            logger.debug("Training Classifier")
             naive_bayes.train_classifier(training_set.data, training_set.target)
 
             # populate return data
-            app.logger.debug("Request Log Probability of Frame %s " , frame.name)
+            logger.debug("Request Log Probability of Frame %s " , frame.name)
             log_probabilities = naive_bayes.classify_document(frame.word_string)
 
             subgroup_a_likelihoods.append(log_probabilities[0])
             subgroup_b_likelihoods.append(log_probabilities[1])
 
-            app.logger.debug( "%s to %s - %f, %f -- %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
-            # app.logger.debug("CURRENT WINDOW DATES:")
+            logger.debug( "%s to %s - %f, %f -- %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
+            # logger.debug("CURRENT WINDOW DATES:")
             # for s in current_window:
-            #     app.logger.debug(str(s.date))
-            #     app.logger.debug(str(s.id))
+            #     logger.debug(str(s.date))
+            #     logger.debug(str(s.id))
 
             # move current window over by 'offset'
-            app.logger.debug("Move window over by %d", offset)
+            logger.debug("Move window over by %d", offset)
             for _ in range(offset):
                 if speeches:
                     current_window.append(speeches.popleft())
@@ -413,7 +409,7 @@ class Analysis(db.Model):
 
         celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
 
-        app.logger.debug("Populate Return Values")
+        logger.debug("Populate Return Values")
         self.frame_plot = {
             'title': "Usage of %s Frame in Speeches about %s" % (frame.name, phrase),
             'ylabel': "a/b Ratio of Log-Likelihoods",
@@ -451,7 +447,7 @@ class Analysis(db.Model):
             subgroup_a_counts.append(sum(a_counts)/len(a_counts))
             subgroup_b_counts.append(sum(b_counts)/len(b_counts))
 
-        app.logger.debug("Populate Return Values")
+        logger.debug("Populate Return Values")
         self.wordcount_plot = {
             'title': "Count of '%s' frame words in Speeches about %s" % (frame.name, phrase),
             'ylabel': "tf/idf score of each speeches",

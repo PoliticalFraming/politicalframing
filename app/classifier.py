@@ -9,6 +9,9 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
     This could be made faster by actually modifying or extending the MultinomialNB
@@ -22,22 +25,22 @@ class Classifier:
         self.classifier = MultinomialNB(alpha=0.1,fit_prior=True)
 
     def learn_vocabulary(self, documents):
-        app.logger.debug("learning vocabulary")
+        logger.debug("learning vocabulary")
         try:
             self.vectorizer.fit(documents)
-            app.logger.debug("learned")
+            logger.debug("learned")
         except ValueError as e:
-            app.logger.debug(e)
-            app.logger.debug(documents)
+            logger.debug(e)
+            logger.debug(documents)
             raise
 
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.fit_transform(data)
-        app.logger.debug("training classifier")
+        logger.debug("training classifier")
         self.classifier.fit(sparse_data, target)
 
     def classify_document(self, document):
-        app.logger.debug("classifying document")
+        logger.debug("classifying document")
         tfidf_frames_vector = self.vectorizer.transform([document])
         return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
 
@@ -59,7 +62,7 @@ class Classifier:
         from a partiular file structure. This function allows me to load from the database
         '''
 
-        app.logger.debug('Building bunch containing data and target vector.')
+        logger.debug('Building bunch containing data and target vector.')
 
         target = [] # 0 and 1 for subgroup a and b respectively
         target_names = ['a','b'] # target_names
