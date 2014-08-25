@@ -22,6 +22,7 @@ argparse==1.1
 backports.ssl-match-hostname==3.4.0.2
 billiard==3.3.0.13
 bintrees==2.0.1
+blessings==1.5.1
 celery==3.1.7
 colorama==0.3.1
 flask-peewee==0.6.5
