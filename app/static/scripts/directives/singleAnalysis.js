@@ -34,6 +34,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
           $scope.graphFramePlot(response);
           $scope.graphTopicPlot(response);
           // $scope.graphWordCountPlot(response);
+
+          $scope.analysisId = $scope.current.filters.id;
         });
 
       });
@@ -121,7 +123,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
-                analysis_id: $scope.current.filters.id,
+                analysis_id: $scope.analysisId,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 order: 'frame',
@@ -183,6 +185,8 @@ angular.module('framingApp').directive('singleAnalysis', function() {
                 order: 'frame',
                 highlight: 'true'
               };
+
+              console.log($scope.current.filters);
 
               if(!$scope.$$phase) { $scope.$digest(); }
 
