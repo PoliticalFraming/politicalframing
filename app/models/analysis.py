@@ -365,6 +365,7 @@ class Analysis(db.Model):
 
         lengaz = []
         datez = []
+        ids = []
 
         # loop through and plot each point
         while speeches:
@@ -412,6 +413,8 @@ class Analysis(db.Model):
 
             lengaz.append(len(current_window))
 
+            ids.append(map(lambda speech: speech.id, current_window))
+
             # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
             for _ in range(offset):
@@ -437,7 +440,8 @@ class Analysis(db.Model):
             'ratios': ratios,
             'raw_ratios': zip(subgroup_a_likelihoods, subgroup_b_likelihoods),
             'lengaz': lengaz,
-            'datez': datez
+            'datez': datez,
+            'ids': ids
         }
         self.speech_windows = json.dumps(speech_windows)
 
