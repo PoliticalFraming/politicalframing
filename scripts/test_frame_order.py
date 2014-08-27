@@ -29,7 +29,7 @@ from blessings import Terminal
 
 t = Terminal()
 
-analysis_id = 2
+analysis_id = 8
 
 analysis = Analysis.get(Analysis.id == analysis_id)
 frame = analysis.frame
@@ -74,7 +74,7 @@ for speech_window_key, speech_window in speech_windows.items():
 	num_found = len(speeches)
 	speeches = Analysis.preprocess_speeches(speeches, analysis.subgroup_fn)
 
-	ipdb.set_trace()
+	# ipdb.set_trace()
 
 	print "%d speeches after preprocessing" % len(speeches)
 
@@ -124,8 +124,8 @@ for speech_window_key, speech_window in speech_windows.items():
 	else:
 		print t.red("!!! ERROR ERROR ERROR ERROR ERROR !!!")
 
-	rep_frame_freq = sum(map(lambda speech: speech.frame_freq, rep_speeches))
-	dem_frame_freq = sum(map(lambda speech: speech.frame_freq, dem_speeches))
+	rep_frame_freq = sum(map(lambda speech: speech.frame_freq, rep_speeches))# / len(rep_speeches)
+	dem_frame_freq = sum(map(lambda speech: speech.frame_freq, dem_speeches))# / len(dem_speeches)
 
 	print "Rep Frame Freq", rep_frame_freq
 	print "Dem Frame Freq", dem_frame_freq

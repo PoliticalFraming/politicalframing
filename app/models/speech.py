@@ -140,8 +140,7 @@ class Speech(object):
     if kwargs.get('order') and kwargs.get('order') not in ["frame", "tfidf", "idf", "termFreq"]:
       solr_query = solr_query.sort_by(kwargs.get('order'))
 
-
-    solr_query = solr_query.terms('speaking').terms(tf=True)
+    # solr_query = solr_query.terms('speaking').terms(tf=True)
     params = solr_query.params()
     dict_params = dict(params)
 
@@ -164,7 +163,7 @@ class Speech(object):
       key = "%s - %s" % (kwargs.get('start_date'), kwargs.get('end_date'))
       vocabulary_proba = json.loads(analysis_obj.speech_windows)[key]
 
-      frame_vocabulary_proba =  { word: (abs(vocabulary_proba.get(word)[0] - vocabulary_proba.get(word)[1])) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
+      frame_vocabulary_proba =  { word: (abs(exp(vocabulary_proba.get(word)[0]) - exp(vocabulary_proba.get(word)[1]))) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
 
       # print frame_vocabulary_proba
 

@@ -164,8 +164,15 @@ class Analysis(db.Model):
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
 
-        analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
+        bins = 100
+        analysis_obj.plot_topic_usage(speeches, phrase, bins, celery_obj)
+
+        window_size = len(speeches) // 20
+        offset = window_size // 10
+        app.logger.debug("window size %d" % window_size)
+        app.logger.debug("offset %d" % offset)
+
+        analysis_obj.plot_frame_usage(frame, speeches, window_size, offset, phrase, celery_obj)
         # analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, phrase, celery_obj)
 
         indexes_to_delete = []
@@ -397,8 +404,8 @@ class Analysis(db.Model):
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
             probabilities = naive_bayes.classify_document(frame.word_string)
 
-            subgroup_a_likelihoods.append(probabilities[0])
-            subgroup_b_likelihoods.append(probabilities[1])
+            subgroup_a_likelihoods.append(probabilities[0]/len(filter(lambda x: x == 0, training_set.target)))
+            subgroup_b_likelihoods.append(probabilities[1]/len(filter(lambda x: x == 1, training_set.target)))
 
             key = "%s - %s" % (current_window[0].date.strftime("%Y-%m-%d"), current_window[-1].date.strftime("%Y-%m-%d"))
             speech_windows[key] = dict(zip( naive_bayes.vectorizer.get_feature_names() , naive_bayes.classifier.feature_log_prob_.T.tolist() ))
@@ -427,7 +434,7 @@ class Analysis(db.Model):
             # end_dates = map(lambda x: utils.formatdate(time.mktime(x.timetuple())), end_dates)
 
         # do something about the div by zero error
-        ratios = map(lambda x,y: x/y, subgroup_a_likelihoods, subgroup_b_likelihoods)
+        ratios = map(lambda x,y: y/x, subgroup_a_likelihoods, subgroup_b_likelihoods)
 
         celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches), 'total': len(ordered_speeches)})
 

@@ -3,6 +3,7 @@
 from app import app
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
