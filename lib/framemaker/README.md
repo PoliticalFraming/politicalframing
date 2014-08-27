@@ -4,7 +4,7 @@
 * User enters a seed word
 		ex. 'crime'
 * Program finds all wordnet 'synsets' related to that word and ask the user if each is relevant
-	
+
 	```
 	x = [Synset('crime.n.01'), Synset('crime.n.02')]
 	>>> x[0].definition
@@ -18,8 +18,8 @@
 	>>> selected_synset = x[0] # user selects this synset
 	```
 	In this case the user selects synset x[0], `crime.n.01`
-	
- * For each synset that the user accepts as relevant, the program grabs all of the following and will add them to the frame: 
+
+ * For each synset that the user accepts as relevant, the program grabs all of the following and will add them to the frame:
 
  	```
 	>>> gethypernymsrecursive(synset)
@@ -33,7 +33,7 @@
 	>>> wordnettools.getlemmas(synset)
 		[Lemma('crime.n.01.crime'), Lemma('crime.n.01.offense'), Lemma('crime.n.01.criminal_offense'), Lemma('crime.n.01.criminal_offence'), Lemma('crime.n.01.offence'), Lemma('crime.n.01.law-breaking')]
 	```
-	
+
 * If this process doesn't output enough words (432 is the magic number right now), then we continue on the process using the frameextender. The frame exender takes a particular synset and will return all of its hyponyms recursively. How to implement the frameextender (ie. which synsets to use is TBD). We intend to start by trying the related forms.
 
 ## TODO
