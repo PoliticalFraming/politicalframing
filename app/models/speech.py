@@ -14,6 +14,8 @@ import operator
 from math import exp, log
 import json
 
+import ipdb
+
 # from celery.contrib import rdb
 
 class Speech(object):
@@ -78,7 +80,7 @@ class Speech(object):
     if kwargs.get('id'):
       compulsory_params['id'] = kwargs['id']
       solr_query = si.Q(**compulsory_params)
-    elif kwargs.get('ids'):
+    elif kwargs.get('ids') and kwargs.get('phrase'):
       solr_query = si.Q()
       solr_query &= reduce(operator.or_, [si.Q(id=_id) for _id in kwargs['ids']])
     elif kwargs.get('phrase'):
@@ -104,6 +106,9 @@ class Speech(object):
       solr_query = si.Q(**compulsory_params)
       if optional_params.get('speaker_state'):
         solr_query &= optional_params['speaker_state']
+    else:
+      print "ERRROR!"
+      print kwargs
 
     solr_query = si.query(solr_query)
     solr_query = solr_query.exclude(speaker_party=None)
@@ -137,16 +142,12 @@ class Speech(object):
     dict_params = dict(params)
 
     dict_params['norm'] = 'norm(speaking)'
-
-    if not kwargs.get('ids'):
-      dict_params['tf'] = 'tf(speaking, %s)' % kwargs.get('phrase')
-      dict_params['idf'] = 'idf(speaking, %s)' % kwargs.get('phrase')
-      dict_params['tfidf'] = 'mul($tf, $idf)'
-      dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs.get('phrase')
-      dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
-
+    dict_params['tf'] = 'tf(speaking, %s)' % kwargs.get('phrase')
+    dict_params['idf'] = 'idf(speaking, %s)' % kwargs.get('phrase')
+    dict_params['tfidf'] = 'mul($tf, $idf)'
+    dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs.get('phrase')
+    dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
     dict_params['q'] += " AND {!frange l=8}$tfidf"
-
     if kwargs.get('order') == None or kwargs.get('order') == "tfidf":
       dict_params["sort"] = "$tfidf desc"
 

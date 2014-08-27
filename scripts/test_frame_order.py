@@ -19,7 +19,7 @@ from app.classifier import Classifier
 
 from math import exp, log, ceil
 import operator
-import pdb
+import ipdb
 import json
 import datetime
 import requests
@@ -30,11 +30,9 @@ from blessings import Terminal
 t = Terminal()
 
 analysis_id = 2
-frame_id = 2
 
-frame = Frame.get(Frame.id == frame_id)
 analysis = Analysis.get(Analysis.id == analysis_id)
-frame_words = frame.word_string
+frame = analysis.frame
 speech_windows = json.loads(analysis.speech_windows)
 
 frame_plot = eval(analysis.frame_plot)
@@ -62,21 +60,18 @@ for speech_window_key, speech_window in speech_windows.items():
 	log_proba_ratio = log(proba_ratio)
 
 	vocabulary_proba = speech_windows[speech_window_key]
-	frame_vocabulary_proba =  { word: (abs(vocabulary_proba.get(word)[0] - vocabulary_proba.get(word)[1])) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
+	frame_vocabulary_proba =  { word: (abs(vocabulary_proba.get(word)[0] - vocabulary_proba.get(word)[1])) if vocabulary_proba.get(word) != None else 0 for word in frame.word_string.split() }
 
-	url = "http://localhost:8983/solr/collection1/select?q="
-	url += " OR ".join(map(lambda x: "id:\"%s\"" % x, ids))
-	url += "&wt=json&indent=true&rows=500" # hardcode 500 rows
-	# url += '&frameFreq=' + "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f, idf(speaking,\"%s\"))" % (word, frame_vocabulary_proba[word], word), frame_words.split())) + "), $norm)"
-	url += '&frameFreq=' + "mul(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % (word), frame_words.split())) + "), $norm)"
-	url += "&norm=norm(speaking)"
-	url += "&fl=*,$frameFreq"
-	response = requests.post(url)
-	speech_jsons = response.json()['response']['docs']
-	speeches = map(lambda x: Speech(**x), speech_jsons)
+	query_params = analysis.build_query_params(order='frame')
+	query_params['analysis_id'] = analysis_id
+	query_params['ids'] = ids
+	query_params['start_date'] = speech_window_start
+	query_params['end_date'] = speech_window_end
 
+	num_found = Speech.get(rows=0, start=0, **query_params)['count']
+	speech_dicts = Speech.get(rows=num_found, start=0, **query_params)['speeches']
+	speeches = map(lambda x: Speech(**x), speech_dicts)
 	num_found = len(speeches)
-
 	speeches = Analysis.preprocess_speeches(speeches, analysis.subgroup_fn)
 
 	print "%d speeches after preprocessing" % len(speeches)
@@ -87,10 +82,12 @@ for speech_window_key, speech_window in speech_windows.items():
 	print "%d republican speeches" % len(rep_speeches)
 	print "%d democratic speeches" % len(dem_speeches)
 
+	# ipdb.set_trace()
+
 	# bayseian_prior_a_rep = len(rep_speeches) / len(speeches)
 	# bayseian_prior_b_dem = len(dem_speeches) / len(speeches)
 	# this frame vocabulary proba has tuples for the proba of class a and b
-	# frame_vocabulary_proba =  { word: vocabulary_proba[word] if vocabulary_proba.get(word) != None else [0, 0] for word in frame_words.split() }
+	# frame_vocabulary_proba =  { word: vocabulary_proba[word] if vocabulary_proba.get(word) != None else [0, 0] for word in frame.word_string.split() }
 	# sum_log_probability_a_rep = sum(map(lambda (word,log_probabilities): log_probabilities[0],frame_vocabulary_proba.items()))
 	# sum_log_probability_b_dem = sum(map(lambda (word,log_probabilities): log_probabilities[1],frame_vocabulary_proba.items()))
 	# final_prob_a = bayseian_prior_a_rep * sum_log_probability_a_rep
@@ -104,8 +101,8 @@ for speech_window_key, speech_window in speech_windows.items():
 
 	tfidf_frames_vector = naive_bayes.vectorizer.transform([frame.word_string])
 
-	print naive_bayes.classifier.predict(tfidf_frames_vector)[0]
-	print naive_bayes.classifier.predict_proba(tfidf_frames_vector)[0]
+	print "Predicted Class: ", naive_bayes.classifier.predict(tfidf_frames_vector)[0]
+	print "Predict Proba: ", naive_bayes.classifier.predict_proba(tfidf_frames_vector)[0]
 
 	print "Probability A (Rep): ", probabilities[0]
 	print "Probability B (Dem): ", probabilities[1]
