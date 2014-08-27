@@ -7,6 +7,7 @@ from dateutil import parser
 from datetime import datetime
 
 from sunburnt import RawString
+from sunburnt.search import SolrSearch
 
 from app.models.frame import Frame
 import re
@@ -44,6 +45,7 @@ class Speech(object):
     self.frame_freq = kwargs.get('$frameFreq')
     self.norm = kwargs.get('$norm')
     self.score = kwargs.get('$score')
+    self.term_vectors = kwargs.get('term_vectors')
 
   def belongs_to(self, subgroup):
     """True if speech is by someone in this subgroup"""
@@ -138,6 +140,8 @@ class Speech(object):
     if kwargs.get('order') and kwargs.get('order') not in ["frame", "tfidf", "idf", "termFreq"]:
       solr_query = solr_query.sort_by(kwargs.get('order'))
 
+
+    solr_query = solr_query.terms('speaking').terms(tf=True)
     params = solr_query.params()
     dict_params = dict(params)
 
@@ -177,9 +181,14 @@ class Speech(object):
 
     # print params
 
-    response = si.schema.parse_response(si.conn.select(params))
+    result = si.schema.parse_response(si.conn.select(params))
+    q = SolrSearch(si)
+    response = q.transform_result(result, q.result_constructor)
 
     speeches = response.result.docs
+    highlighting = response.highlighting
+    term_vectors = response.term_vectors
+
     current_count = response.result.numFound
     current_start = response.result.start
 
@@ -192,7 +201,9 @@ class Speech(object):
     speeches_dict = {
       'count': current_count,
       'start': current_start,
-      'speeches': speeches
+      'speeches': speeches,
+      'term_vectors': term_vectors,
+      'highlighting': highlighting
     }
 
     return speeches_dict

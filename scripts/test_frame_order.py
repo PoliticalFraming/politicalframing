@@ -74,6 +74,8 @@ for speech_window_key, speech_window in speech_windows.items():
 	num_found = len(speeches)
 	speeches = Analysis.preprocess_speeches(speeches, analysis.subgroup_fn)
 
+	ipdb.set_trace()
+
 	print "%d speeches after preprocessing" % len(speeches)
 
 	dem_speeches = filter(lambda speech: speech.speaker_party == 'D', speeches)
