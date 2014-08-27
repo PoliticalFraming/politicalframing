@@ -22,13 +22,14 @@ import operator
 import pdb
 import json
 import datetime
+import requests
 from dateutil import parser
 
 from blessings import Terminal
 
 t = Terminal()
 
-analysis_id = 1
+analysis_id = 2
 frame_id = 2
 
 frame = Frame.get(Frame.id == frame_id)
@@ -41,10 +42,8 @@ end_dates = frame_plot['end_dates']
 ratios = frame_plot['ratios']
 raw_ratios = frame_plot['raw_ratios']
 lengaz = frame_plot['lengaz']
+idz = frame_plot['ids']
 datez = frame_plot['datez']
-
-query_params = analysis.build_query_params(order='frame')
-query_params['analysis_id'] = analysis_id
 
 print "ASSUMING SUBGROUP A IS REPUBLICAN"
 print "ASSUMING SUBGROUP B IS DEMOCRAT"
@@ -55,21 +54,28 @@ for speech_window_key, speech_window in speech_windows.items():
 	print speech_window_key
 
 	speech_window_start, speech_window_end = speech_window_key.split(" - ")
-	query_params['start_date'] = speech_window_start
-	query_params['end_date'] = speech_window_end
 
-	num_found = Speech.get(0, 0, **query_params)['count']
-	pages = int(ceil(num_found/1000))
+	end_date = datetime.datetime.combine(parser.parse(speech_window_end), datetime.time(12, 00))
+	ids = idz[end_dates.index(end_date)]
+	proba_ratio = ratios[end_dates.index(end_date)]
+	raw_ratio = raw_ratios[end_dates.index(end_date)]
+	log_proba_ratio = log(proba_ratio)
 
-	print "Downloading %d speeches for analysis %d for window %s ordered by frame ..." % (num_found, analysis_id, speech_window_key)
+	vocabulary_proba = speech_windows[speech_window_key]
+	frame_vocabulary_proba =  { word: (abs(vocabulary_proba.get(word)[0] - vocabulary_proba.get(word)[1])) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
 
-	speeches = []
-	for i in range(0, pages):
-	    curr_speech_dicts = Speech.get(start=1000*i, rows=1000, **query_params)['speeches']
-	    curr_speech_objs = map(lambda x: Speech(**x), curr_speech_dicts)
-	    speeches = speeches + curr_speech_objs
-	    update_progress((i+1)/pages)
-	print ""
+	url = "http://localhost:8983/solr/collection1/select?q="
+	url += " OR ".join(map(lambda x: "id:\"%s\"" % x, ids))
+	url += "&wt=json&indent=true&rows=500" # hardcode 500 rows
+	# url += '&frameFreq=' + "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f, idf(speaking,\"%s\"))" % (word, frame_vocabulary_proba[word], word), frame_words.split())) + "), $norm)"
+	url += '&frameFreq=' + "mul(sum(" + ", ".join(map(lambda word: "termfreq(speaking,\"%s\")" % (word), frame_words.split())) + "), $norm)"
+	url += "&norm=norm(speaking)"
+	url += "&fl=*,$frameFreq"
+	response = requests.post(url)
+	speech_jsons = response.json()['response']['docs']
+	speeches = map(lambda x: Speech(**x), speech_jsons)
+
+	num_found = len(speeches)
 
 	speeches = Analysis.preprocess_speeches(speeches, analysis.subgroup_fn)
 
@@ -81,7 +87,16 @@ for speech_window_key, speech_window in speech_windows.items():
 	print "%d republican speeches" % len(rep_speeches)
 	print "%d democratic speeches" % len(dem_speeches)
 
-	print "Recompute Naieve Bayes Output For Classifying Frame (%s) Within Window (%s)" % (frame.seed_word, speech_window_key)
+	# bayseian_prior_a_rep = len(rep_speeches) / len(speeches)
+	# bayseian_prior_b_dem = len(dem_speeches) / len(speeches)
+	# this frame vocabulary proba has tuples for the proba of class a and b
+	# frame_vocabulary_proba =  { word: vocabulary_proba[word] if vocabulary_proba.get(word) != None else [0, 0] for word in frame_words.split() }
+	# sum_log_probability_a_rep = sum(map(lambda (word,log_probabilities): log_probabilities[0],frame_vocabulary_proba.items()))
+	# sum_log_probability_b_dem = sum(map(lambda (word,log_probabilities): log_probabilities[1],frame_vocabulary_proba.items()))
+	# final_prob_a = bayseian_prior_a_rep * sum_log_probability_a_rep
+	# final_prob_b = bayseian_prior_b_dem * sum_log_probability_b_dem
+
+	print "Recompute Naieve Bayes Output For Classifying Frame (%s) Within Window (%s) for phrase %s" % (frame.seed_word, speech_window_key, analysis.phrase)
 	naive_bayes = Classifier(vocab=frame.word_string.split())
 	training_set = Classifier.bunch_with_targets(speeches, analysis.target_function2)
 	naive_bayes.train_classifier(training_set.data, training_set.target)
@@ -99,38 +114,6 @@ for speech_window_key, speech_window in speech_windows.items():
 		print t.red("A (Rep) NB Proba > B (Dem) NB Proba: Classify Republican")
 	else:
 		print t.cyan("B (Dem) NB Proba > A (Rep) NB Proba: Classify Democratic")
-
-	# print "MANUALLY recompute Naieve Bayes Output For Classifying Frame (%s) Within Widnow (%s)" % (frame.seed_word, speech_window_key)
-	# vocabulary_proba = speech_windows[speech_window_key]
-	# frame_vocabulary_proba =  { word: vocabulary_proba['word'] if vocabulary_proba.get(word) != None else [0, 0] for word in frame_words.split() }
-
-	# bayseian_prior_a_rep = len(rep_speeches) / len(speeches)
-	# bayseian_prior_b_dem = len(dem_speeches) / len(speeches)
-
-	# print "Bayseian Prior A (Rep): ", bayseian_prior_a_rep
-	# print "Bayseian Prior B (Dem): ", bayseian_prior_b_dem
-
-	# sum_log_probability_a_rep = sum(map(lambda (word,log_probabilities): log_probabilities[0],frame_vocabulary_proba.items()))
-	# sum_log_probability_b_dem = sum(map(lambda (word,log_probabilities): log_probabilities[1],frame_vocabulary_proba.items()))
-
-	# print "NB Sum Log Proba A (Rep): ", sum_log_probability_a_rep
-	# print "NB Sum Log Proba B (Dem): ", sum_log_probability_b_dem
-
-	# final_prob_a = bayseian_prior_a_rep * sum_log_probability_a_rep
-	# final_prob_b = bayseian_prior_b_dem * sum_log_probability_b_dem
-
-	# print "Bayseian Prior * Sum Log Proba, A (Rep): ", final_prob_a
-	# print "Bayseian Prior * Sum Log Proba, B (Dem): ", final_prob_b
-
-	# if final_prob_a > final_prob_b:
-	# 	print t.red("A (Rep) Manual Log Proba > B (Dem) Manual Log Proba: Classify Republican")
-	# else:
-	# 	print t.cyan("B (Dem) Manual Log Proba > A (Rep) Manual Log Proba: Classify Democratic")
-
-	end_date = datetime.datetime.combine(parser.parse(speech_window_end), datetime.time(12, 00))
-	proba_ratio = ratios[end_dates.index(end_date)]
-	raw_ratio = raw_ratios[end_dates.index(end_date)]
-	log_proba_ratio = log(proba_ratio)
 
 	print "[DB] Proba Ratio: ", proba_ratio
 	print "[DB] Raw Ratios: ", raw_ratio
