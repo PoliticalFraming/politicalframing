@@ -24,7 +24,11 @@ frame_plot_fields = {
 	'start_dates': fields.List(fields.Raw),
 	'end_dates': fields.List(fields.Raw),
 	'ylabel': fields.String,
-	'title': fields.String
+	'title': fields.String,
+	'raw_ratios': fields.List(fields.Raw),
+	'lengaz': fields.List(fields.Raw),
+	'datez': fields.List(fields.Raw),
+	'ids': fields.List(fields.Raw)
 }
 
 wordcount_plot_fields = {
@@ -44,7 +48,8 @@ analysis_fields = {
 	'end_date': fields.Raw, #DateTime
 	'topic_plot': fields.Nested(topic_plot_fields),
 	'frame_plot': fields.Nested(frame_plot_fields),
-	'wordcount_plot': fields.Nested(wordcount_plot_fields)
+	'wordcount_plot': fields.Nested(wordcount_plot_fields),
+	'speech_windows': fields.Raw
 }
 
 analysis_marshall = {

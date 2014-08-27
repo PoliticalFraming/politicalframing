@@ -1,0 +1,18 @@
+{
+  "name": "canvasjs",
+  "version": "0.0.0",
+  "homepage": "http://canvasjs.com/",
+  "authors": [
+    "Al Johri <al.johri@gmail.com>"
+  ],
+  "description": "canvasjs on github for bower",
+  "main": "canvasjs.min.js",
+  "keywords": [
+    "canvasjs",
+    "canvas",
+    "chart",
+    "graph",
+    "plot"
+  ],
+  "license": "Dual Licensing Model, Free for Non-Commercial Use (Creative Commons Attribution-NonCommercial 3.0), Commercial License (http://canvasjs.com/license-canvasjs/)"
+}

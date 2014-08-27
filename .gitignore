@@ -6,14 +6,9 @@ include
 *.log
 database.db
 node_modules
-dist
-.tmp
 .webassets-cache
 *.pem
 app/static/dist
-app/static/.tmp
-app/static/styles/main.css
-app/static/components
 .sass-cache
 .bundle
 .vagrant

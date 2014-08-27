@@ -34,6 +34,7 @@ gnureadline==6.3.3
 greenlet==0.4.1
 gunicorn==18.0
 httplib2==0.8
+ipdb==0.8
 ipython==2.2.0
 itsdangerous==0.23
 kombu==3.0.8
@@ -53,7 +54,7 @@ requests==2.1.0
 scikit-learn==0.14.1
 scipy==0.12.0
 six==1.5.1
--e git+https://github.com/AlJohri/sunburnt.git@cb2648d282504a42f4af0eb8dca78bbe0e70b691#egg=sunburnt-master
+-e git+https://github.com/AlJohri/sunburnt.git@master#egg=sunburnt
 textblob==0.8.4
 tornado==3.2
 webassets==0.8

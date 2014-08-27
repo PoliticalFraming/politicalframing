@@ -1,0 +1,13 @@
+{
+  "name": "jquery-ui-sass",
+  "homepage": "https://github.com/AlJohri/jquery-ui-sass-rails",
+  "_release": "c5cba0a2c8",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "c5cba0a2c807e37930b732a82cf2d513caff3f28"
+  },
+  "_source": "git://github.com/AlJohri/jquery-ui-sass-rails.git",
+  "_target": "master",
+  "_originalSource": "git://github.com/AlJohri/jquery-ui-sass-rails"
+}
