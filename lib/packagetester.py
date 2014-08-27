@@ -117,9 +117,29 @@ def multiword_extended_frame():
 	return frame
 
 
+def hypernym_frame(frameword, framemaking_fn):
+	"""
+	Goes to hypernmys, makes basic frame for all hyponyms of all hypernyms
+	"""
+	synsets = getSynsets(frameword)
+	selected_synsets = picksynsets(synsets)
+	frame = set([])
 
-# # ### LEARNING MORE ABOUT WORDNET
-# frameword = raw_input("Enter 'seed' word for frame: ")
-# # basic_frame(frameword)
-# multiword_basic_frame()
-multiword_extended_frame()
+	print "selected_synsets : %s" % str(selected_synsets)
+	for synset in selected_synsets:
+		for hypernym in synset.hypernyms():
+			hyponyms = picksynsets(hypernym.hyponyms())
+			for hyponym in hyponyms:
+				frame = frame.union(getWords(hyponym))
+
+	print "---hypernym frame-----"
+	print frame
+	return frame
+
+
+if __name__ == "__main__":
+	frameword = raw_input("Enter 'seed' word for frame: ")
+	hypernym_frame(frameword, basic_frame)
+	# basic_frame(frameword)
+	# multiword_basic_frame()
+	# multiword_extended_frame()
