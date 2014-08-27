@@ -53,6 +53,7 @@ class SpeechController(Resource):
 class SpeechListController(Resource):
   parser.add_argument('phrase', type = str, required = True, location = 'values')
   parser.add_argument('frame', type = int, required = False, location = 'values')
+  parser.add_argument('analysis_id', type = int, required = False, location = 'values')
   parser.add_argument('start_date', type = str, required = False, location = 'values')
   parser.add_argument('end_date', type = str, required = False, location = 'values')
   parser.add_argument('page', type = int, required = False, location = 'values')
@@ -77,7 +78,8 @@ class SpeechListController(Resource):
       rows = rows,
       start = rows * (args['page'] - 1),
       states = args.get('states'),
-      order = args.get('order')
+      order = args.get('order'),
+      analysis_id = args.get('analysis_id')
       # order = "tfidf"
     )
 

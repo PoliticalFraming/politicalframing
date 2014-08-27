@@ -11,6 +11,8 @@ from sunburnt import RawString
 from app.models.frame import Frame
 import re
 import operator
+from math import exp, log
+import json
 
 # from celery.contrib import rdb
 
@@ -140,16 +142,26 @@ class Speech(object):
     if kwargs.get('order') == None or kwargs.get('order') == "tfidf":
       dict_params["sort"] = "$tfidf desc"
 
-    if kwargs.get('frame'):
+    if kwargs.get('frame') and kwargs.get('order') == "frame" and kwargs.get('analysis_id'):
+
+      from app.models.analysis import Analysis
+
       frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
-      dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(tf(speaking,\"%s\"), idf(speaking,\"%s\"))" % (word, word), frame_words.split())) + "), $norm)"
+      analysis_obj = Analysis.get(Analysis.id == kwargs['analysis_id'])
+      key = "%s - %s" % (kwargs.get('start_date'), kwargs.get('end_date'))
+      vocabulary_proba = json.loads(analysis_obj.speech_windows)[key]
+
+      frame_vocabulary_proba =  { word: (abs(exp(vocabulary_proba.get(word)[0]) - exp(vocabulary_proba.get(word)[1]))) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
+
+      # print frame_vocabulary_proba
+
+      dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f)" % (word, frame_vocabulary_proba[word]), frame_words.split())) + "), $norm)"
       dict_params['fl'] += ", $frameFreq"
-      if kwargs.get('order') == "frame":
-        dict_params["sort"] = "$frameFreq desc"
+      dict_params["sort"] = "$frameFreq desc"
 
     params = zip(dict_params.keys(), dict_params.values())
 
-    print params
+    # print params
 
     response = si.schema.parse_response(si.conn.select(params))
 

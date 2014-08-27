@@ -18,10 +18,15 @@ from dateutil import parser as dateparser
 
 import inspect
 import math
+import json
+
 from celery.contrib import rdb
 
 #Constants (Move creation to where speeches are ingested)
 OLDEST_RECORD_DATE = datetime.datetime(1994,1,1)
+
+import numpy
+numpy.set_printoptions(threshold='nan')
 
 class Analysis(db.Model):
     id = PrimaryKeyField(null=False, db_column='id', primary_key=True, unique=True)
@@ -44,6 +49,7 @@ class Analysis(db.Model):
     frame_plot = TextField(null=True)
     wordcount_plot = TextField(null=True)
 
+    speech_windows = TextField(null=True)
 
     def build_query_params(self, order='date'):
         """
@@ -134,10 +140,10 @@ class Analysis(db.Model):
         app.logger.debug(str(query_params))
 
         frame = Frame.get(Frame.id == analysis_obj.frame)
-        # query_params_without_frame = { key: query_params[key] for key in query_params.keys() if ["frame", "order"] not in key }
-        # numFound = Speech.get(0, 0, **query_params_without_frame)['count']
+        query_params_without_frame = { key: query_params[key] for key in query_params.keys() if key not in ["frame", "order"] }
+        numFound = Speech.get(0, 0, **query_params_without_frame)['count']
         speeches = []
-        pages = 1000 #int(math.ceil(numFound/1000))
+        pages = int(math.ceil(numFound/1000))
 
         celery_obj.update_state(state='PROGRESS', meta={'current': 0, 'total': pages})
 
@@ -157,9 +163,10 @@ class Analysis(db.Model):
 
         speeches = Analysis.preprocess_speeches(speeches, analysis_obj.subgroup_fn)
         app.logger.debug(str(len(speeches)) + " speeches are being analyzed")
-        analysis_obj.topic_plot = analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
-        analysis_obj.frame_plot = analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
-        analysis_obj.wordcount_plot = analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, phrase, celery_obj)
+
+        analysis_obj.plot_topic_usage(speeches, phrase, 100, celery_obj)
+        analysis_obj.plot_frame_usage(frame, speeches, 300, 100, phrase, celery_obj)
+        # analysis_obj.plot_frame_wordcounts(frame, speeches, 300, 100, phrase, celery_obj)
 
         indexes_to_delete = []
         for i, current_end_date in enumerate(analysis_obj.topic_plot['end_dates']):
@@ -354,6 +361,8 @@ class Analysis(db.Model):
         subgroup_b_likelihoods = []
         ratios = []
 
+        speech_windows = {}
+
         # loop through and plot each point
         while speeches:
             celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
@@ -391,7 +400,10 @@ class Analysis(db.Model):
             subgroup_a_likelihoods.append(log_probabilities[0])
             subgroup_b_likelihoods.append(log_probabilities[1])
 
-            app.logger.debug( "%s to %s - %f, %f -- %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
+            key = "%s - %s" % (current_window[0].date.strftime("%Y-%m-%d"), current_window[-1].date.strftime("%Y-%m-%d"))
+            speech_windows[key] = dict(zip( naive_bayes.vectorizer.get_feature_names() , naive_bayes.classifier.feature_log_prob_.T.tolist() ))
+
+            app.logger.debug( "Dates: %s - %s | Probabilities: %f, %f | Window Size: %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
             # app.logger.debug("CURRENT WINDOW DATES:")
             # for s in current_window:
             #     app.logger.debug(str(s.date))
@@ -421,45 +433,46 @@ class Analysis(db.Model):
             'end_dates': end_dates,
             'ratios': ratios
         }
+        self.speech_windows = json.dumps(speech_windows)
 
         return self.frame_plot
 
-    def plot_frame_wordcounts(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
-        """
-        frame = frame object
-        speeches = list of speech objects in date order
-        """
+    # def plot_frame_wordcounts(self, frame, ordered_speeches, window_size, offset, phrase, celery_obj):
+    #     """
+    #     frame = frame object
+    #     speeches = list of speech objects in date order
+    #     """
 
-        start_dates = []
-        end_dates = []
+    #     start_dates = []
+    #     end_dates = []
 
-        subgroup_a_counts = []
-        subgroup_b_counts = []
+    #     subgroup_a_counts = []
+    #     subgroup_b_counts = []
 
-        speech_windows = [ ordered_speeches[i:i+window_size] for i in range(0, len(ordered_speeches), offset) ]
+    #     speech_windows = [ ordered_speeches[i:i+window_size] for i in range(0, len(ordered_speeches), offset) ]
 
-        # celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': i * window_size + j, 'total': len(ordered_speeches)})
+    #     # celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': i * window_size + j, 'total': len(ordered_speeches)})
 
-        for i, current_window in enumerate(speech_windows):
+    #     for i, current_window in enumerate(speech_windows):
 
-            start_dates.append(current_window[0].date)
-            end_dates.append(current_window[-1].date)
+    #         start_dates.append(current_window[0].date)
+    #         end_dates.append(current_window[-1].date)
 
-            a_counts = [speech.frame_freq for speech in current_window if self.target_function2(speech) == 0]
-            b_counts = [speech.frame_freq for speech in current_window if self.target_function2(speech) == 1]
+    #         a_counts = [speech.frame_freq for speech in current_window if self.target_function2(speech) == 0]
+    #         b_counts = [speech.frame_freq for speech in current_window if self.target_function2(speech) == 1]
 
-            subgroup_a_counts.append(sum(a_counts)/len(a_counts))
-            subgroup_b_counts.append(sum(b_counts)/len(b_counts))
+    #         subgroup_a_counts.append(sum(a_counts)/len(a_counts))
+    #         subgroup_b_counts.append(sum(b_counts)/len(b_counts))
 
-        app.logger.debug("Populate Return Values")
-        self.wordcount_plot = {
-            'title': "Count of '%s' frame words in Speeches about %s" % (frame.name, phrase),
-            'ylabel': "tf/idf score of each speeches",
-            'start_dates': start_dates,
-            'end_dates': end_dates,
-            'subgroup_a_counts': subgroup_a_counts,
-            'subgroup_b_counts': subgroup_b_counts
-        }
+    #     app.logger.debug("Populate Return Values")
+    #     self.wordcount_plot = {
+    #         'title': "Count of '%s' frame words in Speeches about %s" % (frame.name, phrase),
+    #         'ylabel': "tf/idf score of each speeches",
+    #         'start_dates': start_dates,
+    #         'end_dates': end_dates,
+    #         'subgroup_a_counts': subgroup_a_counts,
+    #         'subgroup_b_counts': subgroup_b_counts
+    #     }
 
-        return self.wordcount_plot
+    #     return self.wordcount_plot
 

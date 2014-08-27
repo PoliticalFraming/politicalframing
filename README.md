@@ -47,8 +47,8 @@ python manage.py createdb
 python manage.py seeddb
 ```
 
-
-some sunburnt stuff
+mkdir -p /Users/atul/Desktop/solr-copy/
+rsync -rave "ssh -i /Users/atul/Desktop/Credentials/politicalframing.pem" ubuntu@politicalframing.com:/home/ubuntu/solr-4.6.1 /Users/atul/Desktop/solr-copy/
 
 ```
   # print "SOLR QUERY"

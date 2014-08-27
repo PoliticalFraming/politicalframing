@@ -33,7 +33,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
 
           $scope.graphFramePlot(response);
           $scope.graphTopicPlot(response);
-          $scope.graphWordCountPlot(response);
+          // $scope.graphWordCountPlot(response);
         });
 
       });
@@ -121,6 +121,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
+                analysis_id: $scope.current.filters.id,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 order: 'frame',
@@ -175,6 +176,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
+                analysis_id: $scope.current.filters.id,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 speaker_party: 'D',
@@ -197,6 +199,7 @@ angular.module('framingApp').directive('singleAnalysis', function() {
               $scope.current.filters = {
                 phrase: $scope.current.filters.phrase,
                 frame: $scope.current.filters.frame,
+                analysis_id: $scope.current.filters.id,
                 start_date: e.dataPoint.start_date,
                 end_date: e.dataPoint.end_date,
                 speaker_party: 'R',
@@ -219,76 +222,76 @@ angular.module('framingApp').directive('singleAnalysis', function() {
         chart.render();
       }
 
-      $scope.graphWordCountPlot = function(response) {
-        var wordcount_plot = response.data.data.wordcount_plot;
-        // console.log(response.data.data);
-        var dataPointsA = _.zip(wordcount_plot.end_dates, wordcount_plot.subgroup_a_counts, wordcount_plot.start_dates, wordcount_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
-        var dataPointsB = _.zip(wordcount_plot.end_dates, wordcount_plot.subgroup_b_counts, wordcount_plot.start_dates, wordcount_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+      // $scope.graphWordCountPlot = function(response) {
+      //   var wordcount_plot = response.data.data.wordcount_plot;
+      //   // console.log(response.data.data);
+      //   var dataPointsA = _.zip(wordcount_plot.end_dates, wordcount_plot.subgroup_a_counts, wordcount_plot.start_dates, wordcount_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
+      //   var dataPointsB = _.zip(wordcount_plot.end_dates, wordcount_plot.subgroup_b_counts, wordcount_plot.start_dates, wordcount_plot.end_dates).map(function(a) { return {x: new Date(a[0]), y: a[1], start_date: a[2], end_date: a[3] } });
 
-        var chart = new CanvasJS.Chart("chartContainer_wordcount",
-        {
-            zoomEnabled: true,
-            title: { text: wordcount_plot.title
-            },
-            axisX:{
-                valueFormatString: "DD-MMM-YYYY",
-                labelAngle: -50,
-                title: wordcount_plot.ylabel,
-                includeZero: false
-            },
-            axisY: {
-              // valueFormatString: "#,###"
-          },
-          data: [
-          {
-            click: function(e) {
+      //   var chart = new CanvasJS.Chart("chartContainer_wordcount",
+      //   {
+      //       zoomEnabled: true,
+      //       title: { text: wordcount_plot.title
+      //       },
+      //       axisX:{
+      //           valueFormatString: "DD-MMM-YYYY",
+      //           labelAngle: -50,
+      //           title: wordcount_plot.ylabel,
+      //           includeZero: false
+      //       },
+      //       axisY: {
+      //         // valueFormatString: "#,###"
+      //     },
+      //     data: [
+      //     {
+      //       click: function(e) {
 
-              $scope.current.filters = {
-                phrase: $scope.current.filters.phrase,
-                frame: $scope.current.filters.frame,
-                start_date: e.dataPoint.start_date,
-                end_date: e.dataPoint.end_date,
-                speaker_party: 'D',
-                order: 'frame',
-                highlight: 'true'
-              };
+      //         $scope.current.filters = {
+      //           phrase: $scope.current.filters.phrase,
+      //           frame: $scope.current.filters.frame,
+      //           start_date: e.dataPoint.start_date,
+      //           end_date: e.dataPoint.end_date,
+      //           speaker_party: 'D',
+      //           order: 'frame',
+      //           highlight: 'true'
+      //         };
 
-              if(!$scope.$$phase) { $scope.$digest(); }
+      //         if(!$scope.$$phase) { $scope.$digest(); }
 
-            },
-            type: "line",
-            showInLegend: true,
-            legendText: "A Counts",
-            color: "green",
-            dataPoints: dataPointsA
-        },
-          {
-            click: function(e) {
+      //       },
+      //       type: "line",
+      //       showInLegend: true,
+      //       legendText: "A Counts",
+      //       color: "green",
+      //       dataPoints: dataPointsA
+      //   },
+      //     {
+      //       click: function(e) {
 
-              $scope.current.filters = {
-                phrase: $scope.current.filters.phrase,
-                frame: $scope.current.filters.frame,
-                start_date: e.dataPoint.start_date,
-                end_date: e.dataPoint.end_date,
-                speaker_party: 'R',
-                order: 'frame',
-                higlight: 'true'
-              };
+      //         $scope.current.filters = {
+      //           phrase: $scope.current.filters.phrase,
+      //           frame: $scope.current.filters.frame,
+      //           start_date: e.dataPoint.start_date,
+      //           end_date: e.dataPoint.end_date,
+      //           speaker_party: 'R',
+      //           order: 'frame',
+      //           higlight: 'true'
+      //         };
 
-              if(!$scope.$$phase) { $scope.$digest(); }
+      //         if(!$scope.$$phase) { $scope.$digest(); }
 
-            },
-            type: "line",
-            showInLegend: true,
-            legendText: "B Counts",
-            color: "orange",
-            dataPoints: dataPointsB
-        }
+      //       },
+      //       type: "line",
+      //       showInLegend: true,
+      //       legendText: "B Counts",
+      //       color: "orange",
+      //       dataPoints: dataPointsB
+      //   }
 
-        ]
-        });
-        chart.render();
-      }
+      //   ]
+      //   });
+      //   chart.render();
+      // }
 
     },
     templateUrl: '/views/single-analysis.html',

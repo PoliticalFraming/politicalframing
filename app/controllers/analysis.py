@@ -44,7 +44,8 @@ analysis_fields = {
 	'end_date': fields.Raw, #DateTime
 	'topic_plot': fields.Nested(topic_plot_fields),
 	'frame_plot': fields.Nested(frame_plot_fields),
-	'wordcount_plot': fields.Nested(wordcount_plot_fields)
+	'wordcount_plot': fields.Nested(wordcount_plot_fields),
+	'speech_windows': fields.Raw
 }
 
 analysis_marshall = {
