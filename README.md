@@ -62,3 +62,11 @@ rsync -rave "ssh -i /Users/atul/Desktop/Credentials/politicalframing.pem" ubuntu
 ```
 
 python manage.py deletedb && python manage.py createdb && python manage.py seeddb
+
+```
+mysql --user=root mysql
+CREATE USER 'capitolwords'@'localhost' IDENTIFIED BY 'capitolwords';
+GRANT ALL PRIVILEGES ON *.* TO 'capitolwords'@'localhost' WITH GRANT OPTION;
+CREATE DATABASE capitolwords;
+mysql --user=root capitolwords < ../politicalframing/capitolwords_2014-08-16.sql
+```
