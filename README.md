@@ -60,3 +60,5 @@ rsync -rave "ssh -i /Users/atul/Desktop/Credentials/politicalframing.pem" ubuntu
   #   pprint(subq.__dict__)
   # pprint(solr_query.__dict__['subqueries'][1].__dict__)
 ```
+
+python manage.py deletedb && python manage.py createdb && python manage.py seeddb
