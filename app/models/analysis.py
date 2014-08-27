@@ -363,6 +363,9 @@ class Analysis(db.Model):
 
         speech_windows = {}
 
+        lengaz = []
+        datez = []
+
         # loop through and plot each point
         while speeches:
             celery_obj.update_state(state='PROGRESS', meta={'stage': 'analyze', 'current': len(ordered_speeches) - len(speeches), 'total': len(ordered_speeches)})
@@ -372,10 +375,6 @@ class Analysis(db.Model):
             # create_classifier
             app.logger.debug("Create Classifier")
             naive_bayes = Classifier(vocab=frame.word_string.split())
-
-            # Learn Vocabulary
-            app.logger.debug("Learn Vocabulary")
-            naive_bayes.learn_vocabulary(map(lambda speech: " ".join(speech.speaking),current_window))
 
             # Build Training Set
             def target_function(speech):
@@ -395,19 +394,23 @@ class Analysis(db.Model):
 
             # populate return data
             app.logger.debug("Request Log Probability of Frame %s " , frame.name)
-            log_probabilities = naive_bayes.classify_document(frame.word_string)
+            probabilities = naive_bayes.classify_document(frame.word_string)
 
-            subgroup_a_likelihoods.append(log_probabilities[0])
-            subgroup_b_likelihoods.append(log_probabilities[1])
+            subgroup_a_likelihoods.append(probabilities[0])
+            subgroup_b_likelihoods.append(probabilities[1])
 
             key = "%s - %s" % (current_window[0].date.strftime("%Y-%m-%d"), current_window[-1].date.strftime("%Y-%m-%d"))
             speech_windows[key] = dict(zip( naive_bayes.vectorizer.get_feature_names() , naive_bayes.classifier.feature_log_prob_.T.tolist() ))
 
-            app.logger.debug( "Dates: %s - %s | Probabilities: %f, %f | Window Size: %d" % (current_window[0].date, current_window[-1].date, log_probabilities[0], log_probabilities[1], len(current_window) ) )
+            datez.append(key)
+
+            app.logger.debug( "Dates: %s - %s | Probabilities: %f, %f | Window Size: %d" % (current_window[0].date, current_window[-1].date, probabilities[0], probabilities[1], len(current_window) ) )
             # app.logger.debug("CURRENT WINDOW DATES:")
             # for s in current_window:
             #     app.logger.debug(str(s.date))
             #     app.logger.debug(str(s.id))
+
+            lengaz.append(len(current_window))
 
             # move current window over by 'offset'
             app.logger.debug("Move window over by %d", offset)
@@ -431,7 +434,10 @@ class Analysis(db.Model):
             'ylabel': "a/b Ratio of Log-Likelihoods",
             'start_dates': start_dates,
             'end_dates': end_dates,
-            'ratios': ratios
+            'ratios': ratios,
+            'raw_ratios': zip(subgroup_a_likelihoods, subgroup_b_likelihoods),
+            'lengaz': lengaz,
+            'datez': datez
         }
         self.speech_windows = json.dumps(speech_windows)
 

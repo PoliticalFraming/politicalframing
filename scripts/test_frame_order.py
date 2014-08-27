@@ -7,10 +7,15 @@ sys.path.append(root + "/..")
 
 from app.utils import update_progress
 
+import logging
+from app import app
+app.logger.setLevel(logging.INFO)
+
 from app.models.frame import Frame
 from app.models.speech import Speech
 from app.models.subgroup import Subgroup
 from app.models.analysis import Analysis
+from app.classifier import Classifier
 
 from math import exp, log, ceil
 import operator
@@ -23,8 +28,8 @@ from blessings import Terminal
 
 t = Terminal()
 
-analysis_id = 3
-frame_id = 1
+analysis_id = 1
+frame_id = 2
 
 frame = Frame.get(Frame.id == frame_id)
 analysis = Analysis.get(Analysis.id == analysis_id)
@@ -34,6 +39,9 @@ speech_windows = json.loads(analysis.speech_windows)
 frame_plot = eval(analysis.frame_plot)
 end_dates = frame_plot['end_dates']
 ratios = frame_plot['ratios']
+raw_ratios = frame_plot['raw_ratios']
+lengaz = frame_plot['lengaz']
+datez = frame_plot['datez']
 
 query_params = analysis.build_query_params(order='frame')
 query_params['analysis_id'] = analysis_id
@@ -63,6 +71,10 @@ for speech_window_key, speech_window in speech_windows.items():
 	    update_progress((i+1)/pages)
 	print ""
 
+	speeches = Analysis.preprocess_speeches(speeches, analysis.subgroup_fn)
+
+	print "%d speeches after preprocessing" % len(speeches)
+
 	dem_speeches = filter(lambda speech: speech.speaker_party == 'D', speeches)
 	rep_speeches = filter(lambda speech: speech.speaker_party == 'R', speeches)
 
@@ -71,48 +83,62 @@ for speech_window_key, speech_window in speech_windows.items():
 
 	print "Recompute Naieve Bayes Output For Classifying Frame (%s) Within Window (%s)" % (frame.seed_word, speech_window_key)
 	naive_bayes = Classifier(vocab=frame.word_string.split())
-	naive_bayes.learn_vocabulary(map(lambda speech: " ".join(speech.speaking),current_window))
-	training_set = Classifier.bunch_with_targets(current_window, analysis.target_function)
+	training_set = Classifier.bunch_with_targets(speeches, analysis.target_function2)
 	naive_bayes.train_classifier(training_set.data, training_set.target)
-	log_probabilities = naive_bayes.classify_document(frame.word_string)
+	probabilities = naive_bayes.classify_document(frame.word_string)
 
-	print "MANUALLY recompute Naieve Bayes Output For Classifying Frame (%s) Within Widnow (%s)" % (frame.seed_word, speech_window_key)
-	vocabulary_proba = speech_windows[speech_window_key]
-	frame_vocabulary_proba =  { word: vocabulary_proba['word'] if vocabulary_proba.get(word) != None else [0, 0] for word in frame_words.split() }
+	tfidf_frames_vector = naive_bayes.vectorizer.transform([frame.word_string])
 
-	bayseian_prior_a_rep = len(rep_speeches) / len(speeches)
-	bayseian_prior_b_dem = len(dem_speeches) / len(speeches)
+	print naive_bayes.classifier.predict(tfidf_frames_vector)[0]
+	print naive_bayes.classifier.predict_proba(tfidf_frames_vector)[0]
 
-	print "Bayseian Prior A (Rep): ", bayseian_prior_a_rep
-	print "Bayseian Prior B (Dem): ", bayseian_prior_b_dem
+	print "Probability A (Rep): ", probabilities[0]
+	print "Probability B (Dem): ", probabilities[1]
 
-	sum_log_probability_a_rep = sum(map(lambda (word,log_probabilities): log_probabilities[0],frame_vocabulary_proba.items()))
-	sum_log_probability_b_dem = sum(map(lambda (word,log_probabilities): log_probabilities[1],frame_vocabulary_proba.items()))
-
-	print "NB Sum Log Proba A (Rep): ", sum_log_probability_a_rep
-	print "NB Sum Log Proba B (Dem): ", sum_log_probability_b_dem
-
-	final_prob_a = bayseian_prior_a_rep * sum_log_probability_a_rep
-	final_prob_b = bayseian_prior_b_dem * sum_log_probability_b_dem
-
-	print "Bayseian Prior * Sum Log Proba, A (Rep): ", final_prob_a
-	print "Bayseian Prior * Sum Log Proba, B (Dem): ", final_prob_b
-
-	if final_prob_a > final_prob_b:
-		print t.red("A (Rep) Prior * Sum Log Proba > B (Dem) Prior * Sum Log Proba: Classify Republican")
+	if probabilities[0] > probabilities[1]:
+		print t.red("A (Rep) NB Proba > B (Dem) NB Proba: Classify Republican")
 	else:
-		print t.cyan("B (Dem) Prior * Sum Log Proba > A (Rep) Prior * Sum Log Proba: Classify Democratic")
+		print t.cyan("B (Dem) NB Proba > A (Rep) NB Proba: Classify Democratic")
+
+	# print "MANUALLY recompute Naieve Bayes Output For Classifying Frame (%s) Within Widnow (%s)" % (frame.seed_word, speech_window_key)
+	# vocabulary_proba = speech_windows[speech_window_key]
+	# frame_vocabulary_proba =  { word: vocabulary_proba['word'] if vocabulary_proba.get(word) != None else [0, 0] for word in frame_words.split() }
+
+	# bayseian_prior_a_rep = len(rep_speeches) / len(speeches)
+	# bayseian_prior_b_dem = len(dem_speeches) / len(speeches)
+
+	# print "Bayseian Prior A (Rep): ", bayseian_prior_a_rep
+	# print "Bayseian Prior B (Dem): ", bayseian_prior_b_dem
+
+	# sum_log_probability_a_rep = sum(map(lambda (word,log_probabilities): log_probabilities[0],frame_vocabulary_proba.items()))
+	# sum_log_probability_b_dem = sum(map(lambda (word,log_probabilities): log_probabilities[1],frame_vocabulary_proba.items()))
+
+	# print "NB Sum Log Proba A (Rep): ", sum_log_probability_a_rep
+	# print "NB Sum Log Proba B (Dem): ", sum_log_probability_b_dem
+
+	# final_prob_a = bayseian_prior_a_rep * sum_log_probability_a_rep
+	# final_prob_b = bayseian_prior_b_dem * sum_log_probability_b_dem
+
+	# print "Bayseian Prior * Sum Log Proba, A (Rep): ", final_prob_a
+	# print "Bayseian Prior * Sum Log Proba, B (Dem): ", final_prob_b
+
+	# if final_prob_a > final_prob_b:
+	# 	print t.red("A (Rep) Manual Log Proba > B (Dem) Manual Log Proba: Classify Republican")
+	# else:
+	# 	print t.cyan("B (Dem) Manual Log Proba > A (Rep) Manual Log Proba: Classify Democratic")
 
 	end_date = datetime.datetime.combine(parser.parse(speech_window_end), datetime.time(12, 00))
-	log_proba_ratio = ratios[end_dates.index(end_date)]
-	log_of_log_proba_ratio = log(log_proba_ratio)
+	proba_ratio = ratios[end_dates.index(end_date)]
+	raw_ratio = raw_ratios[end_dates.index(end_date)]
+	log_proba_ratio = log(proba_ratio)
 
-	print "Log Proba Ratio: ", log_proba_ratio
-	print "Frame Plot Ratio (Log of Log Proba Ratio): ", log_of_log_proba_ratio
-	if log_proba_ratio < 1 and log_of_log_proba_ratio < 0:
-		print t.cyan("Log Proba < 1 (Log of Log Proba Ratio < 0): Classify Democratic")
-	elif log_proba_ratio > 1 and log_of_log_proba_ratio > 0:
-		print t.red("Log Proba > 1 (Log of Log Proba Ratio > 0): Classify Republican")
+	print "[DB] Proba Ratio: ", proba_ratio
+	print "[DB] Raw Ratios: ", raw_ratio
+	print "Frame Plot Ratio (Log Prob Ratio): ", log_proba_ratio # visual ratio, what you see on the graph
+	if proba_ratio < 1 and log_proba_ratio < 0:
+		print t.cyan("Proba < 1 (Log Proba Ratio < 0): Classify Democratic")
+	elif proba_ratio > 1 and log_proba_ratio > 0:
+		print t.red("Proba > 1 (Log Proba Ratio > 0): Classify Republican")
 	else:
 		print t.red("!!! ERROR ERROR ERROR ERROR ERROR !!!")
 

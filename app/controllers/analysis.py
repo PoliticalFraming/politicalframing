@@ -24,7 +24,10 @@ frame_plot_fields = {
 	'start_dates': fields.List(fields.Raw),
 	'end_dates': fields.List(fields.Raw),
 	'ylabel': fields.String,
-	'title': fields.String
+	'title': fields.String,
+	'raw_ratios': fields.List(fields.Raw),
+	'lengaz': fields.List(fields.Raw),
+	'datez': fields.List(fields.Raw)
 }
 
 wordcount_plot_fields = {

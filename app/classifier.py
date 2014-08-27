@@ -9,27 +9,28 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.datasets.base import Bunch
 from sklearn.cross_validation import cross_val_score
 
+#
+# We expected the graph to remain consistent after passing in
+# a vocabulary to the TfidfVectorizer (thus casuing it to have a
+# "fixed_vocabulary"). It was definitely not consistent and seemed
+# to be much smoother. This may be because each window does not
+# have all of the frame's words. By setting the vocabulary to the
+# words of the frame we are going to get several words with 0 probability.
+# This makes use of the laplace or lidstorm smoothing thus casuing smoother
+# graphs. It might make more sense to just not pass in the frame words
+# that don't exist in the current window; however, inconsitent frames
+# across windows (and inconsistent frame lengths) can cause further
+# complications.
+#
+
 class Classifier:
     """Used to allow the adding and removing of speeches to the classifer.
     This could be made faster by actually modifying or extending the MultinomialNB
     in scikit-learn rather than creating a new MultinomialNB object each time."""
 
     def __init__(self, vocab=None):
-        if vocab:
-            self.vectorizer = TfidfVectorizer(min_df=2)
-        else:
-            self.vectorizer = TfidfVectorizer(min_df=2, vocabulary=vocab)
+        self.vectorizer = TfidfVectorizer(min_df=2, vocabulary=vocab)
         self.classifier = MultinomialNB(alpha=0.1,fit_prior=True)
-
-    def learn_vocabulary(self, documents):
-        app.logger.debug("learning vocabulary")
-        try:
-            self.vectorizer.fit(documents)
-            app.logger.debug("learned")
-        except ValueError as e:
-            app.logger.debug(e)
-            app.logger.debug(documents)
-            raise
 
     def train_classifier(self, data, target):
         sparse_data = self.vectorizer.fit_transform(data)
@@ -39,7 +40,7 @@ class Classifier:
     def classify_document(self, document):
         app.logger.debug("classifying document")
         tfidf_frames_vector = self.vectorizer.transform([document])
-        return self.classifier.predict_log_proba(tfidf_frames_vector)[0]
+        return self.classifier.predict_proba(tfidf_frames_vector)[0]
 
     def cross_validation(self, documents, targets):
         """
