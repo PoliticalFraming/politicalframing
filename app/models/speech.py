@@ -77,6 +77,10 @@ class Speech(object):
 
     if kwargs.get('id'):
       compulsory_params['id'] = kwargs['id']
+      solr_query = si.Q(**compulsory_params)
+    elif kwargs.get('ids'):
+      solr_query = si.Q()
+      solr_query &= reduce(operator.or_, [si.Q(id=_id) for _id in kwargs['ids']])
     elif kwargs.get('phrase'):
       compulsory_params['speaking'] = kwargs['phrase']
 
@@ -100,10 +104,11 @@ class Speech(object):
       solr_query = si.Q(**compulsory_params)
       if optional_params.get('speaker_state'):
         solr_query &= optional_params['speaker_state']
-      solr_query = si.query(solr_query)
-      solr_query = solr_query.exclude(speaker_party=None)
 
-      return solr_query
+    solr_query = si.query(solr_query)
+    solr_query = solr_query.exclude(speaker_party=None)
+
+    return solr_query
 
   @staticmethod
   def get(rows, start, **kwargs):
@@ -130,12 +135,15 @@ class Speech(object):
 
     params = solr_query.params()
     dict_params = dict(params)
+
     dict_params['norm'] = 'norm(speaking)'
-    dict_params['tf'] = 'tf(speaking, %s)' % kwargs['phrase']
-    dict_params['idf'] = 'idf(speaking, %s)' % kwargs['phrase']
-    dict_params['tfidf'] = 'mul($tf, $idf)'
-    dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs['phrase']
-    dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
+
+    if not kwargs.get('ids'):
+      dict_params['tf'] = 'tf(speaking, %s)' % kwargs.get('phrase')
+      dict_params['idf'] = 'idf(speaking, %s)' % kwargs.get('phrase')
+      dict_params['tfidf'] = 'mul($tf, $idf)'
+      dict_params['termFreq'] = 'termfreq(speaking, %s)' % kwargs.get('phrase')
+      dict_params['fl'] = "*, score, $norm, $termFreq, $tf, $idf, $tfidf"
 
     dict_params['q'] += " AND {!frange l=8}$tfidf"
 
@@ -156,7 +164,12 @@ class Speech(object):
       # print frame_vocabulary_proba
 
       dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f)" % (word, frame_vocabulary_proba[word]), frame_words.split())) + "), $norm)"
-      dict_params['fl'] += ", $frameFreq"
+
+      if dict_params.get('fl'):
+        dict_params['fl'] += ", $frameFreq"
+      else:
+        dict_params['fl'] = '$frameFreq'
+
       dict_params["sort"] = "$frameFreq desc"
 
     params = zip(dict_params.keys(), dict_params.values())
