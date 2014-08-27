@@ -15,6 +15,7 @@ import operator
 from math import exp, log
 import json
 
+import ipdb as pdb
 import ipdb
 
 # from celery.contrib import rdb
@@ -194,6 +195,7 @@ class Speech(object):
     # TODO: improve this
     if kwargs.get('frame') and kwargs.get('highlight'):
       frame = Frame.get(Frame.id == kwargs['frame'])
+      # pdb.set_trace()
       for speech in speeches:
           speech = Speech.highlight_speech(speech, frame)
 
@@ -217,7 +219,7 @@ class Speech(object):
     Output
       speech object with highlighted 'speaking'
     """
-    frame = frame.word_string.split(' ')
+    frame = frame.word_string.replace("\n", " ").split(' ')
 
     speech['speaking'] = \
       map(lambda sentence:
