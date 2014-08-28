@@ -1,7 +1,4 @@
-1 christianity
-
 abbey
-absolute
 adherent
 administer
 adonis
@@ -31,7 +28,6 @@ apotheosize
 Arianism
 ascension
 assumption
-authority
 avatar
 Baker
 banns
@@ -42,8 +38,6 @@ baptist
 baptistic
 Baptistic
 basilica
-Being
-being
 belief
 beliefs
 believed
@@ -97,7 +91,6 @@ congregationalist
 conversion
 Coptic
 coptic
-council
 creed
 crypt
 cursed
@@ -136,12 +129,9 @@ exterminated
 faith
 feast
 followers
-founders
-friend
 fundamentalism
 fundamentalist
 gentile
-George
 god
 God
 goddess
@@ -151,8 +141,6 @@ godly
 Gods
 gospel
 grace
-greek
-Greek
 hamadryad
 healing
 hell
@@ -164,7 +152,6 @@ immaculate
 immersion
 immortal
 incarnation
-individual
 inerrancy
 infallibility
 Inquisition
@@ -182,9 +169,7 @@ lutheranism
 Manichaeism
 marriage
 Mary
-mass
 medieval
-members
 mennonite
 Mennonite
 messiah
@@ -207,11 +192,8 @@ nestorian
 nicene
 nonconformist
 nonJewish
-obligation
 observes
-offensive
 omnipotence
-opposition
 Orthodox
 orthodox
 Oxford
@@ -297,7 +279,6 @@ sovereign
 sovereignty
 spiritual
 steeple
-supporter
 Supreme
 supreme
 teachings
@@ -315,8 +296,6 @@ Trinity
 ultramontanism
 Uniate
 unitarianism
-United
-war
 welfare
 wesleyan
 western

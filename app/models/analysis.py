@@ -445,12 +445,12 @@ class Analysis(db.Model):
             'start_dates': start_dates,
             'end_dates': end_dates,
             'ratios': ratios,
-            'raw_ratios': zip(subgroup_a_likelihoods, subgroup_b_likelihoods),
-            'lengaz': lengaz,
-            'datez': datez,
-            'ids': ids
+            # 'raw_ratios': zip(subgroup_a_likelihoods, subgroup_b_likelihoods)
+            # 'lengaz': lengaz,
+            # 'datez': datez,
+            # 'ids': ids
         }
-        self.speech_windows = json.dumps(speech_windows)
+        # self.speech_windows = json.dumps(speech_windows)
 
         return self.frame_plot
 

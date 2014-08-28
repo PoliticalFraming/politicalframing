@@ -15,8 +15,8 @@ import operator
 from math import exp, log
 import json
 
-import ipdb as pdb
-import ipdb
+# import ipdb as pdb
+# import ipdb
 
 # from celery.contrib import rdb
 
@@ -160,15 +160,13 @@ class Speech(object):
       from app.models.analysis import Analysis
 
       frame_words = Frame.get(Frame.id == kwargs['frame']).word_string
-      analysis_obj = Analysis.get(Analysis.id == kwargs['analysis_id'])
-      key = "%s - %s" % (kwargs.get('start_date'), kwargs.get('end_date'))
-      vocabulary_proba = json.loads(analysis_obj.speech_windows)[key]
+      # analysis_obj = Analysis.get(Analysis.id == kwargs['analysis_id'])
+      # key = "%s - %s" % (kwargs.get('start_date'), kwargs.get('end_date'))
+      # vocabulary_proba = json.loads(analysis_obj.speech_windows)[key]
+      # frame_vocabulary_proba =  { word: (abs(exp(vocabulary_proba.get(word)[0]) - exp(vocabulary_proba.get(word)[1]))) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
+      # dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f)" % (word, frame_vocabulary_proba[word]), frame_words.split())) + "), $norm)"
 
-      frame_vocabulary_proba =  { word: (abs(exp(vocabulary_proba.get(word)[0]) - exp(vocabulary_proba.get(word)[1]))) if vocabulary_proba.get(word) != None else 0 for word in frame_words.split() }
-
-      # print frame_vocabulary_proba
-
-      dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f)" % (word, frame_vocabulary_proba[word]), frame_words.split())) + "), $norm)"
+      dict_params['frameFreq'] = "mul(sum(" + ", ".join(map(lambda word: "mul(termfreq(speaking,\"%s\"), %f)" % (word, 1), frame_words.split())) + "), $norm)"
 
       if dict_params.get('fl'):
         dict_params['fl'] += ", $frameFreq"
