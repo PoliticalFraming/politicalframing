@@ -39,8 +39,6 @@ def populate_frames_dummy_data():
         ('war2', open(root + '/frames/war2.txt').read()),
         ('common_words2', open(root + '/frames/common_words2.txt').read()),
 
-        ('crime3', open(root + '/frames/crime3.txt').read()),
-
     ]
 
     for n, frame in enumerate(frames):
