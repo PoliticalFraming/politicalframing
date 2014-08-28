@@ -1,5 +1,3 @@
-3 finance
-
 abound
 abundance
 abundant
@@ -396,7 +394,6 @@ technical
 teeming
 teemingness
 tendency
-terms
 thrift
 token
 traded
@@ -406,13 +403,11 @@ transacting
 transactions
 trust
 trustees
-truth
 underwriter
 undesirable
 unethical
 union
 unit
-United
 unneeded
 unwanted
 vegetation
@@ -422,11 +417,6 @@ wall
 Wall
 waste
 wealth
-wilderness
+wealthy
 withdrawals
 withdrawing
-work
-worker
-workers
-year
-York

@@ -37,7 +37,9 @@ def populate_frames_dummy_data():
         ('finance2', open(root + '/frames/finance2.txt').read()),
         ('sex2', open(root + '/frames/sex2.txt').read()),
         ('war2', open(root + '/frames/war2.txt').read()),
-        ('common_words2', open(root + '/frames/common_words2.txt').read())
+        ('common_words2', open(root + '/frames/common_words2.txt').read()),
+
+        ('crime3', open(root + '/frames/crime3.txt').read()),
 
     ]
 
